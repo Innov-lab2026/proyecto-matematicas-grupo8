@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import apiRoutes from './routes/api.routes.js';
 import prisma from './config/prisma.js';
+import errorHandler from './middlewares/error.middleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,6 +16,7 @@ if (isGeminiMissing) {
 app.use(express.json());
 
 app.use('/api', apiRoutes);
+app.use(errorHandler);
 
 app.get('/', (req, res) => res.send('InnovaLab API Core'));
 
