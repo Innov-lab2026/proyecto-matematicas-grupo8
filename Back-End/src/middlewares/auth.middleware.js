@@ -7,7 +7,7 @@ export const checkAuth = async (req, res, next) => {
     const token = authHeader?.split(' ')[1];
 
     if (isMockMode || token === 'dev-bypass-token') {
-        const mockId = req.body?.uid || req.body?.usuarioId || req.body?.adminId || req.query?.usuarioId || 'user-001';
+        const mockId = req.headers['x-simulated-uid'] || req.body?.uid || req.body?.usuarioId || req.body?.adminId || req.query?.usuarioId || 'user-001';
         let mockRole = 'usuario';
 
         if (mockId.startsWith('admin-')) {
