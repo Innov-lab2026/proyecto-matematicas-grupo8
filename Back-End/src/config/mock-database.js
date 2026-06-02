@@ -31,8 +31,25 @@ const readCSV = (fileName) => {
     }
 };
 
+const saveUsersToCSV = (usuarios) => {
+    try {
+        const filePath = path.join(DATA_PATH, 'usuarios.csv');
+        const headers = ['id', 'email', 'nombre', 'rol', 'puntos', 'racha', 'password'];
+        const rows = usuarios.map(u => {
+            return headers.map(h => {
+                const val = u[h] !== undefined ? u[h] : '';
+                return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+            }).join(',');
+        });
+        const content = [headers.join(','), ...rows].join('\n');
+        fs.writeFileSync(filePath, content, 'utf-8');
+    } catch (error) {
+        console.error('Error al persistir usuarios en CSV:', error);
+    }
+};
+
 let db = {
-    usuario: readCSV('usuarios.csv').map(u => ({ ...u, tokens: 0, ultimaConexion: new Date() })),
+    usuario: readCSV('usuarios.csv').map(u => ({ ...u, tokens: u.tokens || 0, ultimaConexion: new Date() })),
     seccion: readCSV('secciones.csv'),
     escenario: readCSV('escenarios.csv'),
     auditoria: readCSV('auditoria.csv'),
@@ -51,11 +68,12 @@ const mockPrisma = {
             let idx = db.usuario.findIndex(u => u.id === where.id || u.email === where.email);
             if (idx !== -1) {
                 db.usuario[idx] = { ...db.usuario[idx], ...update };
-                return db.usuario[idx];
+            } else {
+                const newUser = { ...create, puntos: create.puntos || 0, tokens: 0, racha: create.racha || 0 };
+                db.usuario.push(newUser);
             }
-            const newUser = { ...create, puntos: 0, tokens: 0, racha: 0 };
-            db.usuario.push(newUser);
-            return newUser;
+            saveUsersToCSV(db.usuario);
+            return idx !== -1 ? db.usuario[idx] : db.usuario[db.usuario.length - 1];
         },
         update: async ({ where, data }) => {
             let idx = db.usuario.findIndex(u => u.id === where.id);
@@ -65,6 +83,7 @@ const mockPrisma = {
             Object.keys(data).forEach(k => {
                 if (typeof data[k] !== 'object' || data[k] instanceof Date) db.usuario[idx][k] = data[k];
             });
+            saveUsersToCSV(db.usuario);
             return db.usuario[idx];
         },
         findMany: async () => db.usuario

@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import apiRoutes from './routes/api.routes.js';
 import prisma from './config/prisma.js';
+import errorHandler from './middlewares/error.middleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,9 +14,11 @@ if (isGeminiMissing) {
     console.log('\x1b[33m%s\x1b[0m', 'Atención: están faltando las Keys de permiso y GeminiCli no va a dar las respuestas automatizadas, solo hay que agregar la API Key GRATUITA que encontrás en tu cuenta de Google en Google Studio.');
 }
 
+app.use(cors());
 app.use(express.json());
 
 app.use('/api', apiRoutes);
+app.use(errorHandler);
 
 app.get('/', (req, res) => res.send('InnovaLab API Core'));
 

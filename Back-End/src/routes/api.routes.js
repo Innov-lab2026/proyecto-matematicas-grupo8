@@ -16,7 +16,7 @@ router.get('/health', (req, res) => {
 });
 
 router.use('/secciones', checkAuth, auditMiddleware, seccionRoutes);
-router.use('/usuarios', checkAuth, auditMiddleware, usuariosRoutes);
+router.use('/usuarios', auditMiddleware, usuariosRoutes);
 router.use('/progreso', checkAuth, auditMiddleware, progresoRoutes);
 router.get('/logs', checkAuth, getLogs);
 
