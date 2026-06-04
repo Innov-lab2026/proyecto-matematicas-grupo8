@@ -38,6 +38,13 @@ const TestValidation = () => {
         }
     };
 
+    const handleLogout = () => {
+        logout();
+        setEmail('');
+        setPassword('');
+        setNombre('');
+    };
+
     const handleShowUsers = async () => {
         try {
             const response = await axiosInstance.get('/usuarios');
@@ -66,7 +73,7 @@ const TestValidation = () => {
                                 ver registro
                             </Button>
                             {user && (
-                                <Button variant="outline-danger" size="sm" onClick={logout}>
+                                <Button variant="outline-danger" size="sm" onClick={handleLogout}>
                                     cerrar sesión
                                 </Button>
                             )}
