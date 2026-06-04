@@ -50,7 +50,7 @@ const TestValidation = () => {
 
     const selectUser = (u) => {
         setEmail(u.email);
-        setPassword(u.password || '');
+        setPassword(u.password || 'User123!');
         setNombre(u.nombre || '');
         setShowUsersModal(false);
     };

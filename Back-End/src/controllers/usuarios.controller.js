@@ -24,7 +24,7 @@ export const registrarUsuario = async (req, res, next) => {
     const rolAsignado = adminEmails.includes(email) ? "admin" : "usuario";
 
     const usuario = await prisma.usuario.upsert({
-      where: { id: uid },
+      where: { email: email },
       update: { nombre, rol: rolAsignado, password },
       create: {
         id: uid,
