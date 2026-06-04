@@ -1,12 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
 import Register from '../pages/Register';
-
 import Landing from '../pages/Landing.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 import LoginPage from '../pages/Login';
+import TestValidation from '../pages/TestValidation';
 import { useAuth } from '../context/AuthContext';
 
 // Componente para proteger rutas autenticadas
@@ -32,7 +31,9 @@ export default function AppRouter() {
             <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<Landing />} />
-                
+
+                <Route path="/test-validation" element={<TestValidation />} />
+
                 <Route
                     path="/login"
                     element={

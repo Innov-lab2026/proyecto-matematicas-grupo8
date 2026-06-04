@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Container, Form, Button, Card, InputGroup, Modal, Table } from 'react-bootstrap';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import { axiosInstance } from '../services/index';
 
 const TestValidation = () => {
     const { login, register, logout, deleteAccount, user, setError } = useAuth();
@@ -40,7 +40,7 @@ const TestValidation = () => {
 
     const handleShowUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:3001/api/usuarios');
+            const response = await axiosInstance.get('/usuarios');
             setUsersList(response.data);
             setShowUsersModal(true);
         } catch (err) {

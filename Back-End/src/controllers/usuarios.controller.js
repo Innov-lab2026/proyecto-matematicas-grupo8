@@ -28,7 +28,7 @@ export const registrarUsuario = async (req, res, next) => {
       update: { nombre, rol: rolAsignado, password },
       create: {
         id: uid,
-        email: normalizedEmail,
+        email: email,
         nombre,
         rol: rolAsignado,
         password,

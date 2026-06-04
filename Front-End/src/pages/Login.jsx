@@ -57,10 +57,10 @@ const useLoginForm = () => {
         // Simulamos una autenticación exitosa
         console.log('Intentando iniciar sesión con:', { email, password });
 
-        // 
-        axiosInstance.post('/login', { email, password })
+        //
+        axiosInstance.post('/usuarios/login', { email, password })
             .then(response => {
-                // status 200 
+                // status 200
                 login({ email });
                 console.log('Respuesta del servidor:', response.data);
                 // Aquí podrías manejar la respuesta del servidor, como guardar el token de autenticación
