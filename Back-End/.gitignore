@@ -18,3 +18,4 @@ prisma/migrations
 *.db
 *.db-journal
 src/generated
+Back-End/src/generated/
