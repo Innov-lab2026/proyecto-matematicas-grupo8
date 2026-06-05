@@ -2,7 +2,11 @@ import axios from 'axios';
 import { supabase } from './supabaseClient';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+    // Si no está la variable, no usamos localhost por defecto en prod para evitar falsos positivos
+    baseURL: import.meta.env.VITE_API_URL || (
+        import.meta.env.MODE === 'production'
+        ? '/api' // Intenta ruta relativa si estamos en prod
+        : 'http://localhost:3001/api')
 });
 
 api.interceptors.request.use(async (config) => {
