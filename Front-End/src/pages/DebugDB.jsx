@@ -11,8 +11,9 @@ const DebugDB = () => {
         try {
             setStatus('Sincronizando...');
             const res = await api.post('/usuarios/registro', {
-                uid: user.id,
-                email: user.email,
+                // Si no hay usuario logueado, mandamos un ID de test para no crashear
+                uid: user?.id || 'test-uid-manual-123',
+                email: user?.email || 'test-debug@innovalab.com',
                 nombre: 'Tester de DB'
             });
             setDbData(res.data);

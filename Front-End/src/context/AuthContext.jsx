@@ -29,7 +29,8 @@ export const AuthProvider = ({ children }) => {
                 const { data: { session } } = await supabase.auth.getSession();
                 setSession(session);
                 if (session?.user) {
-                    await fetchProfile(session.user);
+                // No usamos 'await' acá para que no trabe el renderizado inicial
+                fetchProfile(session.user);
                 }
             } catch (err) {
                 console.error('Error inicializando Auth:', err);
