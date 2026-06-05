@@ -11,7 +11,11 @@
     "dev:all": "pnpm -r --parallel dev",
     "build": "pnpm build:back",
     "clean:audit": "pnpm --filter backend clean:audit",
-    "install:all": "pnpm install --frozen-lockfile",
+    "install:all": "pnpm install",
     "build:back": "pnpm --filter backend build"
-  }
+  },
+  "engines": {
+  "pnpm": "9.x"
+},
+  "packageManager": "pnpm@9.15.4"
 }

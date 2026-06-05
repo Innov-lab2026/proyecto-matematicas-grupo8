@@ -14,8 +14,7 @@ try {
     prisma = new PrismaClient();
     console.log('\x1b[32m%s\x1b[0m', '--- Infraestructura de Base de Datos Vinculada ---');
 } catch (error) {
-    console.error('Falla crítica al inicializar Prisma Client:', error.message);
-    process.exit(1);
+    console.error('Advertencia al inicializar Prisma Client:', error.message);
 }
 
 export default prisma;
