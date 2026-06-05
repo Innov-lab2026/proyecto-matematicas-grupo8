@@ -83,9 +83,7 @@ export default function AppRouter() {
                 <Route
                     path="/debug-db"
                     element={
-                        <AdminRoute>
-                            <DebugDB />
-                        </AdminRoute>
+                        <DebugDB />
                     }
                 />
 

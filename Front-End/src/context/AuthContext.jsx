@@ -16,32 +16,37 @@ export const AuthProvider = ({ children }) => {
                 email: user.email,
                 nombre: user.user_metadata?.full_name || user.email.split('@')[0]
             });
-            setProfile(data);
+            setProfile(data || null);
         } catch (error) {
-            console.error('Error al obtener perfil:', error);
+            console.error('Fallo la conexion con el Back-End:', error.message);
             setProfile(null);
         }
     }, []);
 
     useEffect(() => {
         const initAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            if (session?.user) {
-                await fetchProfile(session.user);
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setSession(session);
+                if (session?.user) {
+                    await fetchProfile(session.user);
+                }
+            } catch (err) {
+                console.error('Error inicializando Auth:', err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
+
         initAuth();
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            setSession(session);
+            setSession(session || null);
             if (session?.user) {
                 await fetchProfile(session.user);
             } else {
                 setProfile(null);
             }
-            setLoading(false);
         });
 
         return () => subscription.unsubscribe();
