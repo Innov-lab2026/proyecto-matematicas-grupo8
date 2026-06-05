@@ -39,7 +39,7 @@ const DebugDB = () => {
         <div style={{ padding: '20px', fontFamily: 'monospace', backgroundColor: '#1a1a1a', color: '#00ff00', minHeight: '100vh' }}>
             <h2>☢ InnovaLab - Debug Zone ☢</h2>
             <div style={{ border: '1px solid #444', padding: '10px', marginBottom: '10px' }}>
-                <p><strong>VITE_API_URL:</strong> {import.meta.env.VITE_API_URL || 'No definida (Usando fallback)'}</p>
+                <p><strong>VITE_API_URL actual:</strong> <span style={{color: '#ff00ff'}}>{import.meta.env.VITE_API_URL || 'No definida'}</span></p>
                 <p><strong>Modo:</strong> {import.meta.env.MODE}</p>
             </div>
             <p>Usuario: {user?.email || 'No logueado'}</p>

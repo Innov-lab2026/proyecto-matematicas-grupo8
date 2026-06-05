@@ -1,11 +1,19 @@
 import axios from 'axios';
 import { supabase } from './supabaseClient';
 
+const rawBaseURL = import.meta.env.VITE_API_URL;
+
+// Limpieza por si quedó algún residuo de la copia del .env
+const cleanBaseURL = rawBaseURL
+    ? rawBaseURL.replace(/^VITE_API_URL:/, '').replace(/['"]/g, '')
+    : null;
+
+console.log('📡 API BaseURL:', cleanBaseURL || 'Usando fallback');
+
 const api = axios.create({
-    // Si no está la variable, no usamos localhost por defecto en prod para evitar falsos positivos
-    baseURL: import.meta.env.VITE_API_URL || (
+    baseURL: cleanBaseURL || (
         import.meta.env.MODE === 'production'
-        ? '/api' // Intenta ruta relativa si estamos en prod
+        ? '/api'
         : 'http://localhost:3001/api')
 });
 
