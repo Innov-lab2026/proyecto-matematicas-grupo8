@@ -10,12 +10,7 @@ export const registrarUsuario = async (req, res, next) => {
             throw validacion.error;
         }
 
-        const { email, nombre } = validacion.data;
-        const uid = req.body.uid; // El UID debe venir obligatoriamente de Supabase Auth
-
-        if (!uid) {
-            return res.status(400).json({ error: "UID de autenticación requerido" });
-        }
+        const { uid, email, nombre } = validacion.data;
 
         const superAdminEmails = process.env.SUPERADMIN_EMAILS
             ? process.env.SUPERADMIN_EMAILS.replace(/['"]/g, '').split(',').map(e => e.trim().toLowerCase())

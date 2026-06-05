@@ -7,11 +7,11 @@ const passwordSchema = z.string()
     .regex(/[!@#$%^&*]/, "Debe contener un carácter especial (ejemplos: ! @ # $ % ^ & *)")
 
 export const registroSchema = z.object({
+    uid: z.string().min(1, "El UID es obligatorio"),
     email: z.string()
         .email({ message: "Formato de email inválido" })
         .trim()
         .toLowerCase(),
-    password: passwordSchema,
     nombre: z.string()
         .min(2, { message: "El nombre es muy corto" })
         .max(50)
