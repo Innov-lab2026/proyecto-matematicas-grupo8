@@ -44,6 +44,9 @@ importers:
 
   Front-End:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.48.1
+        version: 2.48.1
       axios:
         specifier: ^1.16.1
         version: 1.17.0
