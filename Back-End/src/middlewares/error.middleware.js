@@ -16,10 +16,10 @@ export const errorHandler = (err, req, res, next) => {
         message = err.message;
         errors = [err.message];
     } else if (err instanceof Prisma.PrismaClientInitializationError || (err instanceof Prisma.PrismaClientKnownRequestError && err.code.startsWith('P10'))) {
-        console.error('🔴 Error de conexión Prisma:', err.code, err.message);
+        console.error('🔴 Error de conexión Prisma:', err.code, err.message, 'URL:', process.env.DATABASE_URL?.substring(0, 20) + '...');
         statusCode = 503;
         message = 'La base de datos no responde o está fuera de línea';
-        errors = [message];
+        errors = [message, `Código Prisma: ${err.code || 'N/A'}`, `Detalle: ${err.message}`];
     } else {
         console.error(err);
         errors = [message];

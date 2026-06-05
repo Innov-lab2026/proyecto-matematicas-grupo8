@@ -12,7 +12,14 @@ if (!isDbConfigured) {
 
 try {
     prisma = new PrismaClient();
-    console.log('\x1b[32m%s\x1b[0m', '--- Infraestructura de Base de Datos Vinculada ---');
+    // Intento de conexión "lazy" para validar en el arranque
+    prisma.$connect()
+        .then(() => {
+            console.log('\x1b[32m%s\x1b[0m', '✅ Conexión a Base de Datos establecida');
+        })
+        .catch(err => {
+            console.error('❌ Error de conexión inicial Prisma:', err.message);
+        });
 } catch (error) {
     console.error('Advertencia al inicializar Prisma Client:', error.message);
 }
