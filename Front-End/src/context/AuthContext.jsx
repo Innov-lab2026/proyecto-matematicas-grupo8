@@ -42,10 +42,7 @@ export const AuthProvider = ({ children }) => {
 
                 console.log('✅ AuthContext: Sesión recibida:', session ? 'Logueado' : 'Anónimo');
                 setSession(session || null);
-
-                if (session?.user) {
-                    fetchProfile(session.user);
-                }
+                // fetchProfile se ejecutará vía onAuthStateChange automáticamente
             } catch (err) {
                 console.warn('⚠️ AuthContext: No se pudo recuperar sesión (posible bloqueo de red o timeout):', err.message);
                 setSession(null);

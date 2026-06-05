@@ -18,10 +18,18 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    // Intentamos sacar el token del storage directamente si existe,
-    // para evitar el await que puede congelar la petición
-    const storageKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
-    const sessionData = localStorage.getItem(storageKey);
+    let storageKey = null;
+
+    try {
+        if (import.meta.env.VITE_SUPABASE_URL) {
+            const url = new URL(import.meta.env.VITE_SUPABASE_URL);
+            storageKey = `sb-${url.hostname.split('.')[0]}-auth-token`;
+        }
+    } catch (e) {
+        console.warn('⚠️ No se pudo derivar la storageKey de Supabase');
+    }
+
+    const sessionData = storageKey ? localStorage.getItem(storageKey) : null;
 
     if (sessionData) {
         const { access_token } = JSON.parse(sessionData);
