@@ -9,10 +9,15 @@ const api = axios.create({
         : 'http://localhost:3001/api')
 });
 
-api.interceptors.request.use(async (config) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) {
-        config.headers.Authorization = `Bearer ${session.access_token}`;
+api.interceptors.request.use((config) => {
+    // Intentamos sacar el token del storage directamente si existe,
+    // para evitar el await que puede congelar la petición
+    const storageKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+    const sessionData = localStorage.getItem(storageKey);
+
+    if (sessionData) {
+        const { access_token } = JSON.parse(sessionData);
+        config.headers.Authorization = `Bearer ${access_token}`;
     }
     return config;
 }, (error) => {

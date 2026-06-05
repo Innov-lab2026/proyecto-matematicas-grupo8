@@ -27,18 +27,29 @@ export const AuthProvider = ({ children }) => {
         const initAuth = async () => {
             console.log('🔐 AuthContext: Iniciando validación de sesión...');
             try {
-                console.log('🛰️ AuthContext: Solicitando sesión a Supabase...');
-                const { data: { session } } = await supabase.auth.getSession();
-                console.log('✅ AuthContext: Respuesta de sesión recibida:', session ? 'Logueado' : 'Anónimo');
-                setSession(session);
+                // Creamos una promesa que falla a los 4 segundos
+                const timeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout Supabase')), 4000)
+                );
+
+                console.log('🛰️ AuthContext: Solicitando sesión (con timeout)...');
+
+                // Competencia: lo que pase primero (la respuesta o el timeout)
+                const { data: { session } } = await Promise.race([
+                    supabase.auth.getSession(),
+                    timeout
+                ]);
+
+                console.log('✅ AuthContext: Sesión recibida:', session ? 'Logueado' : 'Anónimo');
+                setSession(session || null);
+
                 if (session?.user) {
-                    // No usamos 'await' acá para que no trabe el renderizado inicial
                     fetchProfile(session.user);
                 }
             } catch (err) {
-                console.error('Error inicializando Auth:', err);
+                console.warn('⚠️ AuthContext: No se pudo recuperar sesión (posible bloqueo de red o timeout):', err.message);
+                setSession(null);
             } finally {
-                // Si por alguna razón getSession tarda más de 5 segundos, esto igual debería ejecutarse
                 console.log('🔐 AuthContext: Finalizando estado de carga.');
                 setLoading(false);
             }
