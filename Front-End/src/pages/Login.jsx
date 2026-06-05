@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '../config/api';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -19,8 +19,7 @@ const LoginPage = () => {
         try {
             const { user } = await login(email, password); // Login con Supabase Auth
 
-            // Sincronizar perfil con el Back-End (crear o actualizar en PostgreSQL)
-            await axios.post('/api/usuarios/registro', {
+            await api.post('/usuarios/registro', {
                 uid: user.id,
                 email: user.email,
                 // Supabase a veces no tiene 'full_name' por defecto, lo derivamos del email
