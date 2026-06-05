@@ -22,21 +22,25 @@ app.use(errorHandler);
 
 app.get('/', (req, res) => res.send('InnovaLab API Core'));
 
-const server = app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+    const server = app.listen(PORT, () => {
+        console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    });
 
-server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE') {
-        console.error(`El puerto ${PORT} ya está en uso. Intentá con otro o matá el proceso anterior.`);
-        process.exit(1);
-    } else {
-        console.error('Error al iniciar el servidor:', error);
-        process.exit(1);
-    }
-});
+    server.on('error', (error) => {
+        if (error.code === 'EADDRINUSE') {
+            console.error(`El puerto ${PORT} ya está en uso. Intentá con otro o matá el proceso anterior.`);
+            process.exit(1);
+        } else {
+            console.error('Error al iniciar el servidor:', error);
+            process.exit(1);
+        }
+    });
+}
 
 process.on('SIGINT', async () => {
     await prisma.$disconnect();
     process.exit(0);
 });
+
+export default app;

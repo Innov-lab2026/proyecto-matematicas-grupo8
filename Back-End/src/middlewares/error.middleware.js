@@ -1,5 +1,6 @@
 import ApiError from '../exceptions/api.error.js';
 import { ZodError } from 'zod';
+import { Prisma } from '../generated/client/index.js';
 
 export const errorHandler = (err, req, res, next) => {
     let statusCode = 500;
@@ -14,6 +15,10 @@ export const errorHandler = (err, req, res, next) => {
         statusCode = err.statusCode;
         message = err.message;
         errors = [err.message];
+    } else if (err instanceof Prisma.PrismaClientInitializationError || (err instanceof Prisma.PrismaClientKnownRequestError && err.code.startsWith('P10'))) {
+        statusCode = 503;
+        message = 'La base de datos no responde o está fuera de línea';
+        errors = [message];
     } else {
         console.error(err);
         errors = [message];

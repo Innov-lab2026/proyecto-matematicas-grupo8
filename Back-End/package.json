@@ -5,8 +5,6 @@
   "main": "src/app.js",
   "scripts": {
     "dev": "nodemon",
-    "dev:local": "cross-env DATA_SOURCE=MOCK nodemon",
-    "dev:db": "cross-env DATA_SOURCE=DB nodemon",
     "start": "node src/app.js",
     "build": "prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"

@@ -1,59 +1,52 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-const AUTH_STORAGE_KEY = 'frontend_auth_user';
+import { supabase } from '../config/supabaseClient';
 
 const AuthContext = createContext(undefined);
 
-const getStoredUser = () => {
-    const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!rawUser) return null;
-
-    try {
-        return JSON.parse(rawUser);
-    } catch {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        return null;
-    }
-};
-
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => getStoredUser());
-    const isAuthenticated = Boolean(user);
-
-    const login = (payload = {}) => {
-        const fallbackName = payload.email ? payload.email.split('@')[0] : 'Usuario';
-
-        setUser({
-            id: payload.id || 'demo-user',
-            name: payload.name || fallbackName,
-            email: payload.email || 'demo@correo.com',
-        });
-    };
-
-    const logout = () => {
-        setUser(null);
-    };
+    const [session, setSession] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (user) {
-            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-            return;
-        }
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            setLoading(false);
+        });
 
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-    }, [user]);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const login = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        return data;
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
+    };
 
     const value = useMemo(
         () => ({
-            user,
-            isAuthenticated,
+            user: session?.user ?? null,
+            token: session?.access_token ?? null,
+            isAuthenticated: !!session,
             login,
             logout,
+            loading
         }),
-        [user, isAuthenticated]
+        [session]
     );
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
 };
 
 export const useAuth = () => {

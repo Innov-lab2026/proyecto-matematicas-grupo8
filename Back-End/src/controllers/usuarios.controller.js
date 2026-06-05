@@ -1,6 +1,6 @@
 import prisma from '../config/prisma.js';
 import ApiError from '../exceptions/api.error.js';
-import { registroSchema, perfilSchema, loginSchema } from '../validators/usuarios.validator.js';
+import { registroSchema, perfilSchema } from '../validators/usuarios.validator.js';
 
 export const registrarUsuario = async (req, res, next) => {
     try {
@@ -10,24 +10,37 @@ export const registrarUsuario = async (req, res, next) => {
             throw validacion.error;
         }
 
-        const { email, nombre, password } = validacion.data;
-        const uid = req.body.uid || `user-${Date.now()}`;
+        const { email, nombre } = validacion.data;
+        const uid = req.body.uid; // El UID debe venir obligatoriamente de Supabase Auth
 
-        const adminEmails = process.env.ADMIN_EMAILS
-            ? process.env.ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
+        if (!uid) {
+            return res.status(400).json({ error: "UID de autenticación requerido" });
+        }
+
+        const superAdminEmails = process.env.SUPERADMIN_EMAILS
+            ? process.env.SUPERADMIN_EMAILS.replace(/['"]/g, '').split(',').map(e => e.trim().toLowerCase())
             : [];
 
-        const rolAsignado = adminEmails.includes(email) ? 'admin' : 'usuario';
+        const adminEmails = process.env.ADMIN_EMAILS
+            ? process.env.ADMIN_EMAILS.replace(/['"]/g, '').split(',').map(e => e.trim().toLowerCase())
+            : [];
+
+        let rolFinal = 'usuario';
+        const emailNormalizado = email.trim().toLowerCase();
+        if (superAdminEmails.includes(emailNormalizado)) {
+            rolFinal = 'superadmin';
+        } else if (adminEmails.includes(emailNormalizado)) {
+            rolFinal = 'admin';
+        }
 
         const usuario = await prisma.usuario.upsert({
             where: { id: uid },
-            update: { nombre, rol: rolAsignado, password },
+            update: { nombre, rol: rolFinal },
             create: {
                 id: uid,
                 email,
                 nombre,
-                rol: rolAsignado,
-                password
+                rol: rolFinal
             }
         });
 
@@ -37,55 +50,12 @@ export const registrarUsuario = async (req, res, next) => {
     }
 };
 
-export const loginUsuario = async (req, res, next) => {
-    try {
-        const validacion = loginSchema.safeParse(req.body);
-        if (!validacion.success) {
-            throw validacion.error;
-        }
-
-        const { email, password } = validacion.data;
-
-        const usuario = await prisma.usuario.findUnique({
-            where: { email }
-        });
-
-        if (!usuario || usuario.password !== password) {
-            throw ApiError.unauthorized("Credenciales inválidas (email o contraseña incorrectos)");
-        }
-
-        res.status(200).json({
-            message: "Login exitoso",
-            user: {
-                id: usuario.id,
-                email: usuario.email,
-                nombre: usuario.nombre,
-                rol: usuario.rol,
-                token: "dev-bypass-token"
-            }
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
 export const eliminarUsuario = async (req, res, next) => {
     try {
         const uid = req.user.id;
-        const { password } = req.body;
 
-        if (!password) {
-            throw ApiError.badRequest("Ingresar contraseña para borrar la cuenta");
-        }
-
-        const usuario = await prisma.usuario.findUnique({
-            where: { id: uid }
-        });
-
-        if (!usuario || usuario.password !== password) {
-            throw ApiError.unauthorized("Contraseña incorrecta. No se puede borrar la cuenta");
-        }
-
+        // En producción, aquí también deberías borrar el usuario de Supabase Auth
+        // Pero para el MVP, borramos solo el perfil de nuestra DB
         await prisma.usuario.delete({
             where: { id: uid }
         });
