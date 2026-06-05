@@ -25,16 +25,19 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const initAuth = async () => {
+            console.log('🔐 AuthContext: Iniciando validación de sesión...');
             try {
                 const { data: { session } } = await supabase.auth.getSession();
+                console.log('🔐 AuthContext: Sesión obtenida:', session ? 'Usuario logueado' : 'Sin sesión');
                 setSession(session);
                 if (session?.user) {
-                // No usamos 'await' acá para que no trabe el renderizado inicial
-                fetchProfile(session.user);
+                    // No usamos 'await' acá para que no trabe el renderizado inicial
+                    fetchProfile(session.user);
                 }
             } catch (err) {
                 console.error('Error inicializando Auth:', err);
             } finally {
+                console.log('🔐 AuthContext: Finalizando estado de carga.');
                 setLoading(false);
             }
         };
@@ -79,7 +82,14 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#1a1a1a', color: '#00ff00' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <h3>InnovaLab</h3>
+                        <p>Cargando módulos de seguridad...</p>
+                    </div>
+                </div>
+            ) : children}
         </AuthContext.Provider>
     );
 };
