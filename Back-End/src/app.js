@@ -20,7 +20,7 @@ app.use(express.json());
 app.use('/api', apiRoutes);
 app.use(errorHandler);
 
-app.get('/', (req, res) => res.send('InnovaLab API Core'));
+app.get('/', (req, res) => res.status(200).send('InnovaLab API Core - Back-End Online'));
 
 if (process.env.NODE_ENV !== 'production') {
     const server = app.listen(PORT, () => {
