@@ -16,7 +16,8 @@
     "refresh:lock": "rm pnpm-lock.yaml && pnpm install --no-frozen-lockfile"
   },
   "engines": {
-  "pnpm": ">=10.0.0"
-},
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "packageManager": "pnpm@10.0.0"
 }
