@@ -7,7 +7,7 @@ const isDbConfigured = process.env.DATABASE_URL &&
                       process.env.DATABASE_URL !== 'postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public';
 
 if (!isDbConfigured) {
-    throw new Error('DATABASE_URL no está configurada o tiene el valor por defecto. El despliegue no puede continuar.');
+    console.error('❌ CRÍTICO: DATABASE_URL no está configurada en las variables de entorno del servidor.');
 }
 
 try {
