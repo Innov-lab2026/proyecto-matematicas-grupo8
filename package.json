@@ -12,7 +12,8 @@
     "build": "pnpm build:back",
     "clean:audit": "pnpm --filter backend clean:audit",
     "install:all": "pnpm install",
-    "build:back": "pnpm --filter backend build"
+    "build:back": "pnpm --filter backend build",
+    "refresh:lock": "rm pnpm-lock.yaml && pnpm install --no-frozen-lockfile"
   },
   "engines": {
   "pnpm": "9.x"
