@@ -27,8 +27,9 @@ export const AuthProvider = ({ children }) => {
         const initAuth = async () => {
             console.log('🔐 AuthContext: Iniciando validación de sesión...');
             try {
+                console.log('🛰️ AuthContext: Solicitando sesión a Supabase...');
                 const { data: { session } } = await supabase.auth.getSession();
-                console.log('🔐 AuthContext: Sesión obtenida:', session ? 'Usuario logueado' : 'Sin sesión');
+                console.log('✅ AuthContext: Respuesta de sesión recibida:', session ? 'Logueado' : 'Anónimo');
                 setSession(session);
                 if (session?.user) {
                     // No usamos 'await' acá para que no trabe el renderizado inicial
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
             } catch (err) {
                 console.error('Error inicializando Auth:', err);
             } finally {
+                // Si por alguna razón getSession tarda más de 5 segundos, esto igual debería ejecutarse
                 console.log('🔐 AuthContext: Finalizando estado de carga.');
                 setLoading(false);
             }
