@@ -1,6 +1,6 @@
 import ApiError from '../exceptions/api.error.js';
 import { ZodError } from 'zod';
-import { Prisma } from '../generated/client/index.js';
+import { Prisma } from '@prisma/client';
 
 export const errorHandler = (err, req, res, next) => {
     let statusCode = 500;

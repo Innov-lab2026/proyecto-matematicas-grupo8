@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { PrismaClient } from '../generated/client/index.js';
+import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
     return new PrismaClient({
@@ -15,7 +15,9 @@ export default prisma;
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-prisma.$connect()
-    .catch(err => {
-        console.error('❌ Error de conexión inicial Prisma:', err.message);
-    });
+// En serverless, es mejor no forzar el $connect() al inicio si no es necesario.
+// Prisma lo hará automáticamente en la primera consulta.
+if (process.env.NODE_ENV === 'development') {
+    prisma.$connect()
+        .catch(err => console.error('❌ Error de conexión Prisma:', err.message));
+}
