@@ -1,10 +1,10 @@
 {
   "version": 2,
   "functions": {
-    "src/app.js": { "runtime": "@vercel/node" }
+    "src/app.js": { "memory": 1024 }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/src/app.js" },
-    { "source": "/(.*)", "destination": "/src/app.js" }
+    { "source": "/api/(.*)", "destination": "src/app.js" },
+    { "source": "/(.*)", "destination": "src/app.js" }
   ]
 }
