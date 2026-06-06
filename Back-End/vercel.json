@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "src/app.js": {
+    "api/index.js": {
       "includeFiles": "node_modules/.prisma/client/libquery_engine-*"
     }
   },
@@ -17,7 +17,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "src/app.js" },
-    { "source": "/(.*)", "destination": "src/app.js" }
+    { "source": "/(.*)", "destination": "api/index.js" }
   ]
 }
