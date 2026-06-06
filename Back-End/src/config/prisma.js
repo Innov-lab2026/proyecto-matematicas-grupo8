@@ -1,6 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-    await import('dotenv/config');
-}
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
@@ -15,14 +12,12 @@ const prismaClientSingleton = () => {
 };
 
 const globalForPrisma = globalThis;
-
 const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
-
-export default prisma;
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-// En serverless, es mejor no forzar el $connect() al inicio si no es necesario.
+export default prisma;
+
 // Prisma lo hará automáticamente en la primera consulta.
 if (process.env.NODE_ENV === 'development') {
     prisma.$connect()
