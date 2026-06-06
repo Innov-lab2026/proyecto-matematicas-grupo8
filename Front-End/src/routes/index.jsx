@@ -1,12 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-
 import Register from '../pages/Register';
-
 import Landing from '../pages/Landing.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 import LoginPage from '../pages/Login';
+import DebugDB from '../pages/DebugDB';
 import { useAuth } from '../context/AuthContext';
 
 // Componente para proteger rutas autenticadas
@@ -26,13 +25,24 @@ const PublicRoute = ({ children }) => {
     return !isAuthenticated ? children : <Navigate to="/dashboard" />;
 };
 
+// Componente para proteger rutas de administración
+const AdminRoute = ({ children }) => {
+    const { profile, loading, isAuthenticated } = useAuth();
+
+    if (loading) return <div className="text-center mt-5">Cargando permisos...</div>;
+
+    const isAdmin = profile?.rol === 'admin' || profile?.rol === 'superadmin';
+
+    return isAuthenticated && isAdmin ? children : <Navigate to="/dashboard" />;
+};
+
 export default function AppRouter() {
     return (
         <Router>
             <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<Landing />} />
-                
+
                 <Route
                     path="/login"
                     element={
@@ -67,6 +77,13 @@ export default function AppRouter() {
                         <ProtectedRoute>
                             <Profile />
                         </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/debug-db"
+                    element={
+                        <DebugDB />
                     }
                 />
 

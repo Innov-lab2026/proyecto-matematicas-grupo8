@@ -1,59 +1,107 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-
-const AUTH_STORAGE_KEY = 'frontend_auth_user';
+import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { supabase } from '../config/supabaseClient';
+import api from '../config/api';
 
 const AuthContext = createContext(undefined);
 
-const getStoredUser = () => {
-    const rawUser = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (!rawUser) return null;
-
-    try {
-        return JSON.parse(rawUser);
-    } catch {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        return null;
-    }
-};
-
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(() => getStoredUser());
-    const isAuthenticated = Boolean(user);
+    const [session, setSession] = useState(null);
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const login = (payload = {}) => {
-        const fallbackName = payload.email ? payload.email.split('@')[0] : 'Usuario';
-
-        setUser({
-            id: payload.id || 'demo-user',
-            name: payload.name || fallbackName,
-            email: payload.email || 'demo@correo.com',
-        });
-    };
-
-    const logout = () => {
-        setUser(null);
-    };
+    const fetchProfile = useCallback(async (user) => {
+        try {
+            const { data } = await api.post('/usuarios/registro', {
+                uid: user.id,
+                email: user.email,
+                nombre: user.user_metadata?.full_name || user.email.split('@')[0]
+            });
+            setProfile(data || null);
+        } catch (error) {
+            console.error('Fallo la conexion con el Back-End:', error.message);
+            setProfile(null);
+        }
+    }, []);
 
     useEffect(() => {
-        if (user) {
-            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
-            return;
-        }
+        const initAuth = async () => {
+            console.log('🔐 AuthContext: Iniciando validación de sesión...');
+            try {
+                // Creamos una promesa que falla a los 4 segundos
+                const timeout = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout Supabase')), 4000)
+                );
 
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-    }, [user]);
+                console.log('🛰️ AuthContext: Solicitando sesión (con timeout)...');
+
+                // Competencia: lo que pase primero (la respuesta o el timeout)
+                const { data: { session } } = await Promise.race([
+                    supabase.auth.getSession(),
+                    timeout
+                ]);
+
+                console.log('✅ AuthContext: Sesión recibida:', session ? 'Logueado' : 'Anónimo');
+                setSession(session || null);
+                // fetchProfile se ejecutará vía onAuthStateChange automáticamente
+            } catch (err) {
+                console.warn('⚠️ AuthContext: No se pudo recuperar sesión (posible bloqueo de red o timeout):', err.message);
+                setSession(null);
+            } finally {
+                console.log('🔐 AuthContext: Finalizando estado de carga.');
+                setLoading(false);
+            }
+        };
+
+        initAuth();
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            setSession(session || null);
+            if (session?.user) {
+                await fetchProfile(session.user);
+            } else {
+                setProfile(null);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [fetchProfile]);
+
+    const login = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        return data;
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
+    };
 
     const value = useMemo(
         () => ({
-            user,
-            isAuthenticated,
+            user: session?.user ?? null,
+            profile,
+            token: session?.access_token ?? null,
+            isAuthenticated: !!session,
             login,
             logout,
+            loading,
+            refreshProfile: () => session?.user && fetchProfile(session.user)
         }),
-        [user, isAuthenticated]
+        [session, profile, loading, fetchProfile]
     );
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+        <AuthContext.Provider value={value}>
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#1a1a1a', color: '#00ff00' }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <h3>InnovaLab</h3>
+                        <p>Cargando módulos de seguridad...</p>
+                    </div>
+                </div>
+            ) : children}
+        </AuthContext.Provider>
+    );
 };
 
 // eslint-disable-next-line react-refresh/only-export-components

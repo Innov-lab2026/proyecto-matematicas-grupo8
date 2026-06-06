@@ -1,6 +1,6 @@
 # proyecto-matematicas-grupo8
 
-
+## versión desplegada
 
 
 ## Front End Core
