@@ -1,6 +1,39 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { supabase } from '../config/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import api from '../config/api';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const isRealSupabaseConfigured = supabaseUrl &&
+                                 supabaseKey &&
+                                 !supabaseUrl.includes('[') &&
+                                 !supabaseKey.includes('key') &&
+                                 import.meta.env.VITE_DATA_SOURCE !== 'MOCK';
+
+export const supabase = isRealSupabaseConfigured
+    ? createClient(supabaseUrl, supabaseKey)
+    : {
+        auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+            signInWithPassword: async ({ email }) => {
+                const usuariosExistentes = ['admin@test.com', 'cesar@test.com', 'invitado@test.com'];
+                if (!usuariosExistentes.includes(email.toLowerCase())) {
+                    return { data: { user: null, session: null }, error: new Error('El correo ingresado no figura en nuestra base de datos.') };
+                }
+                return {
+                    data: { user: { id: 'mock-uid-123', email, user_metadata: { full_name: 'Usuario Mock' } }, session: { access_token: 'mock-token-abc' } },
+                    error: null
+                };
+            },
+            signUp: async ({ email, options }) => ({
+                data: { user: { id: 'mock-uid-123', email, user_metadata: options?.data || {} }, session: { access_token: 'mock-token' } },
+                error: null
+            }),
+            signOut: async () => ({ error: null })
+        }
+    };
 
 const AuthContext = createContext(undefined);
 
@@ -72,6 +105,16 @@ export const AuthProvider = ({ children }) => {
         return data;
     };
 
+    const signUp = async (email, password, nombre) => {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: nombre } }
+        });
+        if (error) throw error;
+        return data;
+    };
+
     const logout = async () => {
         await supabase.auth.signOut();
     };
@@ -83,6 +126,7 @@ export const AuthProvider = ({ children }) => {
             token: session?.access_token ?? null,
             isAuthenticated: !!session,
             login,
+            signUp,
             logout,
             loading,
             refreshProfile: () => session?.user && fetchProfile(session.user)

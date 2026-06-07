@@ -11,16 +11,18 @@ import {
     Toast,
     ToastContainer
 } from 'react-bootstrap';
-//aca tengo los hooks para el formulario de registro, similar a los del login pero con campos adicionales como nombre 
+//aca tengo los hooks para el formulario de registro, similar a los del login pero con campos adicionales como nombre
 // y confirmación de contraseña
 
 const useRegisterForm = () => {
     const navigate = useNavigate();
-    const { login } = useAuth(); //traemos el contexto de autenticación para simular el login después del registro exitoso
+    const { signUp } = useAuth();
     const [nombre, setNombre] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [telefono, setTelefono] = useState('');
+    const [edad, setEdad] = useState('');
     const [toastMessage, setToastMessage] = useState('');
     const [toastVariant, setToastVariant] = useState('success'); // 'success' o 'danger'
     const [showToast, setShowToast] = useState(false);
@@ -31,11 +33,13 @@ const useRegisterForm = () => {
         if (name === 'email') setEmail(value);
         if (name === 'password') setPassword(value);
         if (name === 'confirmPassword') setConfirmPassword(value);
+        if (name === 'telefono') setTelefono(value);
+        if (name === 'edad') setEdad(value);
     };
 
-//manejar el envío del formulario, con validaciones básicas para campos vacíos, formato de email y 
+//manejar el envío del formulario, con validaciones básicas para campos vacíos, formato de email y
 // coincidencia de contraseñas
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault(); // Evita que la página se recargue al enviar el formulario
             if (!nombre || !email || !password || !confirmPassword){
                 setToastMessage('❌ Por favor, completa todos los campos');
@@ -49,7 +53,7 @@ const useRegisterForm = () => {
             setToastVariant('danger');
             setShowToast(true);
             return;
-        } 
+        }
         // Validación de longitud de contraseña
             if (password.length < 8) {
             setToastMessage('❌ La contraseña debe tener al menos 8 caracteres');
@@ -66,27 +70,27 @@ const useRegisterForm = () => {
         }
 
 
-     //   console.log('Intentando registrar con:', { nombre, email, password, confirmPassword });
-            login({name: nombre, email}); // Simulamos el login después del registro exitoso
-            setToastMessage('✅ Registro exitoso');
+        try {
+            await signUp(email, password, nombre);
+            setToastMessage('✅ Registro procesado (Modo Mock). Entrando...');
             setToastVariant('success');
             setShowToast(true);
-        // aca simulamos respuesta, limpiamos campos y redirigimos al login después de un tiempo
-        setTimeout(() => {
-            setNombre('');
-            setEmail('');
-            setPassword('');
-            setConfirmPassword('');
-            navigate('/login', { replace: true });
-        }, 2000);
+            setTimeout(() => navigate('/dashboard'), 2000);
+        } catch (error) {
+            setToastMessage('❌ Error: ' + error.message);
+            setToastVariant('danger');
+            setShowToast(true);
+        }
     };
-        
-    
+
+
     return {
         nombre,
         email,
         password,
         confirmPassword,
+        telefono,
+        edad,
         handleChangeValue,
         toastMessage,
         toastVariant,
@@ -106,6 +110,8 @@ const {
     email,
     password,
     confirmPassword,
+    telefono,
+    edad,
     showToast,
     toastMessage,
     toastVariant,
@@ -116,18 +122,18 @@ const {
 
     return (
         <>
-            <Container fluid className="vh-100 vw-100 p-0 m-0"> 
-                <Row className="h-100 g-0"> 
+            <Container fluid className="vh-100 vw-100 p-0 m-0">
+                <Row className="h-100 g-0">
                     <Col md={6} className="bg-primary d-none d-md-flex align-items-center justify-content-center text-white">
                             <div className="text-center p-5">
                                 <h1 className="display-4 mb-4 font-weight-bold">Bienvenido</h1>
                                 <p className="lead">Únete y comienza a gestionar tu aprendizaje</p>
                             </div>
                         </Col>
-                        <Col md={6} className="d-flex align-items-center justify-content-center bg-light">  
-                        <Card className="border-0 bg-transparent" style={{ width: '100%', maxWidth: '400px' }}> 
-                            <Card.Body className="p-4"> 
-                            <div className="text-center mb-4"> 
+                        <Col md={6} className="d-flex align-items-center justify-content-center bg-light">
+                        <Card className="border-0 bg-transparent" style={{ width: '100%', maxWidth: '400px' }}>
+                            <Card.Body className="p-4">
+                            <div className="text-center mb-4">
                             <h1 className="mb-3">Registro</h1>
                             <p className="text-muted">
                                             ¿Ya tienes una cuenta?{' '}
@@ -147,7 +153,29 @@ const {
                                                 name="nombre"
                                                 value={nombre}
                                             />
-                                        </Form.Group>     
+                                        </Form.Group>
+                                <Form.Group className="mb-2">
+                                            <Form.Label>Teléfono de contacto</Form.Label>
+                                            <Form.Control
+                                                type="text"
+                                                placeholder="+54 11 ..."
+                                                size="lg"
+                                                onChange={handleChangeValue}
+                                                name="telefono"
+                                                value={telefono}
+                                            />
+                                        </Form.Group>
+                                <Form.Group className="mb-2">
+                                            <Form.Label>Edad</Form.Label>
+                                            <Form.Control
+                                                type="number"
+                                                placeholder="Tu edad"
+                                                size="lg"
+                                                onChange={handleChangeValue}
+                                                name="edad"
+                                                value={edad}
+                                            />
+                                        </Form.Group>
                                 <Form.Group className="mb-2">
                                             <Form.Label>Correo electrónico</Form.Label>
                                             <Form.Control
@@ -170,7 +198,7 @@ const {
                                                 name="password"
                                                 value={password}
                                             />
-                                        </Form.Group>       
+                                        </Form.Group>
                                         <Form.Group className="mb-4">
                                             <Form.Label>Confirmar contraseña</Form.Label>
                                             <Form.Control
@@ -181,7 +209,7 @@ const {
                                                 name="confirmPassword"
                                                 value={confirmPassword}
                                             />
-                                        </Form.Group>  
+                                        </Form.Group>
                                         <Button
                                             variant="primary"
                                             type="submit"
@@ -189,7 +217,7 @@ const {
                                             className="w-100 mb-3"
                                         >
                                             Registrarse
-                                        </Button>            
+                                        </Button>
                         </Form>
                     </Card.Body>
                     </Card>

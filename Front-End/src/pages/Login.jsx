@@ -8,7 +8,7 @@ import {
     Card,
     Alert
 } from 'react-bootstrap';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../config/api';
 
@@ -50,41 +50,49 @@ const LoginPage = () => {
         <Container className="mt-5">
             <Row className="justify-content-center">
                 <Col md={6}>
-                    <Card className="shadow">
-                        <Card.Header className="bg-primary text-white">
+                    <Card className="shadow border-0">
+                        <Card.Header className="bg-primary text-white text-center">
                             <h3 className="mb-0">Iniciar Sesión</h3>
                         </Card.Header>
-                        <Card.Body>
-                            <Form onSubmit={handleSubmit}>
-                                <Form.Group className="mb-3" controlId="emailInput">
-                                    <Form.Label>Email</Form.Label>
-                                    <Form.Control
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="ejemplo@correo.com"
-                                        required
-                                    />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="passwordInput">
-                                    <Form.Label>Contraseña</Form.Label>
-                                    <Form.Control
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="tu contraseña secreta"
-                                        required
-                                    />
-                                </Form.Group>
-                                {error && <Alert variant="danger">{error}</Alert>}
-                                <div className="d-grid">
-                                    <Button variant="primary" type="submit" disabled={loading}>
-                                        {loading ? 'Entrando...' : 'Entrar'}
-                                    </Button>
+                        <Card.Body className="p-4">
+                                <Form onSubmit={handleSubmit}>
+                                    <Form.Group className="mb-3" controlId="emailInput">
+                                        <Form.Label>Email</Form.Label>
+                                        <Form.Control
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="ejemplo@correo.com"
+                                            required
+                                        />
+                                    </Form.Group>
+                                    <Form.Group className="mb-4" controlId="passwordInput">
+                                        <Form.Label>Contraseña</Form.Label>
+                                        <Form.Control
+                                            type="password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="tu contraseña secreta"
+                                            required
+                                        />
+                                    </Form.Group>
+                                    {error && <Alert variant="danger" className="py-2 small">{error}</Alert>}
+                                    <div className="d-grid mt-4">
+                                        <Button variant="primary" type="submit" size="lg" disabled={loading}>
+                                            {loading ? 'Entrando...' : 'Entrar'}
+                                        </Button>
+                                    </div>
+                                </Form>
+                                <div className="text-center mt-4">
+                                    <p className="text-muted small mb-0">
+                                        ¿No tenés cuenta?{' '}
+                                        <Link to="/register" className="text-primary text-decoration-none fw-bold">
+                                            Registrate acá
+                                        </Link>
+                                    </p>
                                 </div>
-                            </Form>
-                        </Card.Body>
-                    </Card>
+                            </Card.Body>
+                        </Card>
                 </Col>
             </Row>
         </Container>

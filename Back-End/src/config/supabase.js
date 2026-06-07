@@ -4,7 +4,9 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Faltan credenciales de Supabase (URL/Key).');
+    console.warn('⚠️ Supabase: Faltan credenciales. El cliente no se inicializará (ignorar si usas MOCK).');
 }
 
-export default createClient(supabaseUrl, supabaseKey);
+const supabase = (supabaseUrl && supabaseKey) ? createClient(supabaseUrl, supabaseKey) : null;
+
+export default supabase;

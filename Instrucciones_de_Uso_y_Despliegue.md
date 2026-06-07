@@ -25,14 +25,13 @@ Usamos una división de variables en dos archivos `.env` simplificando el despli
   pnpm build:back
   ```
   *¿Cuándo usarlo?* Obligatorio si se modifica el archivo `Back-End/prisma/schema.prisma`. Esto actualiza el motor de Prisma para que Node reconozca los nuevos modelos o campos.
-
 ---
 
 ## 3. Comandos de Desarrollo Local
 
 Desde la raíz del proyecto, podés usar los siguientes comandos:
 
-### Modo Mock (sin Bd, ejecución local con persistencia)
+### Modo Mock (sin Bd, ejecución local)
 
 Utiliza archivos .CSV con Tablas conteniendo datos de ejemplo equivalentes a las sembradas en la Db de ejemplo.
 
@@ -42,8 +41,20 @@ pnpm dev:all-mock
 *   **Back-End:** Corre con `DATA_SOURCE=MOCK`.
 *   **Front-End:** Conecta a `localhost:3001/api`.
 
+#### Autenticación en Mock
+Si no se detectan las llaves de Supabase, el sistema activa automáticamente un "Puente de Autenticación". Esto permite navegar por toda la App sin necesidad de una cuenta real.
 
-### Modo Database (con postgreSQL en Supabase)
+- **Correos habilitados para Login:**
+  - `admin@test.com`
+  - `cesar@test.com`
+  - `invitado@test.com`
+- **Contraseña:** Podés usar cualquier cadena de texto (no pasa por la validación).
+
+**Registro Simulado:**
+Al usar la pantalla de Registro en este modo, el Front enviará los datos al Back-End. Si el Back está en `DATA_SOURCE=MOCK`, responderá con un éxito (HTTP 201) y un perfil de usuario ficticio sin persistencia en la base de datos real, permitiendo el ingreso inmediato al Dashboard.
+---
+
+### Modo Database (postgreSQL en Supabase)
 
 Utilizará la Base de Datos en la nube, requiere la configuración correspondiente de tu archivo `Back-End/.env`.
 
