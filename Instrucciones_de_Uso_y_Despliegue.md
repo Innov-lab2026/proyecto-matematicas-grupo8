@@ -53,10 +53,15 @@ pnpm dev:all
 *   **Back-End:** Corre con `DATA_SOURCE=DB` y 'llaves requeridas' en el archivo `Back-End/.env`.
 *   **Front-End:** Conecta a la API local que a su vez conecta a Supabase.
 
+---
 
 >
     > Podés tener DATA_SOURCE=DB escrito en tu .env del Back-End, pero si lanzás el comando de "Mock", el sistema va a ignorar lo que dice el archivo y va a usar el valor del comando y viceversa, con DATA_SOURCE=MOCK en el `.env` el `pnpm dev:all` despliega la versión con Database web.
 
+>
+    > Los comandos de inicio utilizan `cross-env` para garantizar que las variables de entorno se asignen correctamente tanto en terminales Unix-like (Zsh, Bash) como en Windows (CMD, PowerShell). Esto evita errores de sintaxis al inyectar `DATA_SOURCE` durante la ejecución paralela.
+
+---
 
 ### Integración con CLI de Asistencia Inteligente Modulable
 

@@ -8,13 +8,16 @@
     "dev:front": "pnpm --filter frontend dev",
     "dev:local": "pnpm --filter backend dev:local",
     "dev:db": "pnpm --filter backend dev:db",
-    "dev:all": "pnpm --filter backend dev:db & pnpm --filter frontend dev",
-    "dev:all-mock": "pnpm --filter backend dev:local & pnpm --filter frontend dev",
+    "dev:all": "cross-env DATA_SOURCE=DB pnpm --parallel --filter backend --filter frontend dev",
+    "dev:all-mock": "cross-env DATA_SOURCE=MOCK pnpm --parallel --filter backend --filter frontend dev",
     "build": "pnpm build:back && pnpm --filter frontend build",
     "clean:audit": "pnpm --filter backend clean:audit",
     "install:all": "pnpm install",
     "build:back": "pnpm --filter backend build",
     "refresh:lock": "rm pnpm-lock.yaml && pnpm install --no-frozen-lockfile"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   },
   "engines": {
     "node": ">=20.0.0",
