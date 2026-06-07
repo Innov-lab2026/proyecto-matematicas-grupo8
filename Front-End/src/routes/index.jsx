@@ -8,6 +8,8 @@ import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 import LoginPage from '../pages/Login';
 import { useAuth } from '../context/AuthContext';
+import StartedPage from '../pages/Started.jsx';
+import Onboarding from '../pages/Onboarding';
 
 // Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children }) => {
@@ -32,6 +34,7 @@ export default function AppRouter() {
             <Routes>
                 {/* Rutas públicas */}
                 <Route path="/" element={<Landing />} />
+                <Route path="/started" element={<StartedPage />} />
                 
                 <Route
                     path="/login"
@@ -52,6 +55,16 @@ export default function AppRouter() {
                 />
 
                 {/* Rutas autenticadas */}
+
+                <Route
+                    path="/Onboarding"
+                    element={
+                        <ProtectedRoute>
+                            <Onboarding />
+                        </ProtectedRoute>
+                    }
+                />
+
                 <Route
                     path="/dashboard"
                     element={
