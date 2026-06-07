@@ -10,7 +10,7 @@
     "dev:db": "pnpm --filter backend dev:db",
     "dev:all": "pnpm --filter backend dev:db & pnpm --filter frontend dev",
     "dev:all-mock": "pnpm --filter backend dev:local & pnpm --filter frontend dev",
-    "build": "pnpm build:back",
+    "build": "pnpm build:back && pnpm --filter frontend build",
     "clean:audit": "pnpm --filter backend clean:audit",
     "install:all": "pnpm install",
     "build:back": "pnpm --filter backend build",

@@ -1,4 +1,5 @@
 {
+    "$schema": "https://json.schemastore.org/nodemon.json",
     "watch": ["src", "prisma", ".env"],
     "ext": "js,json,prisma,env",
     "exec": "node src/app.js"

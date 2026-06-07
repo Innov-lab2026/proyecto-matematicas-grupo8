@@ -8,6 +8,13 @@ import errorHandler from './middlewares/error.middleware.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configuración de fuente de datos con Fallback seguro
+const dataSource = process.env.DATA_SOURCE || 'MOCK';
+console.log('\x1b[36m%s\x1b[0m', `--- Sistema de Datos ---`);
+console.log(`Modo: ${dataSource}`);
+if (!process.env.DATA_SOURCE) console.log('\x1b[33m%s\x1b[0m', 'Aviso: DATA_SOURCE no definido, usando MOCK por defecto.');
+console.log('\x1b[36m%s\x1b[0m', `------------------------`);
+
 // Configuración de CORS para permitir solicitudes desde el frontend
 app.use(cors({
     origin: '*',
