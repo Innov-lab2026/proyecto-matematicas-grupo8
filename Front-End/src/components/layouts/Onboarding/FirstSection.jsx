@@ -1,8 +1,8 @@
-import './firstSection.css';
+import './FirstSection.css';
 
 function FirstSection({ onStart }) {
   return (
-   
+
     <div className="container">
       <header>MATE+</header>
       <div className="page">
@@ -16,7 +16,7 @@ function FirstSection({ onStart }) {
         </div>
       </div>
     </div>
-  
+
   );
 }
 export default FirstSection;
