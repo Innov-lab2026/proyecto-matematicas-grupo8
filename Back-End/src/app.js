@@ -29,13 +29,15 @@ app.use(errorHandler);
 app.get('/', (req, res) => res.status(200).send('InnovaLab API Core - Back-End Online'));
 
 if (process.env.NODE_ENV !== 'production') {
-    const server = app.listen(PORT, () => {
+    const server = app.listen(PORT);
+
+    server.on('listening', () => {
         console.log(`Servidor corriendo en http://localhost:${PORT}`);
     });
 
     server.on('error', (error) => {
         if (error.code === 'EADDRINUSE') {
-            console.error(`El puerto ${PORT} ya está en uso. Intentá con otro o matá el proceso anterior.`);
+            console.error(`❌ El puerto ${PORT} ya está en uso. Intentá con otro o matá el proceso anterior (PID: ${process.pid}).`);
             process.exit(1);
         } else {
             console.error('Error al iniciar el servidor:', error);

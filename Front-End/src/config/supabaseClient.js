@@ -12,4 +12,18 @@ console.log('🔌 Supabase Config Check:', {
 
 export const supabase = (supabaseUrl && supabaseKey)
     ? createClient(supabaseUrl, supabaseKey)
-    : { auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }) } };
+    : {
+        auth: {
+            getSession: async () => ({ data: { session: null }, error: null }),
+            onAuthStateChange: () => ({
+                data: {
+                    subscription: {
+                        unsubscribe: () => { }
+                    }
+                }
+            }),
+            signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error('Faltan variables VITE_SUPABASE en el .env') }),
+            signOut: async () => ({ error: null }),
+            getUser: async () => ({ data: { user: null }, error: null })
+        }
+      };

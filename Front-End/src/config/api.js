@@ -8,13 +8,18 @@ const cleanBaseURL = rawBaseURL
     ? rawBaseURL.replace(/^VITE_API_URL:/, '').replace(/['"]/g, '')
     : null;
 
-console.log('📡 API BaseURL:', cleanBaseURL || 'Usando fallback');
+// Aseguramos que la URL tenga el prefijo /api si es una URL externa
+const finalBaseURL = cleanBaseURL
+    ? (cleanBaseURL.endsWith('/api') ? cleanBaseURL : `${cleanBaseURL.replace(/\/$/, '')}/api`)
+    : null;
+
+console.log('📡 API BaseURL final:', finalBaseURL || 'Usando fallback (127.0.0.1:3001/api)');
 
 const api = axios.create({
-    baseURL: cleanBaseURL || (
+    baseURL: finalBaseURL || (
         import.meta.env.MODE === 'production'
         ? '/api'
-        : 'http://localhost:3001/api')
+        : 'http://127.0.0.1:3001/api')
 });
 
 api.interceptors.request.use((config) => {
