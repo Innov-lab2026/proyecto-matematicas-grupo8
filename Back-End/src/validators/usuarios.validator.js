@@ -1,3 +1,4 @@
+import path from 'path';
 import { z } from 'zod';
 
 const passwordSchema = z.string()
@@ -28,3 +29,23 @@ export const perfilSchema = z.object({
         .min(2, { message: "El nombre es muy corto" })
         .max(50)
 });
+
+export const actualizarPerfilSchema = z.object({
+    nombre: z.string()
+        .min(2, { message: "El nombre es muy corto" })
+        .max(50)
+        .optional(),
+    passwordActual: z.string()
+        .min(1, "Debes ingresar tu contraseña actual"),
+    nuevaPassword: passwordSchema,
+    confirmarPassword:passwordSchema
+})
+.refine((data) => data.nuevaPassword === data.confirmarPassword, {
+    message: "La nueva contraseña no puede ser igual a la actual",
+    path: ["nuevaPassword"]
+})
+.refine((data) => data.passwordActual === data.nuevaPassword, {
+    message: "La nueva contraseña no puede ser igual a la anterior",
+    path: ["nevaPassword"]
+})
+
