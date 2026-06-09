@@ -6,7 +6,7 @@ import 'font-awesome/css/font-awesome.min.css';
 const Footer = () => {
   return (
     <div className="footer-wrapper">
-      <Container className="footer">
+      <div className="footer">
         <div className="ms-4">
           <Row>
             <Col className='text-center'>
@@ -63,7 +63,7 @@ const Footer = () => {
             </Col>
           </Row>
         </div>
-      </Container>
+      </div>
     </div>
   );
 };

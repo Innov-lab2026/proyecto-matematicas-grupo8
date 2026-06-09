@@ -25,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
 const PublicRoute = ({ children }) => {
     const { isAuthenticated } = useAuth();
 
-    return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+    return !isAuthenticated ? children : <Navigate to="/onboarding" />;
 };
 
 export default function AppRouter() {
@@ -33,9 +33,24 @@ export default function AppRouter() {
         <Router>
             <Routes>
                 {/* Rutas públicas */}
-                <Route path="/" element={<Landing />} />
-                <Route path="/started" element={<StartedPage />} />
+                <Route
+                    path="/"
+                    element={
+                        <PublicRoute>
+                            <Landing />
+                        </PublicRoute>
+                    }
+                />
                 
+                <Route
+                    path="/started"
+                    element={
+                        <PublicRoute>
+                            <StartedPage />
+                        </PublicRoute>
+                    }
+                />
+
                 <Route
                     path="/login"
                     element={

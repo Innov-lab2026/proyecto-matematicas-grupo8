@@ -26,9 +26,9 @@ const ThirdSection = () => {
             <Container>
                 <Row className="justify-content-center d-flex">
                     {teamData.map((dpto) => (
-                        <Col key={dpto.title} md={4} className="mb-4">
-                            <Card style={{ borderColor: "#31C976", borderWidth: '10px', marginBottom: '1rem', height: '40vh', width: "100%" }} className="shadow-lg">
-                                <Card.Img variant="top" src={dpto.src} style={{ height: '100%', objectFit: 'cover' }} />
+                        <Col key={dpto.title} md={4} className="mb-4 d-flex align-items-center justify-content-center flex-column">
+                            <Card style={{ borderColor: "#31C976", borderWidth: '10px', marginBottom: '1rem', height: 300, width: "75%",  }} className="shadow-lg">
+                                <Card.Img variant="top" src={dpto.src} style={{ height: '100%', objectFit: 'cover', margin: "0 auto" }} />
                             </Card>
                             <h5 className="text-center mt-2" style={{ fontSize: "2rem", color: "#2D3E4E" }}>{dpto.title}</h5>
                         </Col>
