@@ -1,23 +1,24 @@
 import { useState } from 'react';
-import './FirstSection.css';
+import './onboarding.css'; // CSS unificado
+import { useNavigate } from 'react-router-dom';
 
 const initialFormState = {
   nombre: '',
   apellidos: '',
-  idUser: 'USER_ID_TEMPORAL', // Aquí inyectar el ID real del usuario cuando lo tengas
+  idUser: 'USER_ID_TEMPORAL',
   desafio: '',
   edad: '',
   sentimiento: '',
 };
 
-function Onboarding() {
+function SecondSection() { // Cambiado de Onboarding a SecondSection
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState({ loading: false, error: '', success: '' });
 
   const stepLabels = ['Paso 1', 'Paso 2', 'Paso 3'];
 
-  // Función genérica para guardar la selección de los botones interactivos
   const handleSelectOption = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -38,7 +39,6 @@ function Onboarding() {
     event.preventDefault();
     setStatus({ loading: true, error: '', success: '' });
 
-    // Obtenemos la fecha actual en el momento exacto del envío
     const fechaActual = new Date().toISOString();
 
     const dataToSubmit = {
@@ -47,28 +47,13 @@ function Onboarding() {
       nombre: `${formData.nombre} ${formData.apellidos}`.trim()
     };
 
-    try {
-      const response = await fetch('/api/usuarios/registro', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataToSubmit)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al enviar los datos');
-      }
-
+    setTimeout(() => {
       setStatus({ loading: false, error: '', success: 'Formulario enviado correctamente.' });
-      setCurrentStep(stepLabels.length - 1);
-    } catch (error) {
-      setStatus({ loading: false, error: error.message || 'Error al enviar los datos', success: '' });
-    }
+
+      navigate("/dashboard")
+    }, 1000);
   };
 
-  // Listas de opciones fijas para renderizar limpiamente en las columnas
   const opcionesDesafios = [
     'Porcentajes',
     'Finanzas cotidianas',
@@ -82,14 +67,13 @@ function Onboarding() {
   const opcionesEdades = ['20 a 30 años', '30 a 50 años', '+ 50 años'];
 
   return (
-    <div className="container">
+    <div className="onboarding-container">
       <header>MATE+</header>
 
-      {/* Barra de progreso con clases dinámicas para las líneas conectoras */}
       <div className="progress-bar">
         {stepLabels.map((label, index) => (
-          <div 
-            className={`step ${index < currentStep ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`} 
+          <div
+            className={`step ${index < currentStep ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`}
             key={label}
           >
             <p className={index <= currentStep ? 'active' : ''}>{label}</p>
@@ -102,7 +86,7 @@ function Onboarding() {
 
       <div className="form-outer">
         <form onSubmit={handleSubmit} style={{ marginLeft: `-${currentStep * 100}%` }}>
-          
+
           {/* PASO 1: DESAFÍOS */}
           <div className="page">
             <div className="title">¿Qué desafío de tu vida diaria te gustaría dominar primero?</div>
@@ -120,10 +104,10 @@ function Onboarding() {
             </div>
 
             <div className="field btns central-btn">
-              <button 
-                type="button" 
-                className="next" 
-                onClick={nextStep} 
+              <button
+                type="button"
+                className="next"
+                onClick={nextStep}
                 disabled={!formData.desafio}
               >
                 Siguiente
@@ -151,10 +135,10 @@ function Onboarding() {
               <button type="button" className="prev" onClick={prevStep}>
                 Atrás
               </button>
-              <button 
-                type="button" 
-                className="next" 
-                onClick={nextStep} 
+              <button
+                type="button"
+                className="next"
+                onClick={nextStep}
                 disabled={!formData.sentimiento}
               >
                 Siguiente
@@ -177,7 +161,7 @@ function Onboarding() {
                 </button>
               ))}
             </div>
- 
+
             <div className="field btns">
               <button type="button" className="prev" onClick={prevStep}>
                 Atrás
@@ -196,4 +180,4 @@ function Onboarding() {
   );
 }
 
-export default Onboarding;
+export default SecondSection;

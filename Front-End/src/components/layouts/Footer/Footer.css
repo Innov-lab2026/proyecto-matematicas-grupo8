@@ -2,9 +2,8 @@
   position: relative;
     display: flex;
     justify-content: center;
-    padding: 8px 0;
     background: transparent;
-   
+    width: 100%
 }
 
 .footer {
@@ -17,8 +16,6 @@
     font-size: 14px;
     padding: 18px 24px;
     width: 100%;
-    max-width: 1140px;
-  
 }
 
 .footer a {

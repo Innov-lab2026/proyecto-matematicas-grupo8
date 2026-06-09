@@ -18,7 +18,7 @@ const StartedPage = () => {
                 height: '100vh'
             }}
         >
-            <Row className="h-100 gap-5 align-items-center justify-content-center">
+            <Row className="h-100 gap-0 align-items-center justify-content-center">
                 <Col className="d-flex flex-column justify-content-center align-items-center">
                     <h1 className="fw-bold display-1 d-flex justify-content-center align-items-center" style={{ color: '#2D3E4E' }}>
                         <svg
@@ -41,7 +41,7 @@ const StartedPage = () => {
                     </h1>
                 </Col>
                 <Row className="d-flex align-items-center justify-content-start h-50">
-                    <Col md={6} className="text-center text-white d-flex flex-column align-items-center" style={{ gap: '3rem' }}>
+                    <Col md={6} className="text-center text-white d-flex flex-column align-items-center justify-content-start" style={{ gap: '3rem' }}>
                         <img src={Login} alt="Login" style={{ width: "250px", height: "250px" }} />
                         <Button
                             variant="primary"

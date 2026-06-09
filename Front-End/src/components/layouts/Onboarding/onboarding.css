@@ -1,0 +1,323 @@
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+
+/* ==========================================================================
+   CONTENEDOR PRINCIPAL UNIFICADO
+   ========================================================================== */
+
+.onboarding {
+  height: 100vh;
+  width: 100vw;
+  background-image: url('../../../Images/fondo4.png'); 
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-container {
+  width: 100vw;
+  background: #2c3e50;
+  text-align: center;
+  border-radius: 20px;
+  padding: 35px 25px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
+  margin: 20px auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centra verticalmente el contenido */
+}
+
+.onboarding-container header {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 30px;
+  letter-spacing: 1px;
+  color: #ECF0F1;
+}
+
+/* ==========================================================================
+   ESTILOS ESPECÍFICOS PARA FIRST SECTION
+   ========================================================================== */
+
+.onboarding-container .title2 {
+  font-size: 24px;
+  margin-bottom: 40px;
+  color: #ECF0F1;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   BARRA DE PROGRESO
+   ========================================================================== */
+
+.onboarding-container .progress-bar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 auto 35px auto;
+  width: 100%;
+  user-select: none;
+}
+
+.onboarding-container .progress-bar .step {
+  text-align: center;
+  width: 100%;
+  position: relative;
+}
+
+.onboarding-container .progress-bar .step p {
+  font-weight: 500;
+  font-size: 11px;
+  color: #7f8c8d;
+  margin-bottom: 6px;
+  transition: color 0.3s ease;
+}
+
+.onboarding-container .progress-bar .step p.active {
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.onboarding-container .progress-bar .step .bullet {
+  height: 28px;
+  width: 28px;
+  border: 2px solid #7f8c8d;
+  display: inline-block;
+  border-radius: 50%;
+  position: relative;
+  background: #2c3e50;
+  z-index: 2;
+  font-weight: 600;
+  font-size: 13px;
+  color: #7f8c8d;
+  transition: all 0.3s ease;
+}
+
+.onboarding-container .progress-bar .step .bullet.active {
+  border-color: #2ecc71;
+  color: #2ecc71;
+}
+
+.onboarding-container .progress-bar .step.completed .bullet {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.onboarding-container .progress-bar .step .bullet span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.onboarding-container .progress-bar .step::before {
+  position: absolute;
+  content: '';
+  bottom: 13px;
+  left: 50%;
+  height: 2px;
+  width: 100%;
+  background: #7f8c8d;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.onboarding-container .progress-bar .step.completed::before {
+  background: #2ecc71;
+}
+
+.onboarding-container .progress-bar .step:last-child::before {
+  display: none;
+}
+
+/* ==========================================================================
+   FORMULARIO DESLIZABLE
+   ========================================================================== */
+
+.onboarding-container .form-outer {
+  width: 100%;
+  overflow: hidden;
+}
+
+.onboarding-container .form-outer form {
+  display: flex;
+  width: 300%;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.onboarding-container .form-outer form .page {
+  width: 33.333%;
+  padding: 0 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.onboarding-container .form-outer form .page .title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 30px;
+  color: #ECF0F1;
+  min-height: 60px;
+}
+
+/* ==========================================================================
+   GRID DE OPCIONES
+   ========================================================================== */
+
+.onboarding-container .options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.onboarding-container .options-grid button:last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+/* ==========================================================================
+   BOTONES DE OPCIONES
+   ========================================================================== */
+
+.onboarding-container .option-btn {
+  width: 100%;
+  padding: 14px 12px;
+  background: #34495e;
+  border: 2px solid #455a6f;
+  border-radius: 10px;
+  color: #bdc3c7;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.onboarding-container .option-btn:hover {
+  background: #415b76;
+  color: #fff;
+  border-color: #7f8c8d;
+}
+
+.onboarding-container .option-btn.selected {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: #2ecc71;
+  color: #2ecc71;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+}
+
+/* ==========================================================================
+   BOTONES DE NAVEGACIÓN
+   ========================================================================== */
+
+.onboarding-container .form-outer form .page .field.btns {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.onboarding-container .field.btns.central-btn {
+  justify-content: center;
+}
+
+.onboarding-container form .page .field.btns button {
+  flex: 1;
+  max-width: 130px;
+  height: 42px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-transform: none;
+}
+
+.onboarding-container form .page .field.btns button.prev {
+  background: #7f8c8d;
+  color: #fff;
+}
+
+.onboarding-container form .page .field.btns button.prev:hover {
+  background: #95a5a6;
+}
+
+.onboarding-container form .page .field.btns button.next,
+.onboarding-container form .page .field.btns button.submit {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.onboarding-container form .page .field.btns button.next:hover,
+.onboarding-container form .page .field.btns button.submit:hover {
+  background: #27ae60;
+}
+
+.onboarding-container form .page .field.btns button:disabled {
+  background: #566573 !important;
+  color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   MENSAJES DE FEEDBACK
+   ========================================================================== */
+
+.onboarding-container .status-msg {
+  font-size: 14px;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+.onboarding-container .status-msg.error { 
+  color: #e74c3c; 
+}
+
+.onboarding-container .status-msg.success { 
+  color: #2ecc71; 
+}
+
+/* ==========================================================================
+   MEDIA QUERY PARA PANTALLAS GRANDES
+   ========================================================================== */
+
+@media (min-width: 768px) {
+  .onboarding-container {
+    width: 80%;
+    height: 90%;
+    padding: 50px 40px;
+  }
+  
+  .onboarding-container header {
+    font-size: 36px;
+  }
+  
+  .onboarding-container .title2 {
+    font-size: 28px;
+  }
+
+  .onboarding-container .form-outer form .page .title {
+    font-size: 20px;
+  }
+
+  .onboarding-container .option-btn {
+    font-size: 16px;
+    padding: 15px 14px;
+  }
+  
+  .onboarding-container form .page .field.btns button {
+    height: 45px;
+    font-size: 16px;
+    max-width: 140px;
+  }
+}

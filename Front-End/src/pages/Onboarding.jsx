@@ -10,7 +10,7 @@ const Onboarding = () => {
   };
 
   return (
-    <div>
+    <div className="onboarding">
       {activeSection === 'first' ? (
         <FirstSection onStart={handleStart} />
       ) : (
