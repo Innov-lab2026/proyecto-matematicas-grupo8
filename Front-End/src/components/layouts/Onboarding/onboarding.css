@@ -8,7 +8,7 @@
   height: 100vh;
   width: 100vw;
   background-image: url('../../../Images/fondo4.png'); 
-  overflow: hidden;
+  overflow-y: auto; /**/
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,7 +23,9 @@
   padding: 35px 25px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.3);
   margin: 20px auto;
-  overflow: hidden;
+  overflow-y: auto; /**/
+  height: auto; /** */
+  min-height: 90%; /** */
   display: flex;
   flex-direction: column;
   justify-content: center; /* Centra verticalmente el contenido */
@@ -90,7 +92,33 @@
   margin-top: 20px;
 }
 
+.onboarding-container form .page .field.btns button {
+  flex: 1;
+  max-width: 130px;
+  height: 42px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
+.onboarding-container form .page .field.btns button.next,
+.onboarding-container form .page .field.btns button.submit {
+  background: #2ecc71;
+  color: #fff;
+}
+
+.onboarding-container form .page .field.btns button.prev {
+  background: #7f8c8d;
+  color: #fff;
+}
+
+.onboarding-container form .page .field.btns button:disabled {
+  background: #566573 !important;
+  color: #95a5a6;
+  cursor: not-allowed;
+}
 
 
 
@@ -360,5 +388,14 @@
     height: 45px;
     font-size: 18px;
     max-width: 140px;
+  }
+}
+@media (max-width: 768px) {
+  .onboarding {
+    align-items: flex-start;
+  }
+
+  .onboarding-container {
+    margin: 20px auto;
   }
 }
