@@ -10,7 +10,7 @@ function FirstSection({ onStart }) {
           Para personalizar tu experiencia te vamos a hacer un par de preguntas
         </div>
         <div className="field btns central-btn">
-          <button type="button" className="option-btn" onClick={onStart}>
+          <button type="button" className="button2" onClick={onStart}>
             Empecemos
           </button>
         </div>

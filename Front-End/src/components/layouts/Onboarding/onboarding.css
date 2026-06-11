@@ -44,10 +44,56 @@
 .onboarding-container .title2 {
   font-size: 24px;
   margin-bottom: 40px;
-  color: #ECF0F1;
+  color: #bdc3c7;;
+  text-shadow: #2ecc71 1px 1px 1px;
   text-align: center;
   line-height: 1.4;
 }
+
+.onboarding-container .button2 {
+  width: 100%;
+  padding: 14px 12px;
+  background: #34495e;
+  border: 2px solid #455a6f;
+  border-radius: 10px;
+  color: #bdc3c7;
+  font-size: 25px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.onboarding-container .button2:hover {
+  background: #415b76;
+  color:#bdc3c7;
+  border-color: #7f8c8d;
+}
+
+.onboarding-container .button2.selected {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: #2ecc71;
+  color: #2ecc71;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+}
+
+/* ==========================================================================
+   BOTONES DE NAVEGACIÓN
+   ========================================================================== */
+
+.onboarding-container .form-outer form .page .field.btns {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+
+
+
+
 
 /* ==========================================================================
    BARRA DE PROGRESO
@@ -71,7 +117,7 @@
 
 .onboarding-container .progress-bar .step p {
   font-weight: 500;
-  font-size: 11px;
+  font-size: 20px;
   color: #7f8c8d;
   margin-bottom: 6px;
   transition: color 0.3s ease;
@@ -237,7 +283,7 @@
   height: 42px;
   border: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -302,17 +348,17 @@
   }
 
   .onboarding-container .form-outer form .page .title {
-    font-size: 20px;
+    font-size: 30px;
   }
 
   .onboarding-container .option-btn {
-    font-size: 16px;
+    font-size: 20px;
     padding: 15px 14px;
   }
   
   .onboarding-container form .page .field.btns button {
     height: 45px;
-    font-size: 16px;
+    font-size: 18px;
     max-width: 140px;
   }
 }
