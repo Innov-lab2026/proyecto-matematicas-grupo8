@@ -1,12 +1,13 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import '../Footer/Footer.css';
-import 'font-awesome/css/font-awesome.min.css'; 
 
 const Footer = () => {
   return (
     <div className="footer-wrapper">
-      <Container className="footer">
+      <div className="footer">
         <div className="ms-4">
           <Row>
             <Col className='text-center'>
@@ -51,19 +52,19 @@ const Footer = () => {
           </Row>
           <Row>
             <Col className='text-center'>
-                            <a href="#" className="text-white me-3">
-                <i className="fa fa-facebook fa-2x"></i>
+              <a href="#" className="text-white me-3">
+                <FontAwesomeIcon icon={faFacebook} size="2x" />
               </a>
               <a href="#" className="text-white me-3">
-                <i className="fa fa-twitter fa-2x"></i>
+                <FontAwesomeIcon icon={faTwitter} size="2x" />
               </a>
               <a href="#" className="text-white">
-                <i className="fa fa-instagram fa-2x"></i>
+                <FontAwesomeIcon icon={faInstagram} size="2x" />
               </a>
             </Col>
           </Row>
         </div>
-      </Container>
+      </div>
     </div>
   );
 };

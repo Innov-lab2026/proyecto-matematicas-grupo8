@@ -1,23 +1,39 @@
-import { useState } from 'react';
-import './FirstSection.css';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../config/api';
+import { useNavigate } from 'react-router-dom';
+import './onboarding.css';
 
 const initialFormState = {
   nombre: '',
   apellidos: '',
-  idUser: 'USER_ID_TEMPORAL', // Aquí inyectar el ID real del usuario cuando lo tengas
+  uid: '',
   desafio: '',
   edad: '',
+  genero: '',
   sentimiento: '',
+  email: ''
 };
 
-function Onboarding() {
+function SecondSection() {
+  const { user } = useAuth();
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState({ loading: false, error: '', success: '' });
 
-  const stepLabels = ['Paso 1', 'Paso 2', 'Paso 3'];
+  const stepLabels = ['Paso 1', 'Paso 2', 'Paso 3', 'Paso 4'];
 
-  // Función genérica para guardar la selección de los botones interactivos
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        uid: user.id,
+        email: user.email
+      }));
+    }
+  }, [user]);
+
   const handleSelectOption = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -38,7 +54,6 @@ function Onboarding() {
     event.preventDefault();
     setStatus({ loading: true, error: '', success: '' });
 
-    // Obtenemos la fecha actual en el momento exacto del envío
     const fechaActual = new Date().toISOString();
 
     const dataToSubmit = {
@@ -48,27 +63,18 @@ function Onboarding() {
     };
 
     try {
-      const response = await fetch('/api/usuarios/registro', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataToSubmit)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al enviar los datos');
-      }
-
+      await api.post('/usuarios/registro', dataToSubmit);
       setStatus({ loading: false, error: '', success: 'Formulario enviado correctamente.' });
-      setCurrentStep(stepLabels.length - 1);
+
+      setTimeout(() => {
+        navigate("/dashboard")
+      }, 1500);
     } catch (error) {
-      setStatus({ loading: false, error: error.message || 'Error al enviar los datos', success: '' });
+      const errorMsg = error.response?.data?.error || error.message;
+      setStatus({ loading: false, error: errorMsg, success: '' });
     }
   };
 
-  // Listas de opciones fijas para renderizar limpiamente en las columnas
   const opcionesDesafios = [
     'Porcentajes',
     'Finanzas cotidianas',
@@ -81,15 +87,16 @@ function Onboarding() {
 
   const opcionesEdades = ['20 a 30 años', '30 a 50 años', '+ 50 años'];
 
+  const opcionesGeneros = ['masculino', 'femenino', 'otro'];
+
   return (
-    <div className="container">
+    <div className="onboarding-container">
       <header>MATE+</header>
 
-      {/* Barra de progreso con clases dinámicas para las líneas conectoras */}
       <div className="progress-bar">
         {stepLabels.map((label, index) => (
-          <div 
-            className={`step ${index < currentStep ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`} 
+          <div
+            className={`step ${index < currentStep ? 'completed' : ''} ${index === currentStep ? 'current' : ''}`}
             key={label}
           >
             <p className={index <= currentStep ? 'active' : ''}>{label}</p>
@@ -102,7 +109,7 @@ function Onboarding() {
 
       <div className="form-outer">
         <form onSubmit={handleSubmit} style={{ marginLeft: `-${currentStep * 100}%` }}>
-          
+
           {/* PASO 1: DESAFÍOS */}
           <div className="page">
             <div className="title">¿Qué desafío de tu vida diaria te gustaría dominar primero?</div>
@@ -120,10 +127,10 @@ function Onboarding() {
             </div>
 
             <div className="field btns central-btn">
-              <button 
-                type="button" 
-                className="next" 
-                onClick={nextStep} 
+              <button
+                type="button"
+                className="next"
+                onClick={nextStep}
                 disabled={!formData.desafio}
               >
                 Siguiente
@@ -151,10 +158,10 @@ function Onboarding() {
               <button type="button" className="prev" onClick={prevStep}>
                 Atrás
               </button>
-              <button 
-                type="button" 
-                className="next" 
-                onClick={nextStep} 
+              <button
+                type="button"
+                className="next"
+                onClick={nextStep}
                 disabled={!formData.sentimiento}
               >
                 Siguiente
@@ -162,7 +169,28 @@ function Onboarding() {
             </div>
           </div>
 
-          {/* PASO 3: EDAD */}
+          {/* PASO 3: GÉNERO (Para alimentar el gráfico PIE) */}
+          <div className="page">
+            <div className="title">¿Con qué género te identificás?</div>
+            <div className="options-grid">
+              {opcionesGeneros.map((opcion) => (
+                <button
+                  key={opcion}
+                  type="button"
+                  className={`option-btn ${formData.genero === opcion ? 'selected' : ''}`}
+                  onClick={() => handleSelectOption('genero', opcion)}
+                >
+                  {opcion.charAt(0).toUpperCase() + opcion.slice(1)}
+                </button>
+              ))}
+            </div>
+            <div className="field btns">
+              <button type="button" className="prev" onClick={prevStep}>Atrás</button>
+              <button type="button" className="next" onClick={nextStep} disabled={!formData.genero}>Siguiente</button>
+            </div>
+          </div>
+
+          {/* PASO 4: EDAD */}
           <div className="page">
             <div className="title">¿En qué rango de edad te encontrás?</div>
             <div className="options-grid full-width-options">
@@ -177,7 +205,7 @@ function Onboarding() {
                 </button>
               ))}
             </div>
- 
+
             <div className="field btns">
               <button type="button" className="prev" onClick={prevStep}>
                 Atrás
@@ -196,4 +224,4 @@ function Onboarding() {
   );
 }
 
-export default Onboarding;
+export default SecondSection;

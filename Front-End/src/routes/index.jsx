@@ -1,12 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
 import Register from '../pages/Register';
+
 import Landing from '../pages/Landing.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import Profile from '../pages/Profile';
 import NotFound from '../pages/NotFound';
 import LoginPage from '../pages/Login';
-import DebugDB from '../pages/DebugDB';
+import ConsolaAdmin from '../pages/ConsolaAdmin';
 import { useAuth } from '../context/AuthContext';
+import StartedPage from '../pages/Started.jsx';
 import Onboarding from '../pages/Onboarding';
 
 // Componente para proteger rutas autenticadas
@@ -20,21 +23,12 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Componente para redireccionar si ya está autenticado
-const PublicRoute = ({ children }) => {
-    const { isAuthenticated } = useAuth();
+const PublicRoute = ({ children, forceRedirect = true }) => {
+    const { isAuthenticated, profile } = useAuth();
 
-    return !isAuthenticated ? children : <Navigate to="/dashboard" />;
-};
-
-// Componente para proteger rutas de administración
-const AdminRoute = ({ children }) => {
-    const { profile, loading, isAuthenticated } = useAuth();
-
-    if (loading) return <div className="text-center mt-5">Cargando permisos...</div>;
-
-    const isAdmin = profile?.rol === 'admin' || profile?.rol === 'superadmin';
-
-    return isAuthenticated && isAdmin ? children : <Navigate to="/dashboard" />;
+    // Solo redireccionamos si hay sesión Y perfil cargado.
+    // Si hay sesión pero no perfil (error de red), dejamos que vea la página pública.
+    return (isAuthenticated && profile && forceRedirect) ? <Navigate to="/onboarding" /> : children;
 };
 
 export default function AppRouter() {
@@ -42,7 +36,23 @@ export default function AppRouter() {
         <Router>
             <Routes>
                 {/* Rutas públicas */}
-                <Route path="/" element={<Landing />} />
+                <Route
+                    path="/"
+                    element={
+                        <PublicRoute forceRedirect={false}>
+                            <Landing />
+                        </PublicRoute>
+                    }
+                />
+
+                <Route
+                    path="/started"
+                    element={
+                        <PublicRoute>
+                            <StartedPage />
+                        </PublicRoute>
+                    }
+                />
 
                 <Route
                     path="/login"
@@ -65,7 +75,7 @@ export default function AppRouter() {
                 {/* Rutas autenticadas */}
 
                 <Route
-                    path="/Onboarding"
+                    path="/onboarding"
                     element={
                         <ProtectedRoute>
                             <Onboarding />
@@ -92,9 +102,11 @@ export default function AppRouter() {
                 />
 
                 <Route
-                    path="/debug-db"
+                    path="/admin-be"
                     element={
-                        <DebugDB />
+                        <ProtectedRoute>
+                            <ConsolaAdmin />
+                        </ProtectedRoute>
                     }
                 />
 

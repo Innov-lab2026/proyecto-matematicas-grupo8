@@ -1,49 +1,58 @@
-import {
-    Container,
-    Row,
-    Col,
-} from 'react-bootstrap';
-import { steps } from '../../../data/Steps';
+import React from 'react';
+import '../FirstSection/FirstSection.css';
+
+import { Container, Stack, Row, Col } from 'react-bootstrap';
+
+const steps = [
+    {
+        id: 1,
+        title: "Aprende",
+        subtitle: "Micro-lecciones diseñadas para adultos, directas al grano.",
+        src: "https://placehold.co/300x300?text=Aprende"
+    },
+    {
+        id: 2,
+        title: "Practica",
+        subtitle: "Ejercicios basados en situaciones reales de la vida cotidiana.",
+        src: "https://placehold.co/300x300?text=Practica"
+    },
+    {
+        id: 3,
+        title: "Gana",
+        subtitle: "Sumá puntos y desbloqueá insignias mientras progresas.",
+        src: "https://placehold.co/300x300?text=Gana"
+    }
+];
 
 const SecondSection = () => {
     return (
-        <Container fluid className="py-5 bg-light">
-            <Row className="justify-content-center mb-5">
-                <Col md={8} className="text-center">
-                    <h2 className="display-4 fw-bold mb-3">¿Cómo funciona Mate+?</h2>
-                    <p className="lead text-muted">Tres pasos simples para dominar las matemáticas</p>
-                </Col>
-            </Row>
-
-            <Container>
+        <Container fluid className="p-5" style={{ backgroundColor: '#2C3D4D' }} id="como-funciona">
+            <Stack>
                 {steps.map((step, index) => (
-                    <Row key={step.id} className={`mb-5 py-4 align-items-center ${index % 2 === 1 ? 'flex-row-reverse' : ''}`}>
-                        <Col lg={6} className="text-center text-lg-start">
-                            <div className="mb-3">
-                                {/* agregar un fonsize mas grande */}
-                                <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2 mb-3" style={{ fontSize: '1.25rem' }}>
-                                    Paso {step.id}
-                                </span>
-                            </div>
-                            <h3 className="display-5 fw-bold mb-3">{step.title}</h3>
-                            <p className="lead text-muted">{step.subtitle}</p>
+                    <Row key={step.id} className={`py-4 align-items-center justify-content-around gap-2 ${index % 2 === 1 ? 'flex-row-reverse' : ''}`} style={{ marginBottom: '3rem' }}>
+                        <Col lg={7} className="text-center text-lg-start text-white">
+                            <h3 className="text-uppercase fw-bold mb-3" style={{ fontSize: 60 }}>{step.title}</h3>
+                            <p className="lead text-white" style={{ fontSize: 30 }}>{step.subtitle}</p>
                         </Col>
-                        <Col lg={6} className="text-center">
-                            <div 
+                        <Col lg={4} className="text-center">
+                            <div
                                 className="rounded-circle d-flex align-items-center justify-content-center mx-auto shadow-lg"
-                                style={{ 
-                                    width: '180px', 
-                                    height: '180px', 
-                                    background: `linear-gradient(135deg, ${step.color}20, ${step.color}40)`,
-                                    border: `3px solid ${step.color}`
+                                style={{
+                                    width: 300,
+                                    height: 300,
+                                    border: `10px solid #31C976`
                                 }}
                             >
-                                <span className="display-1">{step.icon}</span>
+                                <img
+                                    src={step.src}
+                                    alt={step.title}
+                                    style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                                />
                             </div>
                         </Col>
                     </Row>
                 ))}
-            </Container>
+            </Stack>
         </Container>
     );
 };

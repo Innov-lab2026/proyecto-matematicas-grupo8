@@ -1,16 +1,6 @@
 import prisma from '../config/prisma.js';
 import ApiError from '../exceptions/api.error.js';
-import { registroSchema, perfilSchema } from '../validators/usuarios.validator.js';
-
-const getRolesConfig = () => {
-    const superAdmins = process.env.SUPERADMIN_EMAILS
-        ? process.env.SUPERADMIN_EMAILS.replace(/['"]/g, '').split(',').map(e => e.trim().toLowerCase())
-        : [];
-    const admins = process.env.ADMIN_EMAILS
-        ? process.env.ADMIN_EMAILS.replace(/['"]/g, '').split(',').map(e => e.trim().toLowerCase())
-        : [];
-    return { superAdmins, admins };
-};
+import { registroSchema, perfilSchema, loginSchema } from '../validators/usuarios.validator.js';
 
 export const registrarUsuario = async (req, res, next) => {
     try {
@@ -20,34 +10,63 @@ export const registrarUsuario = async (req, res, next) => {
             throw validacion.error;
         }
 
-        const { uid, email, nombre } = validacion.data;
+        const { email, nombre, password, edad, genero, lugar, desafio, sentimiento } = validacion.data;
+        const uid = req.body.uid;
 
-        const { superAdmins, admins } = getRolesConfig();
-
-        let rolFinal = 'usuario';
-        const emailNormalizado = email.trim().toLowerCase();
-        if (superAdmins.includes(emailNormalizado)) {
-            rolFinal = 'superadmin';
-        } else if (admins.includes(emailNormalizado)) {
-            rolFinal = 'admin';
+        if (!uid) {
+            return res.status(400).json({ error: "Falta UID de autenticación" });
         }
 
-        if (process.env.DATA_SOURCE === 'MOCK') {
-            console.log('🧪 Auth Bridge: Registrando usuario en modo Mock');
-            return res.status(201).json({ id: uid, email, nombre, rol: rolFinal, puntos: 0, tokens: 0 });
+        const cleanEnv = (val) => (val || "").replace(/[\[\]]/g, "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+        const ADMIN_EMAILS = cleanEnv(process.env.ADMIN_EMAILS);
+        const SUPERADMIN_EMAILS = cleanEnv(process.env.SUPERADMIN_EMAILS);
+
+        let rolAsignado = 'usuario';
+        if (SUPERADMIN_EMAILS.includes(email.toLowerCase())) {
+            rolAsignado = 'superadmin';
+        } else if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+            rolAsignado = 'admin';
         }
+
         const usuario = await prisma.usuario.upsert({
             where: { id: uid },
-            update: { nombre, rol: rolFinal },
-            create: {
-                id: uid,
-                email,
-                nombre,
-                rol: rolFinal
-            }
+            update: { nombre, rol: rolAsignado, password, edad, genero, lugar, desafio, sentimiento },
+            create: { id: uid, email, nombre, rol: rolAsignado, password, edad, genero, lugar, desafio, sentimiento }
+        });
+        console.log(`✅ Usuario sincronizado: ${usuario.email} [${usuario.rol}]`);
+        res.status(201).json(usuario);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const loginUsuario = async (req, res, next) => {
+    try {
+        const validacion = loginSchema.safeParse(req.body);
+        if (!validacion.success) {
+            throw validacion.error;
+        }
+
+        const { email, password } = validacion.data;
+
+        const usuario = await prisma.usuario.findUnique({
+            where: { email: email.toLowerCase() } // Convertimos a minúsculas para la búsqueda
         });
 
-        res.status(201).json(usuario);
+        if (!usuario || usuario.password !== password) {
+            throw ApiError.unauthorized("Credenciales inválidas (email o contraseña incorrectos)");
+        }
+
+        res.status(200).json({
+            message: "Login exitoso",
+            user: {
+                id: usuario.id,
+                email: usuario.email,
+                nombre: usuario.nombre,
+                rol: usuario.rol,
+                token: "real-supabase-token-expected" // Este token debería venir de Supabase en el Front-End
+            }
+        });
     } catch (error) {
         next(error);
     }
@@ -56,14 +75,20 @@ export const registrarUsuario = async (req, res, next) => {
 export const eliminarUsuario = async (req, res, next) => {
     try {
         const uid = req.user.id;
+        const { password } = req.body;
 
-        if (process.env.DATA_SOURCE === 'MOCK') {
-            console.log('🧪 Auth Bridge: Eliminando usuario (Mock)');
-            return res.status(200).json({ message: "Cuenta borrada correctamente (Simulado)" });
+        if (!password) {
+            throw ApiError.badRequest("Ingresar contraseña para borrar la cuenta");
         }
 
-        // En producción, aquí también deberías borrar el usuario de Supabase Auth
-        // Pero para el MVP, borramos solo el perfil de nuestra DB
+        const usuario = await prisma.usuario.findUnique({
+            where: { id: uid }
+        });
+
+        if (!usuario || usuario.password !== password) {
+            throw ApiError.unauthorized("Contraseña incorrecta. No se puede borrar la cuenta");
+        }
+
         await prisma.usuario.delete({
             where: { id: uid }
         });
@@ -76,11 +101,6 @@ export const eliminarUsuario = async (req, res, next) => {
 
 export const getUsuarios = async (req, res, next) => {
     try {
-        if (process.env.DATA_SOURCE === 'MOCK') {
-            console.log('🧪 Auth Bridge: Listando usuarios (Mock)');
-            return res.status(200).json([{ id: 'mock-1', email: 'admin@test.com', nombre: 'Admin Mock', rol: 'admin' }]);
-        }
-
         const usuarios = await prisma.usuario.findMany();
         res.status(200).json(usuarios);
     } catch (error) {
@@ -98,11 +118,6 @@ export const actualizarPerfil = async (req, res, next) => {
         }
 
         const { nombre } = validacion.data;
-
-        if (process.env.DATA_SOURCE === 'MOCK') {
-            console.log('🧪 Auth Bridge: Actualizando perfil (Mock)');
-            return res.status(200).json({ id: uid, nombre, email: req.user.email });
-        }
 
         const usuario = await prisma.usuario.update({
             where: {
