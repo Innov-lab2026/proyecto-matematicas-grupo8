@@ -1,17 +1,14 @@
-# Backend Core
+# Mate+
 
-Propuesta inicial de estructura para el Back End del proyecto "Aplicación de aprendizaje de Matemática" en **InnovaLab**. La arquitectura está diseñada para ser escalable, profesional y compatible con entornos de despliegue serverless en **Vercel** y **PostgreSQL** en **Supabase**.
+![¡Nuestra mascota!](src\assets\mascota_32.webp)
+
+## Backend Core
+
+Pre-Beta 1.0 para el Back End del proyecto "Aplicación de aprendizaje de Matemática" en **InnovaLab**. La arquitectura está diseñada para ser escalable, profesional y compatible con entornos de despliegue serverless en **Vercel** y **PostgreSQL** en **Supabase**.
 
 ### Arquitectura
+
 El proyecto se gestiona bajo una estructura de **Monorepo** utilizando `pnpm workspaces`. Esta configuración permite mantener el código del Back-End y del Front-End en un único repositorio, facilitando la gestión de dependencias compartidas y scripts de automatización desde la raíz del proyecto.
-
-#### Integración de Datos
-El sistema cuenta con una arquitectura de datos dual. Puede operar conectado a una base de datos **PostgreSQL** (**Supabase**) o mediante un **Mock Server** que consume archivos `.csv` locales, permitiendo el desarrollo sin dependencias de red o configuraciones de base de datos e integración con CLI externos.
-
-#### Roles y Permisos
-- **usuario:** Perfil estándar para participantes. Acceso a escenarios interactivos y seguimiento de progreso.
-- **admin:** Perfil con permisos de edición sobre contenidos (Secciones y Escenarios).
-- **superadmin:** Perfil de gestión total, incluyendo edición de contenidos y manejo de credenciales/permisos.
 
 #### Stack Tecnológico
 
@@ -20,80 +17,25 @@ El sistema cuenta con una arquitectura de datos dual. Puede operar conectado a u
 - **ORM:** **Prisma** v6.4.1 (Stable - Native Engines)
 - **Gestor de Paquetes:** `pnpm`
 - **Base de Datos:** **PostgreSQL** (vía **Supabase**)
+- **Gestor de Registro e Inicio de Sesión:** **Supabase Auth**
 - **Despliegue:** **Vercel**
+- **Integración LLM-CLI:** **Gemini Flash 2.5**
+- **UX/UI:** Plantilla **FIGMA**
 
-## Instalación y Ejecución
+#### Roles y Permisos
+- **usuario:** Perfil estándar para participantes. Acceso a escenarios interactivos y seguimiento de progreso.
+- **admin:** Perfil con permisos de edición sobre contenidos (Secciones y Escenarios), edición de "prompt" de modelado del CLI pedagógico y acceso a Cuadros Estadísticos.
+- **superadmin:** Perfil de gestión total, incluyendo edición de contenidos y manejo de credenciales/permisos.
 
-1. Clonar el repositorio y posicionarse en el directorio raíz para ejecutar los siguientes comandos:
+#### Resiliencia en respuesta LLM-CLI (Fallback):
+En caso de que no haya una Key configurada o se excedan los límites de cuota, el sistema activará automáticamente un modo de respaldo. En lugar de fallar, el servidor responderá utilizando la explicación técnica predefinida en el campo `explicacion` de la tabla **Escenarios**.
 
-2. Instalar dependencias globales:
-   `pnpm install:all`
+#### Auditoría
+Se mantiene un seguimiento de las actividades de modificación en la tabla Auditoría.
 
-3. Generar el cliente de **Prisma**:
-   `pnpm build:back`
+### Nodo Administrativo
 
-4. Iniciar el servidor en modo desarrollo (elegí según tu necesidad):
-
-   **Modo Local (Mock con CSV):** Ideal para el sub-equipo de Front-End.
-   `pnpm dev:local`
-
-   **Modo Database (Supabase):** Para pruebas de persistencia real.
-   `pnpm dev:db`
-
-*Nota: El comando `pnpm dev` estándar utilizará la fuente definida en la variable `DATA_SOURCE`, configurable como `DB` o `MOCK`, en tu archivo `.env` para simplificar el uso en desarrollo.*
-
-### Integración con Gemini AI (Google Studio)
-Para la generación de feedback pedagógico, la API utiliza el modelo **Gemini 2.5 Flash**. Por motivos de seguridad y para evitar el agotamiento de cuotas compartidas, **cada desarrollador debe configurar su propia API Key**.
-
-**Pasos para obtener la Key:**
-1. Ingresá al [Google AI Studio](https://aistudio.google.com/) de tu cuenta Google.
-2. Generá una nueva **API Key** (podés hacerlo en el plan gratuito, no pide requisitos).
-3. Copiá la llave y pegala en tu archivo `.env` local en la variable `GOOGLE_API_KEY`. (podés crear este archivo basandote en el `.env.example` que se incluye en el repositorio)
-
-#### Gemini API Key
-`GOOGLE_API_KEY="api_key"`
-En tu archivo `.env` de la carpeta `/Back-End`, cambiá lo que está **dentro** de las comillas por tu propia Key.
-
-**Límites de la Capa Gratuita:**
-- **RPM (Requests Per Minute):** 15 solicitudes.
-- **RPD (Requests Per Day):** 1,500 solicitudes.
-- **TPM (Tokens Per Minute):** 1,000,000 tokens.
-
-**Mecanismo de Resiliencia (Fallback):**
-En caso de que no haya una Key configurada o se excedan los límites de cuota, el sistema activará automáticamente un modo de respaldo. En lugar de fallar, el servidor responderá utilizando la explicación técnica predefinida en el campo `explicacion` del módulo CSV de **Escenarios**.
-
-#### Auditoría en Modo Mock
-Cuando el servidor corre en modo **Local** (`DATA_SOURCE=MOCK`), las acciones de escritura (POST, PUT, DELETE) se registran automáticamente en el archivo `Back-End/data/auditoria.csv`. Esto permite simular la persistencia de logs de auditoría sin depender de una base de datos externa.
-
-Para limpiar el historial de auditoría local y empezar una sesión de pruebas limpia, ejecutá desde la raíz:
-`pnpm clean:audit`
-
-#### Pruebas de Endpoints (REST Client)
-Para facilitar el testeo sin salir de VS Code, se incluye un archivo `requests.http` en la carpeta de scripts que se puede modificar segun las necesidades.
-1. Instalá la extensión **REST Client** de Huachao Mao en VS Code.
-2. Abrí el archivo `requests.http`.
-3. Hacé clic en el texto `Send Request` que aparece sobre cada endpoint para ejecutarlo y ver la respuesta en tiempo real.
-
-El servidor estará disponible en http://localhost:3001.
-
-### Endpoints Disponibles
-
-#### Salud de API
-- `GET /api/health`: Estado de salud de la API y timestamp.
-
-#### Usuarios (Auth & Perfil)
-- `POST /api/usuarios/registro`: Registra un nuevo usuario o sincroniza el perfil (vía uid de **Supabase**).
-- `PUT /api/usuarios/perfil`: Actualiza nombre o preferencias del usuario.
-
-#### Secciones y Escenarios
-- `GET /api/secciones`: Lista todas las secciones (Economía Doméstica, Construcción, etc).
-- `GET /api/secciones/:id`: Detalle de una sección específica incluyendo sus escenarios.
-- `GET /api/secciones/:seccionId/escenarios`: Lista de escenarios para una sección.
-- `GET /api/secciones/:seccionId/escenarios/:escenarioId`: Detalle de un escenario con sus opciones de respuesta.
-
-#### Progreso
-- `POST /api/progreso`: Registra la respuesta del usuario, calcula puntos (Tk) y actualiza el progreso.
-- `GET /api/progreso/usuario/:uid`: Obtiene el historial de ejercicios resueltos por el usuario.
+Consola de relevamiento y actividades administrativas, con acceso desde dirección web [/admin-be](https://deploy-mate-mas-front-end.vercel.app/admin-be) y requerimientos de inicio de sesión para su uso, brinda información relativa al estado y funcionamiento del Back-End, el LLM-CLI y la conexión de datos y también es el punto de acceso para los administradores desde el que pueden manejar condiciones y probar resultados del LLM-CLI, crear, editar buscar o eliminar en las tablas de Secciones y Escenarios y acceder a los gráficos en tiempo real
 
 ### Estructura del Proyecto
 
@@ -105,8 +47,11 @@ proyecto-matematicas-grupo8/
 │   ├── prisma/
 │   │   ├── schema.prisma
 │   │   └── seed.js
-│   ├── scripts/
 │   ├── src/
+│   │   ├── assets
+│   │   │   ├── logonodo.png
+│   │   │   ├── mascota_32.webp
+│   │   │   └── mascota_510.webp
 │   │   ├── config/
 │   │   │   ├── prisma.js
 │   │   │   └── supabase.js
@@ -132,11 +77,18 @@ proyecto-matematicas-grupo8/
 │   │   ├── services/
 │   │   │   └── gemini  .service.js
 │   │   ├── validators/
+│   │   │   ├── seccion.validator.js
 │   │   │   └── usuarios.validator.js
 │   │   └── app.js
+│   ├── supabase/
+│   │   ├── .gitignore
+│   │   └── config.toml
+│   ├── .gitignore
+│   ├── nodemon.json
 │   ├── package.json
 │   ├── vercel.json
-│   └── Readme.md
+│   ├── Readme.md
+│   └── test.sql
 ├── Front-End/
 ├── .gitignore
 ├── .npmrc
@@ -150,57 +102,223 @@ proyecto-matematicas-grupo8/
 
 ```mermaid
 erDiagram
-USUARIO ||--o{ PROGRESO : "registra"
-USUARIO ||--o{ RECURSO : "obtiene"
-USUARIO }o--o{ INSIGNIA : gana
-SECCION ||--o{ ESCENARIO : "contiene"
-SECCION ||--o| RECURSO : "desbloquea"
-ESCENARIO ||--o{ INSIGNIA : valída
-ESCENARIO ||--o{ PROGRESO : evaluado_en
+    Usuario ||--o{ Progreso : "registra"
+    Usuario ||--o{ SeccionAprobada : "aprueba"
+    Usuario ||--o{ Recurso : "posee"
+    Usuario ||--o{ Auditoria : "genera"
+    Usuario }o--o{ Insignia : "gana"
+
+    Seccion ||--o{ Escenario : "contiene"
+    Seccion ||--o{ SeccionAprobada : "es_aprobada_por"
+    Seccion ||--o| Recurso : "otorga"
+
+    Escenario ||--o{ Opcion : "ofrece"
+    Escenario ||--o{ Insignia : "recompensa_con"
+    Escenario ||--o{ Progreso : "mide"
+
+    Usuario {
+        string id PK
+        string email UK
+        string nombre
+        int puntos
+        int tokens
+        Rol rol
+        string password
+        string edad
+        string genero
+        string lugar
+        string desafio
+        string sentimiento
+        int racha
+        DateTime ultimaConexion
+        DateTime createdAt
+    }
+
+    Auditoria {
+        int id PK
+        string usuarioId FK
+        string accion
+        string entidad
+        string entidadId
+        Json detalles
+        DateTime timestamp
+    }
+
+    Seccion {
+        int id PK
+        string nombre
+        string descripcion
+        int grado
+        int puntosRequeridos
+        int puntosRecompensa
+        float umbralAprobacion
+    }
+
+    SeccionAprobada {
+        string usuarioId PK, FK
+        int seccionId PK, FK
+    }
+
+    Escenario {
+        int id PK
+        string titulo
+        string descripcion
+        string pregunta
+        string explicacion
+        string categoria
+        int seccionId FK
+    }
+
+    Opcion {
+        int id PK
+        string texto
+        int puntos
+        int escenarioId FK
+    }
+
+    Recurso {
+        string id PK
+        string nombre
+        int valor
+        string usuarioId FK
+        int seccionId UK, FK
+        DateTime createdAt
+    }
+
+    Insignia {
+        string id PK
+        string nombre
+        string descripcion
+        string imagenUrl
+        int puntosRequeridos
+        int escenarioId FK
+        DateTime createdAt
+    }
+
+    Progreso {
+        int id PK
+        string usuarioId FK
+        int escenarioId FK
+        int puntosObtenidos
+        boolean resuelto
+        int intentosFallidos
+        DateTime updatedAt
+    }
 ```
+
+---
+
 
 ### Diagrama de Clases
 
 ```mermaid
 classDiagram
-    class Seccion {
-        +Int id
-        +String nombre
-        +String descripcion
-        +Int nivel
-        +Int grado
-    }
-    class Usuario {
-        +String id
-        +String email
-        +String nombre
-        +Int puntos
-        +DateTime createdAt
-    }
-    class Escenario {
-        +Int id
-        +String titulo
-        +String descripcion
-        +String pregunta
-        +String explicacion
-        +String categoria
-    }
-    class Progreso {
-        +Int id
-        +Boolean resuelto
-        +Int intentosFallidos
-        +DateTime updatedAt
-    }
-    class Insignia {
-        +String id
-        +String nombre
-        +String descripcion
+    class SeccionController {
+        +getSecciones(req, res, next)
+        +getSeccionById(req, res, next)
+        +crearSeccion(req, res, next)
+        +eliminarSeccion(req, res, next)
+        +actualizarSeccion(req, res, next)
     }
 
-    Usuario "1" -- "*" Progreso : "registra"
-    Usuario "*" -- "*" Insignia : gana
-    Seccion "1" -- "*" Escenario : "contiene"
-    Escenario "1" -- "*" Progreso : "evaluado_en"
+    class UsuariosController {
+        +registrarUsuario(req, res, next)
+        +loginUsuario(req, res, next)
+        +eliminarUsuario(req, res, next)
+        +getUsuarios(req, res, next)
+        +actualizarPerfil(req, res, next)
+        -cleanEnv(val: String) List
+    }
+
+    class AdminController {
+        <<Protected_Route>>
+        +getAdminMain(req, res)
+        +getCheckupStatus(req, res, next)
+        +testFeedback(req, res, next)
+        +getAnalyticsData(req, res, next)
+        -checkIA(models: List, retries: int) Object
+    }
+
+    class PrismaClient {
+        +usuario
+        +seccion
+        +auditoria
+        +progreso
+        +$queryRaw()
+    }
+
+    class GoogleGenerativeAI {
+        +getGenerativeModel(config)
+    }
+
+    class Validators {
+        <<Utility>>
+        +crearEditarSeccionSchema
+        +registroSchema
+        +perfilSchema
+        +loginSchema
+    }
+
+    %% Relaciones de uso y dependencia
+    SeccionController --> PrismaClient : "consulta / muta datos"
+    SeccionController ..> Validators : "valida con Zod"
+
+    UsuariosController --> PrismaClient : "upsert / auth usuarios"
+    UsuariosController ..> Validators : "valida credenciales"
+
+    AdminController --> PrismaClient : "agrega métricas y logs"
+    AdminController --> GoogleGenerativeAI : "verifica estado e interactúa"
+
+    note for AdminController "Middleware de Autenticación
+    Acceso como admin / superadmin"
 ```
+
+---
+### Historial
+
+- Revisión de tecnologías y arquitectura propuesta.
+- Planteo de Proyecto “Math-Path”.
+- Planteo de uso de tecnologías ‘pnpm’ y Prisma.
+- Planteo de despliegue Vercel “serverless”.
+- Primer commit.
+- Definición e implementación de Stack.
+  · Configuración de modelo y entorno para la base de datos remota (Prisma).
+- Esquema de entidades: Usuarios, Sección, Escenario.
+  . Lógica en controladores de Secciones y Escenarios.
+  · Lógica en controladores de Usuarios, Admin y Superadmin.
+- Documentación en “Back-End Readme.md”.
+- Actualización en repositorio
+- Configuración de Bd de test en PostgreSQL.
+  · Migración de esquema ‘Prisma’.
+  · Sembrado de datos mock.
+  · Configuración de ‘Auth’.
+- Configuración e implementación de ‘servidor modular local’ funcional.
+- Listado e implementación de endpoints base para testing y pruebas de impacto.
+- Actualización de Documentación y repositorio.
+- Implementación de Test de LogIn y Registro.
+  · Test “local” de ruteo del CRUD de endpoints.
+  · Branch de oficio, acceso para Q&A.
+- Infraestructura para Prueba de Concepto.
+  · Cuentas Google, Supabase y Vercel.
+- Inicio de implementación de validaciones.
+  · Implementación de biblioteca y esquemas de validación Zod.
+Actualización de Back-End en "main"
+- Implementación de doble origen de datos
+ · con archivos locales y WebDb
+- Mecanismo para respuestas de inicio de sesión,
+ · registro de usuarios persistente en archivo local
+- Nodo administrativo (beta)
+ · Gestión de estado Back-End
+ · Gestión de asistencia CLI-LLM (beta)
+ · Gestión de CRUDs de contenidos (beta)
+ · Gestión de grafos estadísticos
+Reunión con integrantes de Front-End y Q&A
+Actualización de rama “producción-test” eliminando las implementaciones de simulación para Registro, Inicio de sesión y Db, actualización de Documentación
+Test de despliegue de Producción activa en Vercel con conexión a WebDb
+Revisión y optimización de Back-End
+
+---
+
+
 
 *Propuesta desarrollada para el equipo de Back End - InnovaLab 2026*
