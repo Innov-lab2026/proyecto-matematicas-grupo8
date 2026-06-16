@@ -1,6 +1,6 @@
 # Mate+
 
-![¡Nuestra mascota!](src\assets\mascota_32.webp)
+![¡Nuestra mascota!](src/assets/mascota_510.webp)
 
 ## Backend Core
 

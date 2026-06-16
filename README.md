@@ -2,7 +2,7 @@
 
 Una plataforma de entrenamiento para actividades matemáticas de la vida diaria
 
-![¡Nuestra mascota!](Back-End\src\assets\mascota_510.webp)
+![¡Nuestra mascota!](Back-End/src/assets/mascota_510.webp)
 
 ## Backend Core
 
