@@ -4,5 +4,7 @@ html {
 }
 
 body {
+    margin: 0; /* elimina margen por defecto del navegador */
     font-family: 'Plus Jakarta Sans', sans-serif !important;
+    overflow-x: hidden; /* evita scroll horizontal si usamos full-bleed */
 }

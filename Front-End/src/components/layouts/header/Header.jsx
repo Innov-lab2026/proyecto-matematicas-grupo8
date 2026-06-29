@@ -57,7 +57,7 @@ export default function Header() {
             <Nav.Link onClick={() => handleScrollToSection("about")}>
               ¿Qué es MATE+?
             </Nav.Link>
-            <Nav.Link onClick={() => handleScrollToSection('nosotros')}>
+            <Nav.Link as={Link} to="/nosotros" onClick={() => setExpanded(false)}>
               Sobre nosotros
             </Nav.Link>
             <Nav.Link onClick={() => handleScrollToSection('calculadora')}>
