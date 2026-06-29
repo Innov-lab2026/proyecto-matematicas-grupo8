@@ -1,12 +1,12 @@
 import './Nosotros.css';
-import hombreconlibro from '../../../assets/fondo Mate+.png';
+import hombre from '../../../assets/Material_Design_6_2.png';
 
 function FirstSection() {
     return (
         <div className="container-nosotros">
             <div className='container-firstSection'>
                 <h1 className="title-nosotros">
-                    CONOCÉ AL EQUIPO<br />DETRÁS DE MATE+
+                    CONOCE AL EQUIPO<br />DETRÁS DE MATE+
                 </h1>
                 
                 <p className="subtitle-nosotros">
@@ -15,7 +15,7 @@ function FirstSection() {
                 </p>
                 
                 <div className="imagen-nosotros">
-                    <img src={hombreconlibro} alt="hombre con libro en la mano" />
+                    <img src={hombre} alt="Hombre con libro" />
                 </div>
             </div>
         </div>

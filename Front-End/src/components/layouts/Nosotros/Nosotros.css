@@ -1,37 +1,35 @@
 .container-nosotros {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  padding: 40px 0; /* vertical padding, horizontal handled by inner content */
+  align-items: center;
   min-height: 100vh;
-  width: 100vw; /* full viewport width */
+  width: 100vw;
   box-sizing: border-box;
-  /* rompe el flujo centrado para que ocupe todo el ancho del viewport
-     incluso si está dentro de un contenedor centrado */
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Variables para ajustar posiciones */
+    --man-position-y: -105px; /* Ajusta la posición vertical del hombre (usa px o %) */
 }
 
-/* Pseudo-element usado para renderizar la imagen de fondo con opacidad
-   sin afectar el contenido hijo */
+/* Fondo cuadriculado */
 .container-nosotros::before {
   content: "";
   position: absolute;
-  inset: 0;
-  background-image: url('../../../assets/Material Design.png');
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('../../../assets/fondo_primera.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.35; /* Ajusta aquí la opacidad del fondo */
   z-index: 0;
 }
 
-/* Asegura que el contenido esté por encima del fondo */
-.container-nosotros > * {
-  position: relative;
-  z-index: 1;
-}
 
 .container-firstSection {
   display: flex;
@@ -39,41 +37,100 @@
   align-items: center;
   text-align: center;
   width: 100%;
-  max-width: 800px; /* Limita el ancho del texto para que no se estire demasiado */
-  padding-top: 60px; /* Espacio superior para despegar el título del borde */
+  max-width: 900px;
+  padding: 120px 20px 60px 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .title-nosotros {
-  font-family: 'Arial Black', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 42px; /* Ajustado para que se asemeje a la proporción de la imagen */
-  font-weight: 900;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 64px;
+  font-weight: 800;
   color: #000000;
   line-height: 1.2;
   letter-spacing: -0.5px;
   margin-bottom: 24px;
+
 }
 
 .subtitle-nosotros {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: 18px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
   font-weight: 400;
   color: #333333;
   line-height: 1.5;
   margin-bottom: 40px;
-  max-width: 500px; /* Hace que el subtítulo quiebre renglón igual que en la imagen base */
+  max-width: 500px;
 }
 
 .imagen-nosotros {
   display: flex;
   justify-content: center;
+  align-items: flex-end;
   width: 100%;
+  margin-top: 30px;
+  position: relative;
+  z-index: 3;
+  height: auto;
+  transform: translateY(var(--man-position-y));
 }
 
 .imagen-nosotros img {
-  width: 33%; /* Ajusta el tamaño de la imagen a un tercio de su contenedor */
-  max-width: 250px; /* Opcional: Le pone un límite máximo para pantallas muy grandes */
-  height: auto; /* Mantiene la proporción para que no se deforme */
+  width: 40%;
+  max-width: 350px;
+  height: auto;
   display: block;
-  margin: 0 auto; /* Asegura que siga estando perfectamente centrada */
+  margin: 0 auto;
+}
+
+/* Media queries responsivo */
+@media (max-width: 768px) {
+  .container-firstSection {
+    padding: 20px 15px;
+  }
+
+  .title-nosotros {
+    font-size: 32px;
+  }
+
+  .subtitle-nosotros {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+
+  .imagen-nosotros img {
+    width: 50%;
+    max-width: 280px;
+  }
+
+  .container-nosotros::after {
+    height: 50%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-firstSection {
+    padding: 20px 10px;
+  }
+
+  .title-nosotros {
+    font-size: 24px;
+    margin-bottom: 16px;
+  }
+
+  .subtitle-nosotros {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .imagen-nosotros img {
+    width: 60%;
+    max-width: 200px;
+  }
+
+  .container-nosotros::after {
+    height: 45%;
+  }
 }
 
