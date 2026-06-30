@@ -11,6 +11,7 @@ import ConsolaAdmin from '../pages/ConsolaAdmin';
 import { useAuth } from '../context/AuthContext';
 import StartedPage from '../pages/Started.jsx';
 import Onboarding from '../pages/Onboarding';
+import Nosotros from '../pages/Nosotros.jsx';
 
 // Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children }) => {
@@ -41,6 +42,14 @@ export default function AppRouter() {
                     element={
                         <PublicRoute forceRedirect={false}>
                             <Landing />
+                        </PublicRoute>
+                    }
+                />
+                <Route
+                    path="/nosotros"
+                    element={
+                        <PublicRoute >
+                            <Nosotros />
                         </PublicRoute>
                     }
                 />
