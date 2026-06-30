@@ -101,7 +101,7 @@ const FirstSection = ({ navigate }) => {
                             }}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
-                            onClick={() => navigate('/started')}
+                            onClick={() => navigate('/register')}
                             aria-label="Comenzar a aprender matemáticas"
                         >
                             <motion.div
