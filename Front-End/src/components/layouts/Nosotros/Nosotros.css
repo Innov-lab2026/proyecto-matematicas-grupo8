@@ -13,7 +13,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   /* Variables para ajustar posiciones */
   --man-position-y: -105px; /* Ajusta la posición vertical del hombre (usa px o %) */
-  --man-image-width: 80%; /* Ajusta el ancho de la imagen del hombre */
+  --man-image-width: 100%; /* Ajusta el ancho de la imagen del hombre */
   --man-image-max-width: 350px; /* Ajusta el ancho máximo */
   --background-position-y: -625px; /* Ajusta la posición vertical del fondo */
 }
@@ -268,3 +268,15 @@
   }
 }
 
+.title-thirdSection{
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  color: #000000;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 24px;
+  
+
+
+}
