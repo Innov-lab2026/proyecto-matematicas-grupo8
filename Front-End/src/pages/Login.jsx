@@ -13,9 +13,7 @@ import {
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
-import Background from "../Images/fondo2.png";
-import Login from "../Images/started/login.png";
+import Header from "../../src/components/layouts/header/Header.jsx";
 
 // Hook personalizado para manejar el estado del formulario de inicio de sesión
 const useLoginForm = () => {
@@ -26,7 +24,7 @@ const useLoginForm = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success"); // 'success' o 'danger'
-
+  const [rememberMe, setRememberMe] = useState(false);
   // Método para manejar el cambio de los campos del formulario
   const handleChangeValue = (e) => {
     const { name, value } = e.target;
@@ -46,12 +44,14 @@ const useLoginForm = () => {
       setShowToast(true);
       return;
     }
-    if (!email.includes("@")) {
-      setToastMessage("❌ Ingresa un correo electrónico válido");
-      setToastVariant("danger");
-      setShowToast(true);
-      return;
-    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!emailRegex.test(email.trim())) {
+    setToastMessage("❌ Ingresa un correo electrónico válido");
+    setToastVariant("danger");
+    setShowToast(true);
+    return;
+  }
     try {
       await login(email, password);
       setToastMessage("✅ ¡Inicio de sesión exitoso! Redirigiendo...");
@@ -74,7 +74,9 @@ const useLoginForm = () => {
   };
   return {
     email,
+    setEmail,
     password,
+    setPassword,
     showToast,
     setShowToast,
     toastMessage,
@@ -82,6 +84,8 @@ const useLoginForm = () => {
     handleChangeValue,
     handleSubmit,
     handleSocialLogin,
+    rememberMe,
+    setRememberMe,
   };
 };
 
@@ -91,6 +95,7 @@ const LoginPage = () => {
   const {
     email,
     password,
+    setPassword,
     showToast,
     setShowToast,
     toastMessage,
@@ -98,6 +103,9 @@ const LoginPage = () => {
     handleChangeValue,
     handleSubmit,
     handleSocialLogin,
+    rememberMe,
+    setRememberMe,
+    setEmail,
   } = useLoginForm();
 
   useEffect(() => {
@@ -107,155 +115,231 @@ const LoginPage = () => {
 
   return (
     <>
-      <Container fluid className="vh-100 vw-100 p-0 m-0">
-        <Row className="h-100 g-0">
-          {/* Columna lateral izquierda */}
-          <Col
-            md={6}
-            className="d-none d-md-flex align-items-center justify-content-center text-white"
+      <Header />
+      <Container
+        fluid
+        className="d-flex align-items-center justify-content-center"
+        style={{
+          backgroundImage: "url('/login/fondo.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#8FD8FD",
+          backgroundSize: "contain",
+          minHeight: "calc(100vh - 70px)",
+          paddingTop: "100px",
+          paddingBottom: "20px",
+        }}
+      >
+        <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
+          <Link to="/" style={{ position: "absolute", left: -70, top: 30 }}>
+            <img
+              src="/login/iconButton.png"
+              alt="button"
+              style={{ width: 50, height: 50 }}
+            />
+          </Link>
+          <div
+            className="bg-white rounded-4 p-4"
             style={{
-              backgroundImage: `url(${Background})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              height: "100vh",
+              width: "100%",
+              maxWidth: 400,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
             }}
           >
-            <img src={Login} alt="Login" style={{ width: 400, height: 400 }} />
-          </Col>
-
-          {/* Columna derecha - Formulario */}
-          <Col
-            md={6}
-            className="d-flex align-items-center justify-content-center bg-light"
-            style={{ overflowY: "auto", height: "100vh", padding: "30px 24px" }}
-          >
-            <Card
-              className="border-0 bg-transparent"
-              style={{ width: "100%", maxWidth: "400px" }}
+            {/* Tabs */}
+            <div className="d-flex border-bottom mb-4">
+              <span
+                className="flex-grow-1 text-center pb-2 fw-bold"
+                style={{
+                  color: "#2D3E4E",
+                  borderBottom: "3px solid #2D3E4E",
+                  cursor: "default",
+                }}
+              >
+                Iniciar sesión
+              </span>
+              <Link
+                to="/register"
+                className="flex-grow-1 text-center pb-2 text-decoration-none text-muted"
+              >
+                Registrarse
+              </Link>
+            </div>
+            <div className="text-center mb-3">
+              <img
+                src="/login/login.png"
+                alt="login"
+                style={{ width: 64, height: 64 }}
+              />
+            </div>
+            <h3
+              className="text-center fw-bold mb-4"
+              style={{ fontSize: 24, fontWeight: 600 }}
             >
-              <Card.Body className="p-0">
-                <div className="text-center mb-4">
-                  <h1 className="mb-3 fw-bold" style={{ color: "#2D3E4E" }}>
-                    Bienvenido a MATE+
-                  </h1>
-                  <p style={{ color: "#2D3E4E", fontSize: "1.25rem" }}>
-                    ¿No tienes una cuenta?{" "}
-                    <Link
-                      to="/register"
-                      style={{ color: "#31C976" }}
-                      className="text-decoration-none"
-                    >
-                      Regístrate
-                    </Link>
-                  </p>
-                </div>
-
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-4">
-                    <Form.Label htmlFor="login-email" className="visually-hidden">Correo electrónico</Form.Label>
+              ¡Que bueno verte de vuelta!
+            </h3>
+            <Form onSubmit={handleSubmit} className="px-2">
+              <Form.Group className="mb-3">
+                <div style={{ position: "relative" }}>
+                  <InputGroup>
                     <Form.Control
-                      id="login-email"
                       type="email"
-                      autoComplete="username"
-                      placeholder="Correo electrónico"
-                      size="lg"
-                      onChange={handleChangeValue}
                       name="email"
+                      placeholder="Email"
                       value={email}
-                      className="border-0 border-bottom rounded-0 ps-0 pl-2"
+                      onChange={handleChangeValue}
                       style={{
+                        backgroundColor: "#f5f5f5",
+                        border: "none",
+                        borderBottom: "1px solid #e0e0e0",
+                        borderRadius: 0,
                         boxShadow: "none",
-                        backgroundColor: "transparent",
+                        paddingRight: "35px",
                       }}
-                      onFocus={(e) => (e.target.style.borderColor = "#0d6efd")}
-                      onBlur={(e) => (e.target.style.borderColor = "#dee2e6")}
                     />
-                  </Form.Group>
-
-                  <Form.Group className="mb-4">
-                    <Form.Label htmlFor="login-password" className="visually-hidden">Contraseña</Form.Label>
-                    <InputGroup>
-                      <Form.Control
-                        id="login-password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="current-password"
-                        placeholder="Ingresa tu contraseña"
-                        size="lg"
-                        onChange={handleChangeValue}
-                        name="password"
-                        value={password}
-                        className="border-0 border-bottom rounded-0 ps-0"
-                        style={{
-                          boxShadow: "none",
-                          backgroundColor: "transparent",
-                        }}
-                      />
-                      <InputGroup.Text
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{
-                          cursor: "pointer",
-                          background: "transparent",
-                          border: "none",
-                          borderBottom: "2px solid #dee2e6",
-                          borderRadius: 0,
-                        }}
-                      >
-                        {showPassword ? (
-                          <FaEyeSlash size={20} />
-                        ) : (
-                          <FaEye size={20} />
-                        )}
-                      </InputGroup.Text>
-                    </InputGroup>
-                  </Form.Group>
-
-                  <div className="d-flex flex-column gap-3">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="w-100 py-2 rounded-pill fw-semibold"
-                      style={{
-                        backgroundColor: "#31C976",
-                        borderColor: "#31C976",
-                        borderRadius: "35px",
-                      }}
-                      onClick={handleSubmit}
-                    >
-                      Iniciar Sesión
-                    </Button>
-                  </div>
-                  {/* Separador */}
-                  <div className="d-flex align-items-center my-1">
-                    <hr className="flex-grow-1" />
-                    <span className="mx-2 text-muted">o</span>
-                    <hr className="flex-grow-1" />
-                  </div>
-
-                  {/* Botón Google */}
-                  <Button
-                    variant="outline-secondary"
-                    size="lg"
-                    className="w-100 d-flex align-items-center justify-content-center gap-2 rounded-pill"
-                    onClick={() => handleSocialLogin("Google")}
-                  >
+                  </InputGroup>
+                  {email && (
                     <img
-                      src="https://www.google.com/favicon.ico"
-                      alt="Google"
-                      style={{ width: 20, height: 20 }}
+                      src="/login/icon2.png"
+                      alt="Cerrar"
+                      onClick={() => setEmail("")}
+                      style={{
+                        position: "absolute",
+                        right: 10,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 16,
+                        height: 16,
+                        cursor: "pointer",
+                        opacity: 0.6,
+                      }}
                     />
-                    Iniciar sesión con Google
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                  )}
+                </div>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <div style={{ position: "relative" }}>
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={handleChangeValue}
+                    style={{
+                      backgroundColor: "#f5f5f5",
+                      border: "none",
+                      borderBottom: "1px solid #e0e0e0",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      paddingRight: "80px",
+                    }}
+                  />
+                  {/* ✕ borrar */}
+                  {password && (
+                    <img
+                      src="/login/icon2.png"
+                      alt="borrar"
+                      onClick={() => setPassword("")}
+                      style={{
+                        position: "absolute",
+                        right: 10,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 16,
+                        height: 16,
+                        cursor: "pointer",
+                        opacity: 0.6,
+                      }}
+                    />
+                  )}
+                </div>
+                {/* 👁 mostrar/ocultar */}
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    marginTop: 0,
+                    height: "38px",
+                    marginRight: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </Form.Group>
+              {/* Recordarme / Olvidé contraseña */}
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <Form.Check
+                  label="Recordarme"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  variant="dark"
+                />
+                <Link
+                  to="/forgot-password"
+                  className="text-decoration-none small"
+                  style={{ color: "#2D3E4E" }}
+                >
+                  Olvidé mi contraseña
+                </Link>
+              </div>
+              {/* Botón ingresar */}
+              <Button
+                variant="outline-secondary"
+                type="submit"
+                className="w-100 rounded-pill fw-semibold mb-2 justify-content-center d-flex align-items-center gap-2"
+                style={{ backgroundColor: "#FFFEFD", color: "#151515" }}
+              >
+                <img
+                  src="/login/icon.png"
+                  alt="Google"
+                  style={{ width: 18, height: 18, bacgroundColor: "#E7E7E7" }}
+                />
+                Ingresar
+              </Button>
+              {/* Separador */}
+              <div className="d-flex align-items-center my-2">
+                <hr className="flex-grow-1" />
+                <span className="mx-2 text-muted small">o</span>
+                <hr className="flex-grow-1" />
+              </div>
+              {/* Google */}
+              <Button
+                variant="outline-secondary"
+                className="w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
+              >
+                <img
+                  src="/login/icon.png"
+                  alt="Google"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    color: "#E7E7E7",
+                  }}
+                />
+                Iniciar sesión con Google
+              </Button>
+            </Form>
+            <p className="text-center mt-3 small text-muted">
+              ¿No tenes cuenta?{" "}
+              <Link
+                to="/register"
+                className="text-decoration-none "
+                style={{ color: "#000000" }}
+              >
+                Registrate
+              </Link>
+            </p>
+          </div>
+        </div>
       </Container>
-
       <ToastContainer
         position="top-end"
         className="p-3"
-        style={{ zIndex: 1050 }}
+        style={{ zIndex: 1050, position: "fixed",}}
       >
         <Toast
           onClose={() => setShowToast(false)}

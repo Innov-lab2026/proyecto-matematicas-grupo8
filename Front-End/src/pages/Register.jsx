@@ -11,11 +11,10 @@ import {
   Toast,
   ToastContainer,
   InputGroup,
+  Modal,
 } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
-import Background from "../Images/fondo2.png";
-import Register from "../Images/started/register.png";
+import Header from "../../src/components/layouts/header/Header";
 
 const useRegisterForm = () => {
   const navigate = useNavigate();
@@ -31,26 +30,28 @@ const useRegisterForm = () => {
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
   const [showToast, setShowToast] = useState(false);
-
+  const [rememberMe, setRememberMe] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [usuario, setUsuario] = useState("");
+  const [anioNacimiento, setAnioNacimiento] = useState("");
   const handleChangeValue = (e) => {
     const { name, value } = e.target;
-    if (name === "nombre") setNombre(value);
-    else if (name === "email") setEmail(value);
+    if (name === "email") setEmail(value);
     else if (name === "password") setPassword(value);
-    else if (name === "confirmPassword") setConfirmPassword(value);
-    else if (name === "genero") setGenero(value);
-    else if (name === "lugar") setLugar(value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!nombre || !email || !password || !confirmPassword) {
+    if (!email || !password) {
       setToastMessage("❌ Por favor, completa todos los campos");
       setToastVariant("danger");
       setShowToast(true);
       return;
     }
-    if (!email.includes("@")) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email.trim())) {
       setToastMessage("❌ Ingresa un correo electrónico válido");
       setToastVariant("danger");
       setShowToast(true);
@@ -62,18 +63,32 @@ const useRegisterForm = () => {
       setShowToast(true);
       return;
     }
-    if (password !== confirmPassword) {
-      setToastMessage("❌ Las contraseñas no coinciden");
+    if (!acceptedTerms) {
+      setToastMessage("❌ Debés aceptar los términos y condiciones");
       setToastVariant("danger");
       setShowToast(true);
       return;
     }
-
+    setShowProfileModal(true);
+  };
+  const handleCompleteProfile = async () => {
+    if (!nombre || !usuario || !anioNacimiento || !genero || !lugar) {
+      setToastMessage("❌ Completá todos los campos del perfil");
+      setToastVariant("danger");
+      setShowToast(true);
+      return;
+    }
     try {
-      await register(email, password, nombre, { genero, lugar });
+      await register(email, password, nombre, {
+        usuario,
+        anioNacimiento,
+        genero,
+        lugar,
+      });
       setToastMessage("✅ Registro exitoso");
       setToastVariant("success");
       setShowToast(true);
+      setShowProfileModal(false);
       setTimeout(() => {
         navigate("/login", { replace: true });
       }, 2000);
@@ -86,6 +101,7 @@ const useRegisterForm = () => {
 
   return {
     nombre,
+    setNombre,
     email,
     password,
     confirmPassword,
@@ -93,20 +109,34 @@ const useRegisterForm = () => {
     setShowPassword,
     showConfirmPassword,
     setShowConfirmPassword,
+    rememberMe,
+    setRememberMe,
+    acceptedTerms,
+    setAcceptedTerms,
     genero,
+    setGenero,
     lugar,
+    setLugar,
+    usuario,
+    setUsuario,
+    anioNacimiento,
+    setAnioNacimiento,
+    showProfileModal,
+    setShowProfileModal,
     handleChangeValue,
     toastMessage,
     toastVariant,
     showToast,
     setShowToast,
     handleSubmit,
+    handleCompleteProfile,
   };
 };
 
 const RegisterPage = () => {
   const {
     nombre,
+    setNombre,
     email,
     password,
     confirmPassword,
@@ -114,215 +144,258 @@ const RegisterPage = () => {
     setShowPassword,
     showConfirmPassword,
     setShowConfirmPassword,
+    rememberMe,
+    setRememberMe,
+    acceptedTerms,
+    setAcceptedTerms,
     genero,
+    setGenero,
     lugar,
+    setLugar,
+    usuario,
+    setUsuario,
+    anioNacimiento,
+    setAnioNacimiento,
+    showProfileModal,
+    setShowProfileModal,
     showToast,
     toastMessage,
     toastVariant,
     setShowToast,
     handleChangeValue,
     handleSubmit,
+    handleCompleteProfile,
   } = useRegisterForm();
 
   return (
     <>
-      <Container fluid className="vh-100 vw-100 p-0 m-0">
-        <Row className="h-100 g-0">
-          <Col
-            md={6}
-            className="d-none d-md-flex align-items-center justify-content-center text-white"
+      <Header />
+      <Container
+        fluid
+        className="d-flex align-items-center justify-content-center"
+        style={{
+          backgroundImage: "url('/login/fondo.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#8FD8FD",
+          backgroundSize: "contain",
+          minHeight: "calc(100vh - 70px)",
+          paddingTop: "100px",
+          paddingBottom: "20px",
+        }}
+      >
+        <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
+          <Link to="/" style={{ position: "absolute", left: -70, top: 30 }}>
+            <img
+              src="/login/iconButton.png"
+              alt="button"
+              style={{ width: 50, height: 50 }}
+            />
+          </Link>
+          <div
+            className="bg-white rounded-4 p-4"
             style={{
-              backgroundImage: `url(${Background})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              height: "100vh",
+              width: "100%",
+              maxWidth: 400,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
             }}
           >
-            <img
-              src={Register}
-              alt="Register"
-              style={{ width: 400, height: 400 }}
-            />
-          </Col>
-          <Col
-            md={6}
-            className="d-flex align-items-start justify-content-center bg-light"
-            style={{ overflowY: "auto", height: "100vh", paddingTop: "30px" }}
-          >
-            <Card
-              className="border-0 bg-transparent"
-              style={{ width: "100%", maxWidth: "400px" }}
+            {/* Tabs */}
+            <div className="d-flex border-bottom mb-4">
+              <Link
+                to="/login"
+                className="flex-grow-1 text-center pb-2 text-decoration-none text-muted"
+              >
+                Iniciar sesión
+              </Link>
+              <span
+                className="flex-grow-1 text-center pb-2 fw-bold"
+                style={{
+                  color: "#2D3E4E",
+                  borderBottom: "3px solid #2D3E4E",
+                  cursor: "default",
+                }}
+              >
+                Registrarse
+              </span>
+            </div>
+            <div className="text-center mb-3">
+              <img
+                src="/login/registroform.png"
+                alt="login"
+                style={{ width: 64, height: 64 }}
+              />
+            </div>
+            <h3
+              className="text-center fw-bold mb-4"
+              style={{ fontSize: 24, fontWeight: 600 }}
             >
-              <Card.Body className="p-4">
-                <div className="text-center mb-4">
-                  <h1 className="mb-3">Registro</h1>
-                  <p style={{ color: "#2D3E4E", fontSize: "1.25rem" }}>
-                    ¿Ya tienes una cuenta?{" "}
-                    <Link
-                      to="/login"
-                      style={{ color: "#31C976" }}
-                      className="text-decoration-none"
-                    >
-                      Iniciar Sesión
-                    </Link>
-                  </p>
-                </div>
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-2">
-                    <Form.Label htmlFor="reg-nombre">Nombre</Form.Label>
+              Bienvenido a MATE+
+            </h3>
+            <Form onSubmit={handleSubmit} className="px-2">
+              <Form.Group className="mb-3">
+                <div style={{ position: "relative" }}>
+                  <InputGroup>
                     <Form.Control
-                      id="reg-nombre"
-                      type="text"
-                      autoComplete="name"
-                      placeholder="Ingresa tu nombre"
-                      size="lg"
-                      onChange={handleChangeValue}
-                      name="nombre"
-                      value={nombre}
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-2">
-                    <Form.Label htmlFor="reg-email">Correo electrónico</Form.Label>
-                    <Form.Control
-                      id="reg-email"
                       type="email"
-                      autoComplete="email"
-                      placeholder="nombre@empresa.com"
-                      size="lg"
-                      onChange={handleChangeValue}
                       name="email"
+                      placeholder="Email"
                       value={email}
+                      onChange={handleChangeValue}
+                      style={{
+                        backgroundColor: "#f5f5f5",
+                        border: "none",
+                        borderBottom: "1px solid #e0e0e0",
+                        borderRadius: 0,
+                        boxShadow: "none",
+                        paddingRight: "35px",
+                      }}
                     />
-                  </Form.Group>
-
-                  <Form.Group className="mb-4">
-                    <Form.Label htmlFor="reg-password">Contraseña</Form.Label>
-                    <InputGroup>
-                      <Form.Control
-                        id="reg-password"
-                        type={showPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        size="lg"
-                        onChange={handleChangeValue}
-                        name="password"
-                        value={password}
-                      />
-                      <Button
-                        size="lg"
-                        variant="outline-secondary"
-                        onClick={() => setShowPassword(!showPassword)}
-                        tabIndex={-1}
-                      >
-                        {showPassword ? <FaEyeSlash /> : <FaEye />}
-                      </Button>
-                    </InputGroup>
-                  </Form.Group>
-                  <Form.Group className="mb-4">
-                    <Form.Label htmlFor="reg-confirm">Confirmar contraseña</Form.Label>
-                    <InputGroup>
-                      <Form.Control
-                        id="reg-confirm"
-                        type={showConfirmPassword ? "text" : "password"}
-                        autoComplete="new-password"
-                        placeholder="••••••••"
-                        size="lg"
-                        onChange={handleChangeValue}
-                        name="confirmPassword"
-                        value={confirmPassword}
-                      />
-                      <Button
-                        size="lg"
-                        variant="outline-secondary"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        tabIndex={-1}
-                      >
-                        {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                      </Button>
-                    </InputGroup>
-                  </Form.Group>
-                  <Row className="mb-3 g-2">
-                    <Col xs={6}>
-                      <Form.Group>
-                        <Form.Label htmlFor="reg-genero">Género</Form.Label>
-                        <Form.Select
-                          id="reg-genero"
-                          name="genero"
-                          value={genero}
-                          autoComplete="sex"
-                          onChange={handleChangeValue}
-                        >
-                          <option value="">Seleccionar</option>
-                          <option value="masculino">Masculino</option>
-                          <option value="femenino">Femenino</option>
-                          <option value="otro">Otro</option>
-                          <option value="prefiero_no_decir">
-                            Prefiero no decir
-                          </option>
-                        </Form.Select>
-                      </Form.Group>
-                    </Col>
-                    <Col xs={6}>
-                      <Form.Group>
-                        <Form.Label htmlFor="reg-lugar">Lugar</Form.Label>
-                        <Form.Control
-                          id="reg-lugar"
-                          type="text"
-                          autoComplete="address-level2"
-                          placeholder="Ciudad o país"
-                          onChange={handleChangeValue}
-                          name="lugar"
-                          value={lugar}
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-                  <Button
-                    variant="primary"
-                    type="submit"
-                    size="lg"
-                    className="w-100 mt-3"
-                    style={{
-                      backgroundColor: "#2ECC71",
-                      borderColor: "#2ECC71",
-                      color: "white",
-                    }}
-                  >
-                    Registrarse
-                  </Button>
-                  {/* Separador */}
-                  <div className="d-flex align-items-center my-3">
-                    <hr className="flex-grow-1" />
-                    <span className="mx-2 text-muted">o</span>
-                    <hr className="flex-grow-1" />
-                  </div>
-
-                  {/* Botón Google */}
-                  <Button
-                    variant="outline-secondary"
-                    size="lg"
-                    className="w-100 d-flex align-items-center justify-content-center gap-2"
-                    onClick={() => {}}
-                  >
+                  </InputGroup>
+                  {email && (
                     <img
-                      src="https://www.google.com/favicon.ico"
-                      alt="Google"
-                      style={{ width: 20, height: 20 }}
+                      src="/login/icon2.png"
+                      alt="Cerrar"
+                      onClick={() => setEmail("")}
+                      style={{
+                        position: "absolute",
+                        right: 10,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 16,
+                        height: 16,
+                        cursor: "pointer",
+                        opacity: 0.6,
+                      }}
                     />
-                    Registrarse con Google
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+                  )}
+                </div>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <div style={{ position: "relative" }}>
+                  <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Contraseña"
+                    value={password}
+                    onChange={handleChangeValue}
+                    style={{
+                      backgroundColor: "#f5f5f5",
+                      border: "none",
+                      borderBottom: "1px solid #e0e0e0",
+                      borderRadius: 0,
+                      boxShadow: "none",
+                      paddingRight: "80px",
+                    }}
+                  />
+                  {/* ✕ borrar */}
+                  {password && (
+                    <img
+                      src="/login/icon2.png"
+                      alt="borrar"
+                      onClick={() => setPassword("")}
+                      style={{
+                        position: "absolute",
+                        right: 10,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        width: 16,
+                        height: 16,
+                        cursor: "pointer",
+                        opacity: 0.6,
+                      }}
+                    />
+                  )}
+                </div>
+                {/* 👁 mostrar/ocultar */}
+                <div
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    marginTop: 0,
+                    height: "38px",
+                    marginRight: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    cursor: "pointer",
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </div>
+              </Form.Group>
+              {/* Recordarme / Olvidé contraseña */}
+              <div className=" mb-3">
+                <Form.Check
+                  label="Recordarme"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  variant="dark"
+                  className="small"
+                />
+                <Form.Check
+                  label="He leído y acepto los términos y condiciones"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  variant="dark"
+                  className="small"
+                />
+              </div>
+              {/* Botón ingresar */}
+              <Button
+                variant="outline-secondary"
+                type="submit"
+                className="w-100 rounded-pill fw-semibold mb-2 justify-content-center d-flex align-items-center gap-2"
+                style={{ backgroundColor: "#FFFEFD", color: "#151515" }}
+              >
+                <img
+                  src="/login/icon.png"
+                  alt="Google"
+                  style={{ width: 18, height: 18, bacgroundColor: "#E7E7E7" }}
+                />
+                Ingresar
+              </Button>
+              {/* Separador */}
+              <div className="d-flex align-items-center my-2">
+                <hr className="flex-grow-1" />
+                <span className="mx-2 text-muted small">o</span>
+                <hr className="flex-grow-1" />
+              </div>
+              {/* Google */}
+              <Button
+                variant="outline-secondary"
+                className="w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
+              >
+                <img
+                  src="/login/icon.png"
+                  alt="Google"
+                  style={{
+                    width: 18,
+                    height: 18,
+                    bacgroundColor: "#E7E7E7",
+                    color: "#E7E7E7",
+                  }}
+                />
+                Iniciar sesión con Google
+              </Button>
+            </Form>
+            <p className="text-center mt-3 small text-muted">
+              ¿Ya sos usuario?{" "}
+              <Link
+                to="/login"
+                className="text-decoration-none "
+                style={{ color: "#000000" }}
+              >
+                Ingresá
+              </Link>
+            </p>
+          </div>
+        </div>
       </Container>
       <ToastContainer
         position="top-end"
         className="p-3"
-        style={{ zIndex: 1050 }}
+        style={{ zIndex: 9999, position: "fixed" }}
       >
         <Toast
           onClose={() => setShowToast(false)}
@@ -334,6 +407,129 @@ const RegisterPage = () => {
           <Toast.Body className={"text-white"}>{toastMessage}</Toast.Body>
         </Toast>
       </ToastContainer>
+      <Modal
+        show={showProfileModal}
+        onHide={() => setShowProfileModal(false)}
+        centered
+      >
+        <div className="  position-relative width-100">
+          <img
+            src="/login/fmodal2.png"
+            alt="fondomodal2"
+            style={{
+              width: 100,
+              height: 100,
+              position: "absolute",
+              top: "15px",
+              right: "10px",
+            }}
+          />
+          <img
+            src="/login/fmodal.png"
+            alt="fondomodal"
+            style={{
+              width: 100,
+              height: 100,
+              position: "absolute",
+              top: "5px",
+              left: "10px",
+            }}
+          />
+        </div>
+        <Modal.Body className="p-4">
+          <div className="text-center mb-3">
+            <img
+              src="/login/registro.png"
+              alt="perfil"
+              style={{ width: 64, height: 64 }}
+            />
+          </div>
+          <h4 className="text-center fw-bold mb-4">Completa tu perfil</h4>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              style={{
+                border: "none",
+                borderBottom: "1px solid #e0e0e0",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="text"
+              placeholder="Usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              style={{
+                border: "none",
+                borderBottom: "1px solid #e0e0e0",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Control
+              type="number"
+              placeholder="Año de nacimiento"
+              value={anioNacimiento}
+              onChange={(e) => setAnioNacimiento(e.target.value)}
+              style={{
+                border: "none",
+                borderBottom: "1px solid #e0e0e0",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Select
+              value={genero}
+              onChange={(e) => setGenero(e.target.value)}
+              style={{
+                border: "none",
+                borderBottom: "1px solid #e0e0e0",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            >
+              <option value="">Género</option>
+              <option value="femenino">Femenino</option>
+              <option value="masculino">Masculino</option>
+              <option value="otro">Otro</option>
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mb-4">
+            <Form.Select
+              value={lugar}
+              onChange={(e) => setLugar(e.target.value)}
+              style={{
+                border: "none",
+                borderBottom: "1px solid #e0e0e0",
+                borderRadius: 0,
+                boxShadow: "none",
+              }}
+            >
+              <option value="">Ubicación</option>
+              <option value="">Argentina</option>
+              <option value=""> Otro pais</option>
+              {/* TODO: traer provincias desde el backend */}
+            </Form.Select>
+          </Form.Group>
+          <Button
+            className="w-100 rounded-pill fw-semibold"
+            style={{ backgroundColor: "#2D2D2D", borderColor: "#2D2D2D" }}
+            onClick={handleCompleteProfile}
+          >
+            Comenzar
+          </Button>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };
