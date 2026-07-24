@@ -21,11 +21,12 @@ import Nosotros from '../pages/Nosotros.jsx';
 import Desafios from '../pages/Desafios.jsx';
 import AuthCallback from '../pages/AuthCallback.jsx';
 import ModuloEjercicios from '../pages/Ejercicios.jsx';
-import DragConstraints from '../pages/DropAndDown.jsx';
+import DragConstraints from '../components/layouts/Ejercicios/DropAndDown.jsx';
 import TermsOfService from '../pages/TermsOfService.jsx';
 import MixtoPage from '../pages/Mixto.jsx';
 import RankingPage from '../pages/Ranking.jsx';
 import Configuracion from '../components/layouts/Configuracion/Configuracion.jsx';
+import Perfil from '../components/layouts/Perfil/Perfil.jsx';
 
 // Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children }) => {
@@ -188,6 +189,15 @@ export default function AppRouter() {
                     element={
                         <ProtectedRoute>
                             <Profile />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/perfil"
+                    element={
+                        <ProtectedRoute>
+                            <Perfil />
                         </ProtectedRoute>
                     }
                 />
