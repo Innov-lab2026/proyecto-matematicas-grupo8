@@ -21,7 +21,7 @@ import Nosotros from '../pages/Nosotros.jsx';
 import Desafios from '../pages/Desafios.jsx';
 import AuthCallback from '../pages/AuthCallback.jsx';
 import ModuloEjercicios from '../pages/Ejercicios.jsx';
-import DragConstraints from '../pages/DropAndDown.jsx';
+import DragConstraints from '../components/layouts/Ejercicios/DropAndDown.jsx';
 import TermsOfService from '../pages/TermsOfService.jsx';
 import MixtoPage from '../pages/Mixto.jsx';
 import RankingPage from '../pages/Ranking.jsx';

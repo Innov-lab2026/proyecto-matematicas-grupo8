@@ -8,10 +8,12 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 import FooterDash from "../components/layouts/FooterDash/FooterDash";
 import { useState } from "react";
 import HeaderSection from "../components/layouts/HeaderDashboardCollapse/HeaderDashboardCollapse";
+import SidebarEscenarios from "../components/layouts/SidebarDesafios/SidebarDesafios";
 
 const DashboardPage = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [showHeader, setShowHeader] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 2. Estado para abrir/cerrar menú
 
     return (
         <main style={{
@@ -24,6 +26,13 @@ const DashboardPage = () => {
             overflow: "hidden"
         }}>
             <HeaderDash showHeader={showHeader} setShowHeader={setShowHeader} />
+            
+            {/* 👈 3. Componente del Menú Flotante Sidebar */}
+            <SidebarEscenarios 
+                isOpen={isSidebarOpen} 
+                onClose={() => setIsSidebarOpen(false)} 
+            />
+
             <Container
                 fluid
                 className="d-flex align-items-start justify-content-between gap-0 flex-column text-white"
@@ -63,6 +72,7 @@ const DashboardPage = () => {
 
                 {/* Botón Flotante Principal con Libro y Dropdown */}
                 <ButtonFloat
+                    onClick={() => setIsSidebarOpen(true)} // 👈 4. Evento onClick para abrir
                     className="btn btn-primary"
                     style={{
                         height: '60px',
@@ -75,7 +85,8 @@ const DashboardPage = () => {
                         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                         borderTopLeftRadius: '0',
                         borderBottomLeftRadius: '0',
-                        zIndex: 100
+                        zIndex: 100,
+                        cursor: 'pointer'
                     }}
                 >
                     <LuBookText color="black" size={30} />
