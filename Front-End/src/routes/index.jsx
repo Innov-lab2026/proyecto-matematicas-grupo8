@@ -26,6 +26,7 @@ import TermsOfService from "../pages/TermsOfService.jsx";
 import MixtoPage from "../pages/Mixto.jsx";
 import RankingPage from "../pages/Ranking.jsx";
 import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx";
+import Perfil from "../components/layouts/Perfil/Perfil.jsx";
 
 // Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children }) => {
@@ -187,6 +188,15 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <Configuracion />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <Perfil />
             </ProtectedRoute>
           }
         />

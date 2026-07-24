@@ -70,8 +70,7 @@ export default function Header({ showHeader, setShowHeader }) {
             <Nav.Link onClick={() => navigate("/dashboard")}>Curso</Nav.Link>
             <Nav.Link onClick={() => navigate("/mixto")}>Mixto</Nav.Link>
             <Nav.Link onClick={() => navigate("/ranking")}>Ranking</Nav.Link>
-            <Nav.Link onClick={() => navigate("/calculadora")}>Calculadora</Nav.Link>
-            <Nav.Link onClick={() => navigate("/configuracion")}>Configuración</Nav.Link>
+            <Nav.Link onClick={() => navigate("/perfil")}>Mi Perfil</Nav.Link>
           </Nav>
         </Navbar.Collapse>
 
