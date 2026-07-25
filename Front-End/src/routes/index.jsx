@@ -49,7 +49,7 @@ const PublicRoute = ({ children, forceRedirect = true }) => {
     
     if(isAuthenticated && profile && forceRedirect) {
         if(profile?.sentimiento || profile?.desafio || profile?.edad) {
-            return <Navigate to="/dashboard" /> 
+            return <Navigate to="/onboarding" /> 
         }
         
         return <Navigate to="/onboarding" />
