@@ -80,6 +80,7 @@ export const registrarUsuario = async (req, res, next) => {
         desafio,
         sentimiento,
       },
+      include: { desafioActual: true },
     });
     console.log(`✅ Usuario sincronizado: ${usuario.email} [${usuario.rol}]`);
 
