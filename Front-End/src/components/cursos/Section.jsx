@@ -209,7 +209,13 @@ export default function CursoSection() {
           }}
         />
 
-        <TitleSection title="Números Básicos" />
+        <TitleSection
+          title={
+            lecciones[currentIndex]?.rama?.nombre ||
+            profile?.desafioActual?.nombre ||
+            "Elegí un desafío"
+          }
+        />
 
         <div
           style={{
