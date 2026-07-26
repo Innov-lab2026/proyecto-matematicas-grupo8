@@ -7,6 +7,7 @@ import HeaderMate from "../HeaderMate/HeaderMate";
 
 function EjercicioChoice({
   pregunta,
+  imagenUrl,
   opciones = [], // [{ id, texto, esCorrecta }]
   onBack,
   onContinue,
@@ -22,7 +23,9 @@ function EjercicioChoice({
   };
 
   const preguntaActual = pregunta || datosChoiceDePrueba.pregunta;
-  const opcionesActuales = opciones.length ? opciones : datosChoiceDePrueba.opciones;
+  const opcionesActuales = opciones.length
+    ? opciones
+    : datosChoiceDePrueba.opciones;
 
   const [seleccionado, setSeleccionado] = useState(null);
   const [esCorrecto, setEsCorrecto] = useState(null);
@@ -52,11 +55,26 @@ function EjercicioChoice({
         <div className="ejercicio-choice-container">
           <h2 className="ejercicio-pregunta-centered">{preguntaActual}</h2>
 
+          {imagenUrl && (
+            <div
+              className="card-imagen-wrapper"
+              style={{ marginBottom: "2rem" }}
+            >
+              <img
+                src={imagenUrl}
+                alt="Material del ejercicio"
+                className="ejercicio-imagen"
+              />
+            </div>
+          )}
+
           <div className="options-grid">
             {opcionesActuales.map((opcion) => {
               let buttonClass = "option-button";
               if (seleccionado === opcion.id) {
-                buttonClass += esCorrecto ? " option-correct" : " option-incorrect";
+                buttonClass += esCorrecto
+                  ? " option-correct"
+                  : " option-incorrect";
               }
 
               return (
@@ -72,20 +90,22 @@ function EjercicioChoice({
             })}
           </div>
 
-
           <div className="feedback-wrapper">
             {esCorrecto === true && (
               <div className="alert-message alert-success animate-pop">
-                <span>🎉 ¡Excelente trabajo! Respuesta correcta. ¡Sigue así!</span>
+                <span>
+                  🎉 ¡Excelente trabajo! Respuesta correcta. ¡Sigue así!
+                </span>
               </div>
             )}
             {esCorrecto === false && (
               <div className="alert-message alert-danger animate-pop">
-                <span>💪 ¡Casi lo tienes! Intenta analizar la pregunta nuevamente.</span>
+                <span>
+                  💪 ¡Casi lo tienes! Intenta analizar la pregunta nuevamente.
+                </span>
               </div>
             )}
           </div>
-
         </div>
 
         <div className="ejercicio-footer">

@@ -141,6 +141,7 @@ function ModuloEjercicios() {
   return (
     <EjercicioChoice
       pregunta={ejercicioActual.pregunta}
+      imagenUrl={ejercicioActual.imagenUrl}
       opciones={ejercicioActual.opciones || []}
       onBack={manejarAtras}
       onContinue={manejarContinuar}
