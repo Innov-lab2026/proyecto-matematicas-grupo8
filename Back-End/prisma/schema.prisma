@@ -40,6 +40,8 @@ model Usuario {
   recursos           Recurso[]
   auditorias         Auditoria[]
   createdAt          DateTime            @default(now())
+  desafioActualId Int?
+  desafioActual   Rama? @relation(fields: [desafioActualId], references: [id])
 }
 
 model Auditoria {
@@ -65,6 +67,8 @@ model Seccion {
   aprobadaPor      SeccionAprobada[]
   recursoOtorgado  Recurso?
   lecciones        Leccion[]
+  ramaId  Int?
+  rama    Rama? @relation(fields: [ramaId], references: [id])
 }
 
 model SeccionAprobada {
@@ -152,4 +156,14 @@ model Consejo {
   activo      Boolean   @default(true)
   escenarioId Int
   escenario   Escenario @relation(fields: [escenarioId], references: [id])
+}
+
+model Rama {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @unique
+  descripcion String?
+  orden       Int       @default(0)
+  activo      Boolean   @default(true)
+  secciones   Seccion[]
+  usuarios    Usuario[]
 }

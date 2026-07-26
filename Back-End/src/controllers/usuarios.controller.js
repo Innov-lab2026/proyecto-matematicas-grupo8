@@ -88,7 +88,9 @@ export const registrarUsuario = async (req, res, next) => {
       prisma.seccionAprobada.count({ where: { usuarioId: uid } }),
     ]);
 
-    res.status(201).json({ ...usuario, totalSecciones, seccionesAprobadasCount });
+    res
+      .status(201)
+      .json({ ...usuario, totalSecciones, seccionesAprobadasCount });
   } catch (error) {
     next(error);
   }
@@ -185,6 +187,41 @@ export const actualizarPerfil = async (req, res, next) => {
         nombre,
       },
     });
+    return res.status(200).json(usuario);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const actualizarDesafioActual = async (req, res, next) => {
+  try {
+    const uid = req.user.id;
+    const { desafioActualId } = req.body || {};
+
+    if (
+      desafioActualId !== null &&
+      (typeof desafioActualId !== "number" || desafioActualId < 1)
+    ) {
+      return res.status(400).json({
+        error: "desafioActualId debe ser un número entero positivo o null",
+      });
+    }
+
+    if (desafioActualId !== null) {
+      const rama = await prisma.rama.findUnique({
+        where: { id: desafioActualId },
+      });
+      if (!rama) {
+        return res.status(404).json({ error: "La rama indicada no existe" });
+      }
+    }
+
+    const usuario = await prisma.usuario.update({
+      where: { id: uid },
+      data: { desafioActualId },
+      include: { desafioActual: true },
+    });
+
     return res.status(200).json(usuario);
   } catch (error) {
     next(error);

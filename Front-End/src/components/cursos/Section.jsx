@@ -5,8 +5,10 @@ import SectionItem from "./SectionItem";
 import ModalConfirmacion from "./ModalConfirmacion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import api from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function CursoSection() {
+  const { profile } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const navigate = useNavigate();
   const containerRef = useRef(null);
@@ -19,14 +21,18 @@ export default function CursoSection() {
     api
       .get("/secciones")
       .then((res) => {
-        const secciones = (res.data || []).map((s) => ({
-          ...s,
-          titulo: s.nombre,
-        }));
-        setLecciones(secciones);
+        let secciones = res.data || [];
+        if (profile?.desafioActualId) {
+          secciones = secciones.filter(
+            (s) => s.ramaId === profile.desafioActualId,
+          );
+        }
+        const conTitulo = secciones.map((s) => ({ ...s, titulo: s.nombre }));
+        setLecciones(conTitulo);
+        setCurrentIndex(0);
       })
       .catch((err) => console.error("Error al cargar secciones:", err));
-  }, []);
+  }, [profile?.desafioActualId]);
 
   // Estados para touch events
   const [touchStartY, setTouchStartY] = useState(0);
