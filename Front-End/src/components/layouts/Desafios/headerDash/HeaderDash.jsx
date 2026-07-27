@@ -67,7 +67,7 @@ export default function Header({ showHeader, setShowHeader }) {
 
         <Navbar.Collapse id="navbar-nav" className="align-items-center justify-content-center">
           <Nav className="d-flex align-items-center gap-1 gap-lg-5 py-2 py-lg-0">
-            <Nav.Link onClick={() => navigate("/dashboard")}>Curso</Nav.Link>
+            <Nav.Link onClick={() => navigate("/dashboard")}>Escenarios</Nav.Link>
             <Nav.Link onClick={() => navigate("/mixto")}>Mixto</Nav.Link>
             <Nav.Link onClick={() => navigate("/ranking")}>Ranking</Nav.Link>
             <Nav.Link onClick={() => navigate("/perfil")}>Mi Perfil</Nav.Link>
