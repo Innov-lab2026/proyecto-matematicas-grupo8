@@ -7,6 +7,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { LuChevronDown, LuChevronUp } from "react-icons/lu";
 import { useMediaQuery } from "../../../../hooks/useMediaQuery";
 import ButtonFloat from "../../../ui/ButtonFloat/ButtonFloat";
+import fotoPerfilUser from "../../../../assets/Foto_perfil.png";
 
 export default function Header({ showHeader, setShowHeader }) {
   const navigate = useNavigate();
@@ -48,7 +49,10 @@ export default function Header({ showHeader, setShowHeader }) {
       expanded={expanded}
       onToggle={() => setExpanded(!expanded)}
     >
-      <Container className="d-flex justify-content-between align-items-center px-4">
+      <Container
+        className="d-flex align-items-center px-4"
+        style={{ justifyContent: "space-between" }}
+      >
         <Navbar.Brand
           onClick={handleScrollToTop}
           as={Link}
@@ -107,12 +111,13 @@ export default function Header({ showHeader, setShowHeader }) {
           className="align-items-center justify-content-center"
         >
           <Nav className="d-flex align-items-center gap-1 gap-lg-5 py-2 py-lg-0">
-            <Nav.Link onClick={() => navigate("/dashboard")}>Desafíos</Nav.Link>
+            <Nav.Link onClick={() => navigate("/dashboard")}>Desafío</Nav.Link>
             <Nav.Link onClick={() => navigate("/mixto")}>Mixto</Nav.Link>
             <Nav.Link onClick={() => navigate("/ranking")}>Ranking</Nav.Link>
             <Nav.Link onClick={() => navigate("/perfil")}>Mi Perfil</Nav.Link>
           </Nav>
         </Navbar.Collapse>
+
         <div className="hidden md:block d-flex align-items-center gap-2 gap-lg-3">
           <Dropdown align="end">
             <Dropdown.Toggle
@@ -121,7 +126,7 @@ export default function Header({ showHeader, setShowHeader }) {
               className="p-0 border-0"
             >
               <img
-                src="/user.png"
+                src={fotoPerfilUser}
                 alt="User Avatar"
                 className="rounded-circle"
                 style={{ width: 40, height: 40, objectFit: "cover" }}
@@ -154,18 +159,6 @@ export default function Header({ showHeader, setShowHeader }) {
             </Dropdown.Menu>
           </Dropdown>
         </div>
-
-        <Navbar.Collapse
-          id="navbar-nav"
-          className="align-items-center justify-content-center"
-        >
-          <Nav className="d-flex align-items-center gap-1 gap-lg-5 py-2 py-lg-0">
-            <Nav.Link onClick={() => navigate("/dashboard")}>Curso</Nav.Link>
-            <Nav.Link onClick={() => navigate("/mixto")}>Mixto</Nav.Link>
-            <Nav.Link onClick={() => navigate("/ranking")}>Ranking</Nav.Link>
-            <Nav.Link onClick={() => navigate("/perfil")}>Mi Perfil</Nav.Link>
-          </Nav>
-        </Navbar.Collapse>
         <ButtonFloat
           className="btn btn-primary"
           onClick={toggleHeader}
