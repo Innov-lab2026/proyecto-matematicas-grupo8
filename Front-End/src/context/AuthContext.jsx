@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
     const [session, setSession] = useState(null);
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [initialized, setInitialized] = useState(false);
     const lastFetchedId = useRef(null);
     const isFetching = useRef(false);
@@ -206,6 +207,27 @@ export const AuthProvider = ({ children }) => {
         }
     }, []);
 
+    const loginWithGoogle = useCallback(async (redirectTo) => {
+        try {
+            setGoogleLoading(true);
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: redirectTo || `${window.location.origin}/auth/callback`,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent',
+                    },
+                },
+            });
+            if (error) throw error;
+            return data;
+        } catch (err) {
+            setGoogleLoading(false);
+            throw err;
+        }
+    }, []);
+
     const value = useMemo(
         () => ({
             user: session?.user ?? null,
@@ -213,13 +235,15 @@ export const AuthProvider = ({ children }) => {
             token: session?.access_token ?? null,
             isAuthenticated: !!session,
             login,
+            loginWithGoogle,
             register,
             logout,
             loading,
+            googleLoading,
             initialized,
             refreshProfile: () => session?.user && fetchProfile(session.user)
         }),
-        [session, profile, login, register, logout, loading, initialized, fetchProfile]
+        [session, profile, login, loginWithGoogle, register, logout, loading, googleLoading, initialized, fetchProfile]
     );
 
     return (
