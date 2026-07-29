@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/preserve-manual-memoization */
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { supabase } from '../config/supabaseClient';
 import api from '../config/api';
@@ -10,10 +10,12 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false); // ✅ Nuevo: indica si es usuario nuevo
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
   const lastFetchedId = useRef(null);
   const isFetching = useRef(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const initializationAttempted = useRef(false); // ✅ Evita múltiples inicializaciones
 
   const logout = useCallback(async () => {
     try {
@@ -27,14 +29,13 @@ export const AuthProvider = ({ children }) => {
       setIsNewUser(false);
       lastFetchedId.current = null;
       setLoading(false);
+      setInitialized(true); // ✅ Asegurar que se marque como inicializado
     }
   }, []);
 
-  // ✅ fetchProfile mejorado: detecta si es usuario nuevo
   const fetchProfile = useCallback(async (user) => {
     if (!user?.id || isFetching.current) return;
 
-    // Si ya tenemos este perfil y no es un evento de login forzado, no repetir
     if (profile?.id === user.id && lastFetchedId.current === user.id) {
       console.log(`✅ Perfil ya cargado para ${user.id}`);
       return;
@@ -56,13 +57,21 @@ export const AuthProvider = ({ children }) => {
         setProfile(data);
         lastFetchedId.current = user.id;
 
-        // ✅ Detectar si es usuario nuevo (basado en la respuesta del backend)
-        // Asumimos que el backend devuelve un campo `isNew` o similar
-        // O podemos detectar por la ausencia de datos adicionales
-        const isNew = data.isNew || !data.puntos || data.puntos === 0;
+        const hasOnboardingData =
+          data.edad && data.edad.trim() !== '' &&
+          data.desafio && data.desafio.trim() !== '' &&
+          data.genero !== null &&
+          data.sentimiento !== null;
+
+        const isNew = !hasOnboardingData || data.isNew === true;
+
         setIsNewUser(isNew);
 
-        console.log(`👤 Perfil cargado: ${data.nombre} (${isNew ? 'NUEVO' : 'EXISTENTE'})`);
+        console.log(`👤 Perfil cargado: ${data.nombre}`);
+        console.log(`   📊 Puntos: ${data.puntos}`);
+        console.log(`   📝 Edad: ${data.edad || 'No definida'}`);
+        console.log(`   🎯 Desafío: ${data.desafio || 'No definido'}`);
+        console.log(`   🆕 ¿Usuario nuevo? ${isNew ? 'SÍ' : 'NO'}`);
       }
     } catch (error) {
       console.error("🔴 Error de sincronización con Back-End:", error.message);
@@ -84,27 +93,27 @@ export const AuthProvider = ({ children }) => {
     }
   }, [profile?.id, logout]);
 
-  const completeInitialization = useCallback(() => {
+  // ✅ Función para marcar como inicializado
+  const markInitialized = useCallback(() => {
     if (!initialized) {
+      console.log('✅ Auth inicializado correctamente');
       setInitialized(true);
       setLoading(false);
     }
   }, [initialized]);
 
-  // ✅ Efecto de inicialización mejorado
+  // ✅ Efecto de inicialización mejorado - SIN TIMEOUT AGRESIVO
   useEffect(() => {
-    let isMounted = true;
-    let timeoutId = null;
+    // ✅ Evitar múltiples inicializaciones
+    if (initializationAttempted.current) return;
+    initializationAttempted.current = true;
 
-    timeoutId = setTimeout(() => {
-      if (isMounted && !initialized) {
-        console.warn("⚠️ Timeout de inicialización - forzando carga");
-        completeInitialization();
-      }
-    }, 3000);
+    let isMounted = true;
 
     const initializeAuth = async () => {
       try {
+        console.log('🔍 Verificando sesión en Supabase...');
+        
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
@@ -123,9 +132,12 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("🔴 Error en inicialización:", error);
+        setSession(null);
+        setProfile(null);
+        setIsNewUser(false);
       } finally {
         if (isMounted) {
-          completeInitialization();
+          markInitialized();
         }
       }
     };
@@ -138,33 +150,39 @@ export const AuthProvider = ({ children }) => {
 
       if (!isMounted) return;
 
-      // ✅ Evento SIGNED_IN: usuario acaba de iniciar sesión
+      // ✅ IMPORTANTE: Si el evento es SIGNED_IN, esperar a que se cargue el perfil
       if (_event === 'SIGNED_IN' && newSession?.user) {
         console.log('🔄 Usuario ha iniciado sesión, verificando onboarding...');
         setSession(newSession);
-        // Forzar la obtención del perfil (podría ser nuevo)
+        // Forzar la obtención del perfil
         lastFetchedId.current = null;
-        fetchProfile(newSession.user);
+        fetchProfile(newSession.user).then(() => {
+          // Asegurar que el estado esté actualizado
+          if (!initialized) {
+            markInitialized();
+          }
+        });
         return;
       }
 
-      // ✅ Evento USER_UPDATED: usuario actualizó datos (ej. completó onboarding)
       if (_event === 'USER_UPDATED' && newSession?.user) {
         console.log('🔄 Usuario actualizado, refrescando perfil...');
         if (lastFetchedId.current === newSession.user.id) {
-          // Refrescar perfil sin cambiar la bandera de nuevo usuario
           fetchProfile(newSession.user);
         }
         return;
       }
 
-      // ✅ Evento SIGNED_OUT: cerró sesión
       if (_event === 'SIGNED_OUT') {
         console.log('🚪 Usuario cerró sesión');
         setSession(null);
         setProfile(null);
         setIsNewUser(false);
         lastFetchedId.current = null;
+        // ✅ Asegurar que se marque como inicializado después del logout
+        if (!initialized) {
+          markInitialized();
+        }
         return;
       }
 
@@ -183,24 +201,21 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (!initialized) {
-        completeInitialization();
+        markInitialized();
       }
     });
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [fetchProfile, completeInitialization, initialized]);
+  }, [fetchProfile, markInitialized, initialized]);
 
-  // ✅ Función para marcar onboarding como completado
   const completeOnboarding = useCallback(async (additionalData = {}) => {
     if (!session?.user) return;
 
     try {
       setLoading(true);
-      // Actualizar perfil en el backend
       const { data } = await api.put(`/usuarios/${session.user.id}`, {
         ...additionalData,
         onboardingCompleto: true,
@@ -233,7 +248,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.user) {
-        // Forzar recarga del perfil (puede ser nuevo usuario)
         lastFetchedId.current = null;
         await fetchProfile(data.user);
       }
@@ -266,8 +280,9 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (email, password, nombre, extraData = {}) => {
     try {
+      setRegisterLoading(true);
+      
       const redirectUrl = "https://matemas.vercel.app/auth/callback";
-      setLoading(true);
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -279,11 +294,11 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      // Después del registro, el usuario debe ser redirigido al onboarding
-      setLoading(false);
+      setRegisterLoading(false);
       return data;
     } catch (err) {
-      setLoading(false);
+      setRegisterLoading(false);
+      
       if (err.message === "SUPABASE_UNAVAILABLE_MOCK" || err.status === 400) {
         console.warn("⚠️ Supabase no disponible. Modo de autenticación local");
         const response = await api.post("/usuarios/registro", {
@@ -331,7 +346,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ Valor del contexto con todas las propiedades necesarias
   const value = useMemo(
     () => ({
       user: session?.user ?? null,
@@ -340,6 +354,7 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated: !!session && !!profile,
       isNewUser,
       loading,
+      registerLoading,
       googleLoading,
       initialized,
       login,
@@ -348,12 +363,11 @@ export const AuthProvider = ({ children }) => {
       loginWithGoogle,
       completeOnboarding,
       refreshProfile: () => session?.user && fetchProfile(session.user),
-      // ✅ Utilidades para el enrutamiento
       shouldShowOnboarding: isNewUser && !!session && !!profile,
       shouldShowDashboard: !isNewUser && !!session && !!profile,
-      shouldShowLogin: !session && !loading && initialized,
+      shouldShowLogin: !session && initialized && !loading,
     }),
-    [session, profile, isNewUser, loading, googleLoading, initialized,
+    [session, profile, isNewUser, loading, registerLoading, googleLoading, initialized,
       login, register, logout, loginWithGoogle, completeOnboarding, fetchProfile]
   );
 
