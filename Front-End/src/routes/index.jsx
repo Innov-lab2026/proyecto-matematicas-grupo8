@@ -8,25 +8,25 @@ import {
 
 import Register from "../pages/Register";
 
-import Landing from "../pages/Landing.jsx";
-import Dashboard from "../pages/Dashboard.jsx";
-import Profile from "../pages/Profile";
-import NotFound from "../pages/NotFound";
-import LoginPage from "../pages/Login";
-import ConsolaAdmin from "../pages/ConsolaAdmin";
-import { useAuth } from "../context/AuthContext";
-import StartedPage from "../pages/Started.jsx";
-import Onboarding from "../pages/Onboarding";
-import Nosotros from "../pages/Nosotros.jsx";
-import Desafios from "../pages/Desafios.jsx";
-import AuthCallback from "../pages/AuthCallback.jsx";
-import ModuloEjercicios from "../pages/Ejercicios.jsx";
-import DragConstraints from "../components/layouts/Ejercicios/DropAndDown.jsx";
-import TermsOfService from "../pages/TermsOfService.jsx";
-import MixtoPage from "../pages/Mixto.jsx";
-import RankingPage from "../pages/Ranking.jsx";
-import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx";
-import Perfil from "../components/layouts/Perfil/Perfil.jsx";
+import Landing from '../pages/Landing.jsx';
+import Dashboard from '../pages/Dashboard.jsx';
+import Profile from '../pages/Profile';
+import NotFound from '../pages/NotFound';
+import LoginPage from '../pages/Login';
+import ConsolaAdmin from '../pages/ConsolaAdmin';
+import { useAuth } from '../context/AuthContext';
+import StartedPage from '../pages/Started.jsx';
+import Onboarding from '../pages/Onboarding';
+import Nosotros from '../pages/Nosotros.jsx';
+import Desafios from '../pages/Desafios.jsx';
+import AuthCallback from '../pages/AuthCallback.jsx';
+import ModuloEjercicios from '../pages/Ejercicios.jsx';
+import DragConstraints from '../components/layouts/Ejercicios/DropAndDown.jsx';
+import TermsOfService from '../pages/TermsOfService.jsx';
+import MixtoPage from '../pages/Mixto.jsx';
+import RankingPage from '../pages/Ranking.jsx';
+import Configuracion from '../components/layouts/Configuracion/Configuracion.jsx';
+import Perfil from '../components/layouts/Perfil/Perfil.jsx';
 
 // Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children }) => {
@@ -41,12 +41,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // Componente para redireccionar si ya está autenticado
-const PublicRoute = ({ children, forceRedirect = true }) => {
+const PublicRoute = ({ forceRedirect = true }) => {
   const { isAuthenticated, profile } = useAuth();
 
-  if (!(isAuthenticated && profile && forceRedirect)) {
-    return children;
-  }
+    // Solo redireccionamos si hay sesión Y perfil cargado.
+    // Si hay sesión pero no perfil (error de red), dejamos que vea la página pública.
+    
+    if(isAuthenticated && profile && forceRedirect) {
+        if(profile?.sentimiento || profile?.desafio || profile?.edad) {
+            return <Navigate to="/onboarding" /> 
+        }
+        
+        return <Navigate to="/onboarding" />
+    }
 
   const onboardingCompleto =
     profile?.sentimiento || profile?.desafio || profile?.edad;
@@ -135,7 +142,7 @@ export default function AppRouter() {
 
         {/* Ruta de desarrollo para previsualizar Onboarding sin autenticación */}
         {import.meta.env.DEV && (
-          <Route path="/dev-onboarding" element={<Onboarding />} />
+          <Route path="/dev-Dashboard" element={<Perfil />} />
         )}
 
         <Route
@@ -200,6 +207,15 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+                <Route
+                    path="/perfil"
+                    element={
+                        <ProtectedRoute>
+                            <Perfil />
+                        </ProtectedRoute>
+                    }
+                />
 
         {/* Ruta 404 */}
         <Route path="*" element={<NotFound />} />

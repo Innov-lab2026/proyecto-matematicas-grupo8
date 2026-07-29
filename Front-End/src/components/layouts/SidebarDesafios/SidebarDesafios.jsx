@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { LuBookText, LuX } from "react-icons/lu";
 import api from "../../../config/api";
 import { useAuth } from "../../../context/AuthContext";
@@ -104,6 +104,18 @@ const SidebarDesafios = ({ isOpen, onClose }) => {
                 </span>
               </div>
             )}
+            {/* Opción Destacada 1 */}
+            <div className="sidebar-item item-highlighted active">
+              <div className="item-icon-wrapper">
+                <LuBookText size={20} color="#111111" />
+              </div>
+              <span className="item-text text-bold">Porcentajes</span>
+            </div>
+
+            {/* Opción Destacada 2 */}
+            <div className="sidebar-item item-highlighted">
+              <span className="item-text text-bold">Geometría</span>
+            </div>
 
             <div className="sidebar-divider" />
 

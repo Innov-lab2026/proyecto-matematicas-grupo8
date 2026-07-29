@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { supabase } from '../config/supabaseClient';
 import api from '../config/api';
@@ -8,7 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false); // Nuevo estado
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const lastFetchedId = useRef(null);
   const isFetching = useRef(false);
 
@@ -164,7 +166,6 @@ export const AuthProvider = ({ children }) => {
     };
   }, [fetchProfile, completeInitialization]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const login = async (email, password) => {
     try {
       setLoading(true); // Mostrar loading durante el login
@@ -253,6 +254,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithGoogle = useCallback(async (redirectTo) => {
+    try {
+      setGoogleLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectTo || `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setGoogleLoading(false);
+      throw err;
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       user: session?.user ?? null,
@@ -260,52 +282,27 @@ export const AuthProvider = ({ children }) => {
       token: session?.access_token ?? null,
       isAuthenticated: !!session,
       login,
+      loginWithGoogle,
       register,
       logout,
-
       loading,
+      googleLoading,
       initialized,
-      refreshProfile: () => session?.user && fetchProfile(session.user),
+      refreshProfile: () => session?.user && fetchProfile(session.user)
     }),
-    [session, profile, login, loading, initialized, fetchProfile],
+    [session, profile, login, loginWithGoogle, register, logout, loading, googleLoading, initialized, fetchProfile]
   );
-
-  // Solo mostrar el spinner si loading es true Y no está inicializado
-  {
-    /*if (loading && !initialized) {
-        return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100vh',
-                backgroundColor: '#1a1a1a',
-                color: '#00ff00'
-            }}>
-                <div style={{ textAlign: 'center' }}>
-                    <h3>InnovaLab</h3>
-                    <p>Cargando módulos de seguridad...</p>
-                    <div style={{ marginTop: '20px' }}>
-                        <div className="spinner-border text-success" role="status">
-                            <span className="visually-hidden">Cargando...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }*/
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
-    const context = useContext(AuthContext);
+  const context = useContext(AuthContext);
 
-    if (!context) {
-        throw new Error('useAuth debe usarse dentro de AuthProvider');
-    }
+  if (!context) {
+    throw new Error('useAuth debe usarse dentro de AuthProvider');
+  }
 
-    return context;
+  return context;
 };
