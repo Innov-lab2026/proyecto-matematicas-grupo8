@@ -9,52 +9,68 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false); // ✅ Nuevo: indica si es usuario nuevo
   const lastFetchedId = useRef(null);
   const isFetching = useRef(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setLoading(true);
       await supabase.auth.signOut();
     } catch (err) {
-      console.warn(
-        "⚠️ Error al cerrar sesión en Supabase, limpiando estado local.",
-        err,
-      );
+      console.warn("⚠️ Error al cerrar sesión en Supabase, limpiando estado local.", err);
     } finally {
       setSession(null);
       setProfile(null);
+      setIsNewUser(false);
       lastFetchedId.current = null;
       setLoading(false);
     }
-  };
+  }, []);
 
+  // ✅ fetchProfile mejorado: detecta si es usuario nuevo
   const fetchProfile = useCallback(async (user) => {
-    console.log(
-      `🔄 fetchProfile called for user: ${user.id}, isFetching: ${isFetching.current}, currentProfile: ${profile?.id}`,
-    );
-    if (isFetching.current) return;
+    if (!user?.id || isFetching.current) return;
+
+    // Si ya tenemos este perfil y no es un evento de login forzado, no repetir
+    if (profile?.id === user.id && lastFetchedId.current === user.id) {
+      console.log(`✅ Perfil ya cargado para ${user.id}`);
+      return;
+    }
+
     isFetching.current = true;
     try {
-      const { data } = await api.post("/usuarios/registro", {
+      console.log(`🔄 Obteniendo perfil para: ${user.id}`);
+
+      const response = await api.post("/usuarios/registro", {
         uid: user.id,
         email: user.email,
-        nombre: user.user_metadata?.full_name || user.email.split("@")[0],
+        nombre: user.user_metadata?.full_name || user.email?.split("@")[0] || "Usuario",
       });
-      setProfile(data || null);
+
+      const data = response.data;
+
+      if (data) {
+        setProfile(data);
+        lastFetchedId.current = user.id;
+
+        // ✅ Detectar si es usuario nuevo (basado en la respuesta del backend)
+        // Asumimos que el backend devuelve un campo `isNew` o similar
+        // O podemos detectar por la ausencia de datos adicionales
+        const isNew = data.isNew || !data.puntos || data.puntos === 0;
+        setIsNewUser(isNew);
+
+        console.log(`👤 Perfil cargado: ${data.nombre} (${isNew ? 'NUEVO' : 'EXISTENTE'})`);
+      }
     } catch (error) {
       console.error("🔴 Error de sincronización con Back-End:", error.message);
 
-      // Si el Back-End nos tira 401, la sesión de Supabase que tenemos es basura.
-      // Forzamos el cierre de sesión para que el usuario pueda volver al login.
       if (error.response?.status === 401) {
-        console.warn("⚠️ Sesión inválida detectada. Limpiando...", error);
-        logout();
-      }
-      // Si es un error de red, permitimos re-intento en el próximo evento
-      if (
+        console.warn("⚠️ Sesión inválida detectada. Limpiando...");
+        await logout();
+      } else if (
         error.code === "ERR_NETWORK" ||
         error.code === "ECONNABORTED" ||
         !error.response
@@ -62,12 +78,12 @@ export const AuthProvider = ({ children }) => {
         lastFetchedId.current = null;
       }
       setProfile(null);
+      setIsNewUser(false);
     } finally {
       isFetching.current = false;
     }
-  }, []);
+  }, [profile?.id, logout]);
 
-  // Función para marcar la inicialización como completa
   const completeInitialization = useCallback(() => {
     if (!initialized) {
       setInitialized(true);
@@ -75,28 +91,21 @@ export const AuthProvider = ({ children }) => {
     }
   }, [initialized]);
 
+  // ✅ Efecto de inicialización mejorado
   useEffect(() => {
     let isMounted = true;
     let timeoutId = null;
 
-    // Failsafe: Si en 3 segundos no hay respuesta, forzamos la carga
     timeoutId = setTimeout(() => {
       if (isMounted && !initialized) {
-        console.warn(
-          "⚠️ Timeout de inicialización - forzando carga de la aplicación",
-        );
+        console.warn("⚠️ Timeout de inicialización - forzando carga");
         completeInitialization();
       }
     }, 3000);
 
-    // Primero, intentamos obtener la sesión actual de manera síncrona
     const initializeAuth = async () => {
       try {
-        // Verificar si ya hay una sesión activa
-        const {
-          data: { session: currentSession },
-          error,
-        } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
 
         if (error) {
           console.warn("⚠️ Error al obtener sesión:", error);
@@ -105,115 +114,157 @@ export const AuthProvider = ({ children }) => {
         if (currentSession?.user) {
           console.log("✅ Sesión existente encontrada");
           setSession(currentSession);
-          lastFetchedId.current = currentSession.user.id;
-
-          // Cargar el perfil en segundo plano
           await fetchProfile(currentSession.user);
         } else {
           console.log("ℹ️ No hay sesión activa");
           setSession(null);
           setProfile(null);
+          setIsNewUser(false);
         }
       } catch (error) {
         console.error("🔴 Error en inicialización:", error);
       } finally {
-        // Marcar como inicializado solo si el componente sigue montado
         if (isMounted) {
           completeInitialization();
         }
       }
     };
 
-    // Ejecutar inicialización
     initializeAuth();
 
-    // Suscribirse a cambios de autenticación
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    // ✅ Suscripción a cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       console.log(`🔐 AuthEvent: ${_event}`);
 
       if (!isMounted) return;
 
+      // ✅ Evento SIGNED_IN: usuario acaba de iniciar sesión
+      if (_event === 'SIGNED_IN' && newSession?.user) {
+        console.log('🔄 Usuario ha iniciado sesión, verificando onboarding...');
+        setSession(newSession);
+        // Forzar la obtención del perfil (podría ser nuevo)
+        lastFetchedId.current = null;
+        fetchProfile(newSession.user);
+        return;
+      }
+
+      // ✅ Evento USER_UPDATED: usuario actualizó datos (ej. completó onboarding)
+      if (_event === 'USER_UPDATED' && newSession?.user) {
+        console.log('🔄 Usuario actualizado, refrescando perfil...');
+        if (lastFetchedId.current === newSession.user.id) {
+          // Refrescar perfil sin cambiar la bandera de nuevo usuario
+          fetchProfile(newSession.user);
+        }
+        return;
+      }
+
+      // ✅ Evento SIGNED_OUT: cerró sesión
+      if (_event === 'SIGNED_OUT') {
+        console.log('🚪 Usuario cerró sesión');
+        setSession(null);
+        setProfile(null);
+        setIsNewUser(false);
+        lastFetchedId.current = null;
+        return;
+      }
+
+      // Manejo genérico para otros eventos
       setSession(newSession || null);
 
       if (newSession?.user) {
-        if (
-          lastFetchedId.current !== newSession.user.id ||
-          (_event === "SIGNED_IN" && !profile)
-        ) {
+        if (lastFetchedId.current !== newSession.user.id) {
           lastFetchedId.current = newSession.user.id;
           fetchProfile(newSession.user);
         }
       } else {
         setProfile(null);
+        setIsNewUser(false);
         lastFetchedId.current = null;
       }
 
-      // Si aún no está inicializado, marcarlo
       if (!initialized) {
         completeInitialization();
       }
     });
 
-    // Cleanup
     return () => {
       isMounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [fetchProfile, completeInitialization]);
+  }, [fetchProfile, completeInitialization, initialized]);
 
-  const login = async (email, password) => {
+  // ✅ Función para marcar onboarding como completado
+  const completeOnboarding = useCallback(async (additionalData = {}) => {
+    if (!session?.user) return;
+
     try {
-      setLoading(true); // Mostrar loading durante el login
+      setLoading(true);
+      // Actualizar perfil en el backend
+      const { data } = await api.put(`/usuarios/${session.user.id}`, {
+        ...additionalData,
+        onboardingCompleto: true,
+      });
+
+      if (data) {
+        setProfile(data);
+        setIsNewUser(false);
+        console.log('✅ Onboarding completado exitosamente');
+      }
+    } catch (error) {
+      console.error('❌ Error al completar onboarding:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.user]);
+
+  const login = useCallback(async (email, password) => {
+    try {
+      setLoading(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
       if (error) {
         if (error.status === 400) throw error;
         throw new Error("SUPABASE_UNAVAILABLE");
       }
-      // No bloqueamos el login esperando al perfil, lo tiramos en paralelo
-      if (data.user) fetchProfile(data.user);
+
+      if (data.user) {
+        // Forzar recarga del perfil (puede ser nuevo usuario)
+        lastFetchedId.current = null;
+        await fetchProfile(data.user);
+      }
       setLoading(false);
       return data;
     } catch (err) {
       setLoading(false);
-      // Solo caemos en el mock si Supabase realmente no está o da error de conexión
-      const isMockMode =
-        !import.meta.env.VITE_SUPABASE_URL ||
+      const isMockMode = !import.meta.env.VITE_SUPABASE_URL ||
         import.meta.env.VITE_SUPABASE_URL.includes("[TU_PROYECTO]");
 
-      if (
-        isMockMode ||
-        err.message === "SUPABASE_UNAVAILABLE" ||
-        err.message === "SUPABASE_UNAVAILABLE_MOCK"
-      ) {
+      if (isMockMode || err.message === "SUPABASE_UNAVAILABLE") {
         console.warn("⚠️ Usando autenticación de respaldo (Back-End Mock)");
-        const response = await api.post("/usuarios/login", {
-          email,
-          password,
-        });
+        const response = await api.post("/usuarios/login", { email, password });
         if (response.data) {
           const mockSession = {
             user: { email, id: response.data.user?.id || "local-auth" },
             access_token: response.data.user?.token || "local-mock-token",
           };
-          if (supabase.auth._updateMockSession)
-            supabase.auth._updateMockSession(mockSession);
           setSession(mockSession);
+          if (mockSession.user) {
+            lastFetchedId.current = null;
+            await fetchProfile(mockSession.user);
+          }
         }
         return response.data;
       }
       throw err;
     }
-  };
+  }, [fetchProfile]);
 
-  const register = async (email, password, nombre, extraData = {}) => {
+  const register = useCallback(async (email, password, nombre, extraData = {}) => {
     try {
       const redirectUrl = "https://matemas.vercel.app/auth/callback";
       setLoading(true);
@@ -225,15 +276,16 @@ export const AuthProvider = ({ children }) => {
           emailRedirectTo: redirectUrl,
         },
       });
+
       if (error) throw error;
+
+      // Después del registro, el usuario debe ser redirigido al onboarding
       setLoading(false);
       return data;
     } catch (err) {
       setLoading(false);
       if (err.message === "SUPABASE_UNAVAILABLE_MOCK" || err.status === 400) {
-        console.warn(
-          "⚠️ Supabase no disponible. Entrando en modo de autenticación local (Mock)",
-        );
+        console.warn("⚠️ Supabase no disponible. Modo de autenticación local");
         const response = await api.post("/usuarios/registro", {
           uid: "mock-" + Date.now(),
           email,
@@ -247,12 +299,16 @@ export const AuthProvider = ({ children }) => {
             access_token: "local-mock-token",
           };
           setSession(mockSession);
+          if (mockSession.user) {
+            lastFetchedId.current = null;
+            await fetchProfile(mockSession.user);
+          }
         }
         return response.data;
       }
       throw err;
     }
-  };
+  }, [fetchProfile]);
 
   const loginWithGoogle = useCallback(async (redirectTo) => {
     try {
@@ -275,34 +331,39 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // ✅ Valor del contexto con todas las propiedades necesarias
   const value = useMemo(
     () => ({
       user: session?.user ?? null,
       profile,
       token: session?.access_token ?? null,
-      isAuthenticated: !!session,
-      login,
-      loginWithGoogle,
-      register,
-      logout,
+      isAuthenticated: !!session && !!profile,
+      isNewUser,
       loading,
       googleLoading,
       initialized,
-      refreshProfile: () => session?.user && fetchProfile(session.user)
+      login,
+      register,
+      logout,
+      loginWithGoogle,
+      completeOnboarding,
+      refreshProfile: () => session?.user && fetchProfile(session.user),
+      // ✅ Utilidades para el enrutamiento
+      shouldShowOnboarding: isNewUser && !!session && !!profile,
+      shouldShowDashboard: !isNewUser && !!session && !!profile,
+      shouldShowLogin: !session && !loading && initialized,
     }),
-    [session, profile, login, loginWithGoogle, register, logout, loading, googleLoading, initialized, fetchProfile]
+    [session, profile, isNewUser, loading, googleLoading, initialized,
+      login, register, logout, loginWithGoogle, completeOnboarding, fetchProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error('useAuth debe usarse dentro de AuthProvider');
   }
-
   return context;
 };
