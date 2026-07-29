@@ -351,7 +351,7 @@ export const AuthProvider = ({ children }) => {
       user: session?.user ?? null,
       profile,
       token: session?.access_token ?? null,
-      isAuthenticated: !!session && !!profile,
+      isAuthenticated: !!session,
       isNewUser,
       loading,
       registerLoading,

@@ -30,23 +30,31 @@ import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 
 // ✅ Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children, requireOnboarding = false }) => {
-  const { isAuthenticated, shouldShowOnboarding, loading, initialized } = useAuth();
+  const { user, profile, shouldShowOnboarding, loading, initialized } = useAuth();
   const location = useLocation();
 
   // ⏳ Esperar a que termine la inicialización
   if (loading || !initialized) {
-    return <div className="flex items-center justify-center h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>;
+    return <LoadingSpinner message="Validando sesión..." />;
   }
 
   // 🔐 Si no está autenticado, redirigir a login
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
-  // 🎯 Si requiere onboarding y el usuario es nuevo, redirigir
-  if (requireOnboarding && shouldShowOnboarding) {
+  // ⏳ Si hay sesión pero aún no llega el perfil, evitar rebote a login/dashboard.
+  if (!profile) {
+    return <LoadingSpinner message="Cargando tu perfil..." />;
+  }
+
+  // 🎯 Ruta exclusiva para onboarding: si ya completó, enviar al dashboard.
+  if (requireOnboarding) {
+    return shouldShowOnboarding ? children : <Navigate to="/dashboard" replace />;
+  }
+
+  // 🎯 Si todavía necesita onboarding, cualquier otra ruta protegida debe ir allí.
+  if (shouldShowOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
 
@@ -56,7 +64,7 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
 // ✅ Componente para rutas públicas (no autenticadas)
 const PublicRoute = ({ children, redirectAuthenticated = true }) => {
-  const { isAuthenticated, shouldShowOnboarding, loading, initialized, registerLoading } = useAuth();
+  const { user, profile, shouldShowOnboarding, loading, initialized, registerLoading } = useAuth();
 
   // ⏳ Esperar a que termine la inicialización
   if (loading || !initialized) {
@@ -69,8 +77,13 @@ const PublicRoute = ({ children, redirectAuthenticated = true }) => {
   }
 
   // 🔓 Si no está autenticado, mostrar la ruta pública
-  if (!isAuthenticated) {
+  if (!user) {
     return children;
+  }
+
+  // ⏳ Hay sesión activa pero todavía se está resolviendo el perfil.
+  if (!profile) {
+    return <LoadingSpinner message="Cargando tu perfil..." />;
   }
 
   // 🔒 Si está autenticado y debe redirigir
