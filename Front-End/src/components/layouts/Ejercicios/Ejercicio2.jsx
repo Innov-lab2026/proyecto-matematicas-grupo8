@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from "react";
-import ButtonBack from "../../ui/ButtonBack/ButtonBack";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react";
 import ButtonContinue from "../../ui/ButtonContinue/ButtonContinue";
 import "./Ejercicio.css";
 import HeaderDesafio from "../Desafios/headerDesafio/HeaderDesafio";
 import HeaderMate from "../HeaderMate/HeaderMate";
+import { MascotWidget } from "../../../mascotas/components/MascotWidget";
+import { useMascotContext } from "../../../mascotas/core/MascotProvider";
 
 function EjercicioChoice({
   pregunta,
   imagenUrl,
   opciones = [], // [{ id, texto, esCorrecta }]
-  onBack,
   onContinue,
   onResponder, // (opcionId) => void — informa al padre para registrar el progreso
+  mascotPosition = "bottom-left",
+  mascotSize = 160,
 }) {
+  const isMobile = window.innerWidth <= 900;
   const datosChoiceDePrueba = {
     pregunta: "¿Cuánto es el 25% de 300?",
     opciones: [
@@ -29,17 +33,25 @@ function EjercicioChoice({
 
   const [seleccionado, setSeleccionado] = useState(null);
   const [esCorrecto, setEsCorrecto] = useState(null);
+  const { react, setState } = useMascotContext();
 
   useEffect(() => {
     setSeleccionado(null);
     setEsCorrecto(null);
-  }, [preguntaActual]);
+    setState("idle");
+  }, [preguntaActual, setState]);
 
   const manejarSeleccion = (opcion) => {
     if (esCorrecto) return;
 
     setSeleccionado(opcion.id);
     setEsCorrecto(opcion.esCorrecta);
+
+    if (opcion.esCorrecta) {
+      react("celebration", "¡Excelente! Elegiste la opción correcta.");
+    } else {
+      react("sad", "Casi. Volvé a intentarlo, vos podés.");
+    }
 
     if (onResponder) {
       onResponder(opcion.id);
@@ -48,6 +60,12 @@ function EjercicioChoice({
 
   return (
     <div className="ejercicio-page-container">
+      <MascotWidget
+        size={isMobile ? 90 : mascotSize}
+        position={mascotPosition}
+        showBubble={true}
+      />
+
       <main className="ejercicio-page-content">
         <HeaderMate />
         <HeaderDesafio progreso={100} />

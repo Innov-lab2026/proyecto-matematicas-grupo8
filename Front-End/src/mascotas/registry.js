@@ -18,6 +18,7 @@ export function getMascotConfig(id) {
 
 export function getRandomDialog(id, moment) {
   const config = MASCOT_REGISTRY[id];
+  if (!config?.dialogs) return null;
   const options = config.dialogs[moment];
   if (!options || options.length === 0) return null;
   return options[Math.floor(Math.random() * options.length)];

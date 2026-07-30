@@ -1,6 +1,7 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Oval } from "react-loader-spinner";
 import SectionItem from "./SectionItem";
 import ModalConfirmacion from "./ModalConfirmacion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
@@ -16,11 +17,17 @@ export default function CursoSection() {
   const [, setScrollDirection] = useState(0);
   const isTransitioning = useRef(false);
   const [lecciones, setLecciones] = useState([]);
+  const desafioKey = String(profile?.desafioActualId ?? "all");
+  const [desafioCargadoKey, setDesafioCargadoKey] = useState(null);
+  const loadingLecciones = desafioCargadoKey !== desafioKey;
 
   useEffect(() => {
+    let activo = true;
+
     api
       .get("/secciones")
       .then((res) => {
+        if (!activo) return;
         let secciones = res.data || [];
         if (profile?.desafioActualId) {
           secciones = secciones.filter(
@@ -30,9 +37,19 @@ export default function CursoSection() {
         const conTitulo = secciones.map((s) => ({ ...s, titulo: s.nombre }));
         setLecciones(conTitulo);
         setCurrentIndex(0);
+        setDesafioCargadoKey(desafioKey);
       })
-      .catch((err) => console.error("Error al cargar secciones:", err));
-  }, [profile?.desafioActualId]);
+      .catch((err) => {
+        if (!activo) return;
+        console.error("Error al cargar secciones:", err);
+        setLecciones([]);
+        setDesafioCargadoKey(desafioKey);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, [profile?.desafioActualId, desafioKey]);
 
   // Estados para touch events
   const [touchStartY, setTouchStartY] = useState(0);
@@ -224,10 +241,59 @@ export default function CursoSection() {
             alignItems: "flex-end",
             justifyContent: "center",
             position: "relative",
-            width: isMobile ? "100%" : "75%",
+            width: "100%",
             height: "100%",
           }}
         >
+          <AnimatePresence>
+            {loadingLecciones && (
+              <motion.div
+                key="loader-secciones"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 120,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.75rem",
+                  backgroundColor: "rgba(255,255,255,0.85)",
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: 6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -4 }}
+                  transition={{ duration: 0.22, ease: "easeOut" }}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <Oval
+                    height={56}
+                    width={56}
+                    color="#16a34a"
+                    secondaryColor="#bbf7d0"
+                    strokeWidth={5}
+                    strokeWidthSecondary={5}
+                    ariaLabel="cargando-secciones"
+                  />
+                  <span style={{ color: "#14532d", fontWeight: 600 }}>
+                    Cargando secciones...
+                  </span>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {lecciones.map((leccion, index) => (
             <SectionItem
               currentIndex={currentIndex}

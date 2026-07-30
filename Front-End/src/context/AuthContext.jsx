@@ -2,8 +2,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { supabase } from '../config/supabaseClient';
 import api from '../config/api';
+import { MASCOT_LIST } from '../mascotas';
 
 const AuthContext = createContext(undefined);
+
+const DEFAULT_MASCOT = 'multi';
+
+const normalizeMascot = (mascotId) => {
+  if (typeof mascotId !== 'string') return DEFAULT_MASCOT;
+
+  const normalized = mascotId.trim().toLowerCase();
+  return MASCOT_LIST.includes(normalized) ? normalized : DEFAULT_MASCOT;
+};
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
@@ -33,10 +43,12 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchProfile = useCallback(async (user) => {
+  const fetchProfile = useCallback(async (user, options = {}) => {
+    const { force = false } = options;
+
     if (!user?.id || isFetching.current) return;
 
-    if (profile?.id === user.id && lastFetchedId.current === user.id) {
+    if (!force && profile?.id === user.id && lastFetchedId.current === user.id) {
       console.log(`✅ Perfil ya cargado para ${user.id}`);
       return;
     }
@@ -54,7 +66,12 @@ export const AuthProvider = ({ children }) => {
       const data = response.data;
 
       if (data) {
-        setProfile(data);
+        const normalizedProfile = {
+          ...data,
+          mascota: normalizeMascot(data.mascota),
+        };
+
+        setProfile(normalizedProfile);
         lastFetchedId.current = user.id;
 
         const hasOnboardingData =
@@ -71,6 +88,7 @@ export const AuthProvider = ({ children }) => {
         console.log(`   📊 Puntos: ${data.puntos}`);
         console.log(`   📝 Edad: ${data.edad || 'No definida'}`);
         console.log(`   🎯 Desafío: ${data.desafio || 'No definido'}`);
+        console.log(`   🐾 Mascota: ${normalizedProfile.mascota}`);
         console.log(`   🆕 ¿Usuario nuevo? ${isNew ? 'SÍ' : 'NO'}`);
       }
     } catch (error) {
@@ -247,6 +265,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error("SUPABASE_UNAVAILABLE");
       }
 
+      // Asegura estado de sesión local inmediatamente para que los guards redirijan.
+      if (data?.session) {
+        setSession(data.session);
+      } else if (data?.user) {
+        setSession((prev) => prev ?? { user: data.user, access_token: null });
+      }
+
       if (data.user) {
         lastFetchedId.current = null;
         await fetchProfile(data.user);
@@ -362,7 +387,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       loginWithGoogle,
       completeOnboarding,
-      refreshProfile: () => session?.user && fetchProfile(session.user),
+      refreshProfile: () => session?.user && fetchProfile(session.user, { force: true }),
       shouldShowOnboarding: isNewUser && !!session && !!profile,
       shouldShowDashboard: !isNewUser && !!session && !!profile,
       shouldShowLogin: !session && initialized && !loading,

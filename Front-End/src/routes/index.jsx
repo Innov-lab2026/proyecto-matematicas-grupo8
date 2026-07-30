@@ -45,7 +45,7 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
   // ⏳ Si hay sesión pero aún no llega el perfil, evitar rebote a login/dashboard.
   if (!profile) {
-    return <LoadingSpinner message="Cargando tu perfil..." />;
+    return requireOnboarding ? children : <Navigate to="/onboarding" replace />;
   }
 
   // 🎯 Ruta exclusiva para onboarding: si ya completó, enviar al dashboard.
@@ -83,7 +83,7 @@ const PublicRoute = ({ children, redirectAuthenticated = true }) => {
 
   // ⏳ Hay sesión activa pero todavía se está resolviendo el perfil.
   if (!profile) {
-    return <LoadingSpinner message="Cargando tu perfil..." />;
+    return <Navigate to="/onboarding" replace />;
   }
 
   // 🔒 Si está autenticado y debe redirigir
@@ -102,14 +102,7 @@ export default function AppRouter() {
 
   // ⏳ Loading global mientras se inicializa la autenticación
   if (loading || !initialized) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-500 mx-auto"></div>
-          <p className="text-white mt-4">Iniciando sesión...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Iniciando sesión..." />;
   }
 
   return (
