@@ -9,14 +9,13 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Header from "../../src/components/layouts/header/Header.jsx";
 import RecuperarContrasena from "./RecuperarContrasena.jsx";
 // Hook personalizado para manejar el estado del formulario de inicio de sesión
 const useLoginForm = () => {
-  const navigate = useNavigate();
-  const { login, loginWithGoogle, googleLoading, profile } = useAuth();
+  const { login, loginWithGoogle, googleLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -33,15 +32,6 @@ const useLoginForm = () => {
       setPassword(value);
     }
   };
-
-  useEffect(() => {
-    if(profile && (profile?.sentimiento || profile?.desafio || profile?.edad)) {
-        navigate("/dashboard", { replace: true });
-    } else if(profile) {
-        navigate("/onboarding", { replace: true });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile])
 
   const handleSubmit = async (e) => {
     e.preventDefault();

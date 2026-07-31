@@ -7,7 +7,6 @@ import {
 } from "react-router-dom";
 
 import Register from "../pages/Register";
-
 import Landing from '../pages/Landing.jsx';
 import Dashboard from '../pages/Dashboard.jsx';
 import Profile from '../pages/Profile';
@@ -27,67 +26,104 @@ import MixtoPage from '../pages/Mixto.jsx';
 import RankingPage from '../pages/Ranking.jsx';
 import Configuracion from '../components/layouts/Configuracion/Configuracion.jsx';
 import Perfil from '../components/layouts/Perfil/Perfil.jsx';
+import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 
-// Componente para proteger rutas autenticadas
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+// ✅ Componente para proteger rutas autenticadas
+const ProtectedRoute = ({ children, requireOnboarding = false }) => {
+  const { user, profile, shouldShowOnboarding, loading, initialized } = useAuth();
   const location = useLocation();
+  console.log({ user, profile, shouldShowOnboarding, loading, initialized });
+  // ⏳ Esperar a que termine la inicialización
+  if (loading || !initialized) {
+    return <LoadingSpinner message="Validando sesión..." />;
+  }
 
-  return isAuthenticated ? (
-    children
-  ) : (
-    <Navigate to="/login" replace state={{ from: location.pathname }} />
-  );
+  // 🔐 Si no está autenticado, redirigir a login
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  }
+
+  // ⏳ Si hay sesión pero aún no llega el perfil, evitar rebote a login/dashboard.
+  if (!profile) {
+    return <LoadingSpinner message="Cargando tu perfil..." />;
+  }
+
+  // 🎯 Ruta exclusiva para onboarding: si ya completó, enviar al dashboard.
+  if (requireOnboarding) {
+    return shouldShowOnboarding ? children : <Navigate to="/dashboard" replace />;
+  }
+
+  // 🎯 Si todavía necesita onboarding, cualquier otra ruta protegida debe ir allí.
+  if (shouldShowOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // ✅ Si todo está bien, mostrar la ruta
+  return children;
 };
 
-// Componente para redireccionar si ya está autenticado
-const PublicRoute = ({ children, forceRedirect = true }) => {
-  const { isAuthenticated, profile } = useAuth();
+// ✅ Componente para rutas públicas (no autenticadas)
+const PublicRoute = ({ children, redirectAuthenticated = true }) => {
+  const { user, profile, shouldShowOnboarding, loading, initialized, registerLoading } = useAuth();
 
-    // Solo redireccionamos si hay sesión Y perfil cargado.
-    // Si hay sesión pero no perfil (error de red), dejamos que vea la página pública.
-    
-    if(isAuthenticated && profile && forceRedirect) {
-        if(profile?.sentimiento || profile?.desafio || profile?.edad) {
-            return <Navigate to="/onboarding" /> 
-        }
-        
-        return <Navigate to="/onboarding" />
+  // ⏳ Esperar a que termine la inicialización
+  if (loading || !initialized) {
+    return <LoadingSpinner message="Iniciando sesión..." />;
+  }
+
+  // ⏳ Mostrar spinner durante el registro
+  if (registerLoading) {
+    return <LoadingSpinner message="Creando tu cuenta..." />;
+  }
+
+  // 🔓 Si no está autenticado, mostrar la ruta pública
+  if (!user) {
+    return children;
+  }
+
+  // ⏳ Hay sesión activa pero todavía se está resolviendo el perfil.
+  if (!profile) {
+    return <LoadingSpinner message="Cargando tu perfil..." />;
+  }
+
+  // 🔒 Si está autenticado y debe redirigir
+  if (redirectAuthenticated) {
+    if (shouldShowOnboarding) {
+      return <Navigate to="/onboarding" replace />;
     }
+    return <Navigate to="/dashboard" replace />;
+  }
 
-    return children
+  return children;
 };
 
 export default function AppRouter() {
+  const { loading, initialized } = useAuth();
+
+  // ⏳ Loading global mientras se inicializa la autenticación
+  if (loading || !initialized) {
+    return <LoadingSpinner message="Iniciando sesión..." />;
+  }
+
   return (
     <Router>
       <Routes>
-        {/* Rutas públicas */}
+        {/* 🌐 Rutas públicas (siempre accesibles) */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/TermsOfService" element={<TermsOfService />} />
+        <Route path="/nosotros" element={<Nosotros />} />
+
+        {/* 📄 Landing - Página principal pública */}
         <Route
           path="/"
           element={
-            <PublicRoute forceRedirect={false}>
+            <PublicRoute redirectAuthenticated={false}>
               <Landing />
             </PublicRoute>
           }
         />
-        <Route
-          path="/nosotros"
-          element={
-            <PublicRoute>
-              <Nosotros />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/TermsOfService"
-          element={
-            <PublicRoute>
-              <TermsOfService />
-            </PublicRoute>
-          }
-        />
 
+        {/* 🚀 Started - Pre-onboarding */}
         <Route
           path="/started"
           element={
@@ -97,6 +133,7 @@ export default function AppRouter() {
           }
         />
 
+        {/* 🔐 Login y Register - Solo para no autenticados */}
         <Route
           path="/login"
           element={
@@ -105,9 +142,6 @@ export default function AppRouter() {
             </PublicRoute>
           }
         />
-
-        <Route path="/auth/callback" element={<AuthCallback />} />
-
         <Route
           path="/register"
           element={
@@ -117,28 +151,24 @@ export default function AppRouter() {
           }
         />
 
-        {/* Rutas públicas para previsualización */}
+        {/* 📚 Rutas de previsualización (públicas) */}
         <Route path="/desafios" element={<Desafios />} />
-
-        <Route path="/ejercicios" element={<ModuloEjercicios />} />
-
+        <Route path="/ejercicios/:seccionId?" element={<ModuloEjercicios />} />
         <Route path="/ejercicios2" element={<DragConstraints />} />
 
-        {/* Rutas autenticadas */}
+        {/* 🔒 Rutas protegidas (requieren autenticación) */}
+
+        {/* 🎯 Onboarding - Solo para usuarios nuevos */}
         <Route
           path="/onboarding"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireOnboarding>
               <Onboarding />
             </ProtectedRoute>
           }
         />
 
-        {/* Ruta de desarrollo para previsualizar Onboarding sin autenticación */}
-        {import.meta.env.DEV && (
-          <Route path="/dev-Dashboard" element={<Perfil />} />
-        )}
-
+        {/* 📊 Dashboard - Ruta principal después del onboarding */}
         <Route
           path="/dashboard"
           element={
@@ -148,6 +178,7 @@ export default function AppRouter() {
           }
         />
 
+        {/* 👤 Perfil y Configuración */}
         <Route
           path="/profile"
           element={
@@ -156,53 +187,59 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <Perfil />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/configuracion"
+          element={
+            <ProtectedRoute>
+              <Configuracion />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/mixto"
-                    element={
-                        <ProtectedRoute>
-                            <MixtoPage />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* 🏆 Ranking */}
+        <Route
+          path="/ranking"
+          element={
+            <ProtectedRoute>
+              <RankingPage />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/ranking"
-                    element={
-                        <ProtectedRoute>
-                            <RankingPage />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* 🎮 Mixto y Ejercicios */}
+        <Route
+          path="/mixto"
+          element={
+            <ProtectedRoute>
+              <MixtoPage />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/configuracion"
-                    element={
-                        <ProtectedRoute>
-                            <Configuracion />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* 🔧 Administración */}
+        <Route
+          path="/admin-be"
+          element={
+            <ProtectedRoute>
+              <ConsolaAdmin />
+            </ProtectedRoute>
+          }
+        />
 
-                <Route
-                    path="/profile"
-                    element={
-                        <ProtectedRoute>
-                            <Profile />
-                        </ProtectedRoute>
-                    }
-                />
+        {/* 🛠️ Ruta de desarrollo */}
+        {import.meta.env.DEV && (
+          <Route path="/dev-Dashboard" element={<Perfil />} />
+        )}
 
-                <Route
-                    path="/perfil"
-                    element={
-                        <ProtectedRoute>
-                            <Perfil />
-                        </ProtectedRoute>
-                    }
-                />
-
-        {/* Ruta 404 */}
+        {/* ❌ 404 - Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

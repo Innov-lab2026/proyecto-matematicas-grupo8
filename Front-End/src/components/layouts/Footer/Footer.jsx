@@ -31,7 +31,11 @@ const Footer = () => {
                     {/* Columna 1 - Logo y descripción */}
                     <Col xs={12} sm={12} md={12} lg={4} className="mb-4 mb-lg-0">
                         <div className="footer-section d-flex align-items-center align-items-lg-start flex-column gap-3">
-                            <p className="footer-brand m-0">Logo</p>
+                            <img 
+                                src="/logo.png"
+                                alt="Logo de MATE+"
+                                style={{ width: 100, height: 'auto', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)', borderRadius: '100%' }}
+                            />
                             <p className="footer-location w-75 text-center text-lg-start">
                                 Nuestra visión es hacerte el aprendizaje más fácil y ayudarte a dominar las matemáticas que necesitás para potenciar tu día a día.
                             </p>
@@ -59,8 +63,8 @@ const Footer = () => {
                     <Col xs={4} sm={4} md={4} lg={2}>
                         <Nav className="footer-section d-flex align-items-center flex-column gap-2">
                             <p className="footer-social-title m-0">Acerca</p>
-                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ textWrap: "no-wrap" }}>¿Qué es MATE+?</Nav.Link>
-                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ textWrap: "no-wrap" }}>Sobre nosotros</Nav.Link>
+                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ whiteSpace: "nowrap" }}>¿Qué es MATE+?</Nav.Link>
+                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ whiteSpace: "nowrap" }}>Sobre nosotros</Nav.Link>
                         </Nav>
                     </Col>
 

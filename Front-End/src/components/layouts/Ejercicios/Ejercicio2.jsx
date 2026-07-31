@@ -1,111 +1,137 @@
-import React, { useState, useEffect } from 'react';
-import HeaderEjercicios from '../../layouts/Header/Header';
-import ButtonBack from '../../ui/ButtonBack/ButtonBack';
-import ButtonContinue from '../../ui/ButtonContinue/ButtonContinue';
-import './Ejercicios.css';
-import HeaderDesafio from '../Desafios/headerDesafio/HeaderDesafio';
-import HeaderMate from '../HeaderMate/HeaderMate';
-
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from "react";
+import ButtonContinue from "../../ui/ButtonContinue/ButtonContinue";
+import "./Ejercicio.css";
+import HeaderDesafio from "../Desafios/headerDesafio/HeaderDesafio";
+import HeaderMate from "../HeaderMate/HeaderMate";
+import { MascotWidget } from "../../../mascotas/components/MascotWidget";
+import { useMascotContext } from "../../../mascotas/core/MascotProvider";
 
 function EjercicioChoice({
-    pregunta,
-    opciones = [],
-    respuestaCorrecta,
-    onBack,
-    onContinue
+  pregunta,
+  imagenUrl,
+  opciones = [], // [{ id, texto, esCorrecta }]
+  onContinue,
+  onResponder, // (opcionId) => void — informa al padre para registrar el progreso
+  mascotPosition = "bottom-left",
+  mascotSize = 160,
 }) {
+  const isMobile = window.innerWidth <= 900;
+  const datosChoiceDePrueba = {
+    pregunta: "¿Cuánto es el 25% de 300?",
+    opciones: [
+      { id: -1, texto: "75", esCorrecta: true },
+      { id: -2, texto: "100", esCorrecta: false },
+      { id: -3, texto: "50", esCorrecta: false },
+    ],
+  };
 
-    const datosChoiceDePrueba = {
-        pregunta: "¿Cuánto es el 25% de 300?",
-        opciones: ["75", "100", "50"],
-        respuestaCorrecta: "75"
-    };
+  const preguntaActual = pregunta || datosChoiceDePrueba.pregunta;
+  const opcionesActuales = opciones.length
+    ? opciones
+    : datosChoiceDePrueba.opciones;
 
-    const preguntaActual = pregunta || datosChoiceDePrueba.pregunta;
-    const opcionesActuales = opciones.length ? opciones : datosChoiceDePrueba.opciones;
-    const respuestaCorrectaActual = respuestaCorrecta || datosChoiceDePrueba.respuestaCorrecta;
+  const [seleccionado, setSeleccionado] = useState(null);
+  const [esCorrecto, setEsCorrecto] = useState(null);
+  const { react, setState } = useMascotContext();
 
-    const [seleccionado, setSeleccionado] = useState(null);
-    const [esCorrecto, setEsCorrecto] = useState(null);
+  useEffect(() => {
+    setSeleccionado(null);
+    setEsCorrecto(null);
+    setState("idle");
+  }, [preguntaActual, setState]);
 
-    // Reiniciar los estados internos si la pregunta cambia en el mismo componente
-    useEffect(() => {
-        setSeleccionado(null);
-        setEsCorrecto(null);
-    }, [preguntaActual]);
+  const manejarSeleccion = (opcion) => {
+    if (esCorrecto) return;
 
-    const manejarSeleccion = (opcion) => {
-        // Si ya contestó correctamente, bloquear cambios adicionales (opcional)
-        if (esCorrecto) return;
+    setSeleccionado(opcion.id);
+    setEsCorrecto(opcion.esCorrecta);
 
-        setSeleccionado(opcion);
+    if (opcion.esCorrecta) {
+      react("celebration", "¡Excelente! Elegiste la opción correcta.");
+    } else {
+      react("sad", "Casi. Volvé a intentarlo, vos podés.");
+    }
 
-        if (opcion === respuestaCorrecta) {
-            setEsCorrecto(true);
-        } else {
-            setEsCorrecto(false);
-        }
-    };
+    if (onResponder) {
+      onResponder(opcion.id);
+    }
+  };
 
-    return (
-        <div className="ejercicio-page-container">
-           
-            <main className="ejercicio-page-content">
-                <HeaderMate />
-                <HeaderDesafio progreso={100}  />
+  return (
+    <div className="ejercicio-page-container">
+      <MascotWidget
+        size={isMobile ? 90 : mascotSize}
+        position={mascotPosition}
+        showBubble={true}
+      />
 
-                {/* Contenedor central enfocado en la pregunta Choice */}
-                <div className="ejercicio-choice-container">
-                    <h2 className="ejercicio-pregunta-centered">{preguntaActual}</h2>
+      <main className="ejercicio-page-content">
+        <HeaderMate />
+        <HeaderDesafio progreso={100} />
 
-                    {/* Listado de Opciones Múltiples */}
-                    <div className="options-grid">
-                        {opcionesActuales.map((opcion, index) => {
-                            // Determinar clases dinámicas para cada botón
-                            let buttonClass = "option-button";
-                            if (seleccionado === opcion) {
-                                buttonClass += esCorrecto ? " option-correct" : " option-incorrect";
-                            }
+        <div className="ejercicio-choice-container">
+          <h2 className="ejercicio-pregunta-centered">{preguntaActual}</h2>
 
-                            return (
-                                <button
-                                    key={index}
-                                    className={buttonClass}
-                                    onClick={() => manejarSeleccion(opcion)}
-                                    type="button"
-                                >
-                                    {opcion}
-                                </button>
-                            );
-                        })}
-                    </div>
+          {imagenUrl && (
+            <div
+              className="card-imagen-wrapper"
+              style={{ marginBottom: "2rem" }}
+            >
+              <img
+                src={imagenUrl}
+                alt="Material del ejercicio"
+                className="ejercicio-imagen"
+              />
+            </div>
+          )}
 
-                    {/* Carteles Mensajes de Feedback */}
-                    <div className="feedback-wrapper">
-                        {esCorrecto === true && (
-                            <div className="alert-message alert-success animate-pop">
-                                <span>🎉 ¡Excelente trabajo! Respuesta correcta. ¡Sigue así!</span>
-                            </div>
-                        )}
-                        {esCorrecto === false && (
-                            <div className="alert-message alert-danger animate-pop">
-                                <span>💪 ¡Casi lo tenés! Intenta analizar la pregunta nuevamente.</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
+          <div className="options-grid">
+            {opcionesActuales.map((opcion) => {
+              let buttonClass = "option-button";
+              if (seleccionado === opcion.id) {
+                buttonClass += esCorrecto
+                  ? " option-correct"
+                  : " option-incorrect";
+              }
 
-                {/* Barra inferior con el botón continuar */}
-                <div className="ejercicio-footer">
-                    <ButtonContinue
-                        onClick={onContinue}
-                        disabled={esCorrecto !== true} // Deshabilitado hasta que seleccione la correcta
-                    />
-                </div>
-            </main>
+              return (
+                <button
+                  key={opcion.id}
+                  className={buttonClass}
+                  onClick={() => manejarSeleccion(opcion)}
+                  type="button"
+                >
+                  {opcion.texto}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="feedback-wrapper">
+            {esCorrecto === true && (
+              <div className="alert-message alert-success animate-pop">
+                <span>
+                  🎉 ¡Excelente trabajo! Respuesta correcta. ¡Sigue así!
+                </span>
+              </div>
+            )}
+            {esCorrecto === false && (
+              <div className="alert-message alert-danger animate-pop">
+                <span>
+                  💪 ¡Casi lo tienes! Intenta analizar la pregunta nuevamente.
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-    );
+
+        <div className="ejercicio-footer">
+          <ButtonContinue onClick={onContinue} disabled={esCorrecto !== true} />
+        </div>
+      </main>
+    </div>
+  );
 }
 
 export default EjercicioChoice;
-

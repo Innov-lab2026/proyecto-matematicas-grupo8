@@ -79,14 +79,13 @@ const useRegisterForm = () => {
     setShowProfileModal(true);
   };
   const handleCompleteProfile = async () => {
-    if (!nombre ||  !genero ) {
+    if (!nombre || !genero) {
       setToastMessage("❌ Completá todos los campos del perfil");
       setToastVariant("danger");
       setShowToast(true);
       return;
     }
 
-   
     try {
       await register(email, password, nombre, {
         genero,
@@ -547,7 +546,7 @@ const RegisterPage = () => {
               }}
             />
           </Form.Group>
-        
+
           <Form.Group className="mb-3">
             <Form.Select
               value={genero}

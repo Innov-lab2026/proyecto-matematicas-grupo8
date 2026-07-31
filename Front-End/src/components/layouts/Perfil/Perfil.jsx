@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Header from '../Desafios/headerDash/HeaderDash'; 
 import fondoCuadrille from '../../../assets/fondo_consejo.png';
 import fotoPerfilUser from '../../../assets/Foto_perfil.png'; 

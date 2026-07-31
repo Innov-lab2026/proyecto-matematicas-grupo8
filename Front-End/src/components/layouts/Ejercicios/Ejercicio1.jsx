@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useRef } from 'react';
 import ButtonContinue from '../../ui/ButtonContinue/ButtonContinue';
 import { MascotWidget } from '../../../mascotas/components/MascotWidget';
@@ -6,11 +7,12 @@ import HeaderDesafio from '../Desafios/headerDesafio/HeaderDesafio';
 import HeaderMate from '../HeaderMate/HeaderMate';
 import { useMascotContext } from '../../../mascotas/core/MascotProvider';
 
-function EjercicioInput({
-  pregunta,
-  imagenUrl,
+function EjercicioInput({ 
+  pregunta, 
+  imagenUrl, 
   respuestaCorrecta,
   onContinue,
+  onResponder, 
   mascotPosition = 'bottom-left',
   mascotSize = 160,
   maxIntentos = 3,
@@ -116,6 +118,10 @@ function EjercicioInput({
       setYaDioPista(false);
       setState('idle');
       onContinue();
+    }
+
+    if (onResponder) {
+      onResponder(inputValue);
     }
   };
 

@@ -111,7 +111,7 @@ const DashboardPage = () => {
                         boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                         borderTopLeftRadius: '0',
                         borderBottomLeftRadius: '0',
-                        zIndex: 100,
+                        zIndex: 150,
                         cursor: 'pointer'
                     }}
                 >
