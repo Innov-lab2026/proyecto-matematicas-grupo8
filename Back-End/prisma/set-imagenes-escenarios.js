@@ -1,5 +1,8 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import prisma from '../src/config/prisma.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 if (!SUPABASE_URL) throw new Error("Falta SUPABASE_URL en el entorno");

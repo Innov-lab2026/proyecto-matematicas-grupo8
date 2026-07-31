@@ -1,9 +1,7 @@
-// Back-End/prisma/seed-ejercicios.js
-// Carga los desafíos de Porcentajes y Geometría (con niveles, ejercicios y opciones) en la DB.
-// Correr con: node prisma/seed-ejercicios.js
-
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../src/config/prisma.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const desafios = [
   {
@@ -134,32 +132,89 @@ const desafios = [
 ];
 
 async function main() {
+  console.log('🚀 Iniciando seed de ejercicios...');
+  
   for (const desafio of desafios) {
     for (const nivel of desafio.niveles) {
-      const seccion = await prisma.seccion.create({
-        data: {
-          nombre: `${desafio.categoria} - ${nivel.nombre}`,
-          descripcion: nivel.descripcion,
-          grado: nivel.grado,
-          puntosRequeridos: 0,
-          puntosRecompensa: 50,
-          umbralAprobacion: 0.66,
-        }
+      const nombreSeccion = `${desafio.categoria} - ${nivel.nombre}`;
+      
+      // 🔍 Buscar si la sección ya existe por nombre
+      let seccion = await prisma.seccion.findFirst({
+        where: { nombre: nombreSeccion }
       });
-      console.log(`✅ Sección creada: ${seccion.nombre} (id ${seccion.id})`);
 
-      for (const ej of nivel.ejercicios) {
-        const escenario = await prisma.escenario.create({
+      if (seccion) {
+        // 📝 Actualizar sección existente
+        seccion = await prisma.seccion.update({
+          where: { id: seccion.id },
           data: {
-            titulo: ej.pregunta.slice(0, 60),
-            descripcion: ej.pregunta,
-            pregunta: ej.pregunta,
-            categoria: desafio.categoria,
-            tipo: 'opcion_multiple',
-            seccionId: seccion.id,
+            descripcion: nivel.descripcion,
+            grado: nivel.grado,
+            puntosRequeridos: 0,
+            puntosRecompensa: 50,
+            umbralAprobacion: 0.66,
+          }
+        });
+        console.log(`🔄 Sección actualizada: ${seccion.nombre} (id ${seccion.id})`);
+      } else {
+        // ✨ Crear nueva sección
+        seccion = await prisma.seccion.create({
+          data: {
+            nombre: nombreSeccion,
+            descripcion: nivel.descripcion,
+            grado: nivel.grado,
+            puntosRequeridos: 0,
+            puntosRecompensa: 50,
+            umbralAprobacion: 0.66,
+          }
+        });
+        console.log(`✅ Sección creada: ${seccion.nombre} (id ${seccion.id})`);
+      }
+
+      // 🔄 Procesar ejercicios
+      for (const ej of nivel.ejercicios) {
+        const tituloEscenario = ej.pregunta.slice(0, 60);
+        
+        // Buscar si el escenario ya existe en esta sección
+        let escenario = await prisma.escenario.findFirst({
+          where: {
+            titulo: tituloEscenario,
+            seccionId: seccion.id
           }
         });
 
+        if (escenario) {
+          // Actualizar escenario existente
+          escenario = await prisma.escenario.update({
+            where: { id: escenario.id },
+            data: {
+              descripcion: ej.pregunta,
+              pregunta: ej.pregunta,
+              categoria: desafio.categoria,
+            }
+          });
+          
+          // Eliminar opciones viejas
+          await prisma.opcion.deleteMany({
+            where: { escenarioId: escenario.id }
+          });
+          console.log(`   ↻ Escenario actualizado: ${tituloEscenario.substring(0, 30)}...`);
+        } else {
+          // Crear nuevo escenario
+          escenario = await prisma.escenario.create({
+            data: {
+              titulo: tituloEscenario,
+              descripcion: ej.pregunta,
+              pregunta: ej.pregunta,
+              categoria: desafio.categoria,
+              tipo: 'opcion_multiple',
+              seccionId: seccion.id,
+            }
+          });
+          console.log(`   ✨ Escenario creado: ${tituloEscenario.substring(0, 30)}...`);
+        }
+
+        // Crear nuevas opciones
         for (let i = 0; i < ej.opciones.length; i++) {
           await prisma.opcion.create({
             data: {
@@ -171,7 +226,7 @@ async function main() {
           });
         }
       }
-      console.log(`   → ${nivel.ejercicios.length} ejercicios cargados`);
+      console.log(`   → ${nivel.ejercicios.length} ejercicios procesados`);
     }
   }
   console.log('🎉 Seed de ejercicios completado.');

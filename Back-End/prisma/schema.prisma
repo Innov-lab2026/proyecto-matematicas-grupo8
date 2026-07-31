@@ -32,6 +32,7 @@ model Usuario {
   lugar              String?
   desafio            String?
   sentimiento        String?
+  mascota            String             @default("multi")
   racha              Int                 @default(0)
   ultimaConexion     DateTime            @default(now())
   progreso           Progreso[]
@@ -40,8 +41,8 @@ model Usuario {
   recursos           Recurso[]
   auditorias         Auditoria[]
   createdAt          DateTime            @default(now())
-  desafioActualId Int?
-  desafioActual   Rama? @relation(fields: [desafioActualId], references: [id])
+  desafioActualId    Int?
+  desafioActual      Rama?               @relation(fields: [desafioActualId], references: [id])
 }
 
 model Auditoria {
