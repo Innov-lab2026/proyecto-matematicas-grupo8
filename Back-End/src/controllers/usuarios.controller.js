@@ -57,6 +57,26 @@ export const registrarUsuario = async (req, res, next) => {
       rolAsignado = "admin";
     }
 
+    // Si quedó un usuario "obsoleto" con el mismo email pero otro uid (p.ej. mock vs Supabase),
+    // lo eliminamos para poder sincronizar con el uid actual de Auth.
+    const existentePorEmail = await prisma.usuario.findUnique({ where: { email } });
+    if (existentePorEmail && existentePorEmail.id !== uid) {
+      console.warn(
+        `⚠️ Usuario obsoleto detectado para ${email}: ${existentePorEmail.id} → ${uid}. Reasignando...`,
+      );
+      await prisma.$transaction([
+        prisma.progreso.deleteMany({ where: { usuarioId: existentePorEmail.id } }),
+        prisma.seccionAprobada.deleteMany({ where: { usuarioId: existentePorEmail.id } }),
+        prisma.recurso.deleteMany({ where: { usuarioId: existentePorEmail.id } }),
+        prisma.auditoria.deleteMany({ where: { usuarioId: existentePorEmail.id } }),
+        prisma.usuario.update({
+          where: { id: existentePorEmail.id },
+          data: { insignias: { set: [] } },
+        }),
+        prisma.usuario.delete({ where: { id: existentePorEmail.id } }),
+      ]);
+    }
+
     const usuario = await prisma.usuario.upsert({
       where: { id: uid },
       update: {
@@ -68,7 +88,7 @@ export const registrarUsuario = async (req, res, next) => {
         lugar: lugarFinal,
         desafio,
         sentimiento,
-        mascota,
+        ...(mascota ? { mascota } : {}),
       },
       create: {
         id: uid,
@@ -81,7 +101,7 @@ export const registrarUsuario = async (req, res, next) => {
         lugar: lugarFinal,
         desafio,
         sentimiento,
-        mascota,
+        mascota: mascota || "multi",
       },
       include: { desafioActual: true },
     });
