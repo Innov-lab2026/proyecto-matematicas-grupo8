@@ -1,14 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
-import LeccionCompleta from "../components/layouts/LeccionCompleta/LeccionCompleta";
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    navigate("/", { replace: true });
+    await logout();
   };
 
   return (

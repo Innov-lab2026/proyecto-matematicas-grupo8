@@ -1,48 +1,86 @@
 import { Stack, Card } from 'react-bootstrap';
+import { motion } from 'framer-motion';
 import './Banner.css';
 
 const Banner = () => {
+    // Variantes para la animación continua
+    const floatJellyVariants = (i) => {
+        return {
+            initial: {
+                scale: 1 * (1 + i * 0.02), // Escala inicial ligeramente diferente para cada ícono
+                rotate: 0 * (1 + i * 0.02), // Rotación inicial ligeramente diferente para cada ícono
+                y: 0 * (1 + i * 0.02), // Posición vertical inicial ligeramente diferente para cada ícono
+            },
+            animate: {
+                scale: [1, 1.02, 0.98, 1.01, 0.99, 1],
+                rotate: [0, 2, -2, 1.5, -1.5, 0],
+                y: [0, -4, 4, -2, 2, 0],
+                transition: {
+                    duration: 5,
+                    ease: "easeInOut",
+                    times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+                    repeat: Infinity,
+                    repeatDelay: 1
+                }
+            }
+        }
+    };
+
     return (
-        <Stack 
-            className="banner-grid justify-content-center align-items-center px-3 py-5" 
-            style={{ 
-                backgroundColor: "black", 
-                color: "#ffffff", 
-                borderTopLeftRadius: "40px", 
-                borderTopRightRadius: "40px" 
+        <Stack
+            className="banner-grid justify-content-center align-items-center px-3 py-5"
+            style={{
+                backgroundColor: "black",
+                color: "#ffffff",
+                borderTopLeftRadius: "40px",
+                borderTopRightRadius: "40px"
             }}
         >
             {data.map((item, index) => (
-                <Card 
-                    key={index} 
-                    className="banner-card text-center p-3 p-md-4 d-flex flex-column align-items-center h-100" 
-                    style={{ 
-                        backgroundColor: "black", 
-                        color: "#ffffff", 
+                <Card
+                    key={index}
+                    className="banner-card text-center p-3 p-md-4 d-flex flex-column align-items-center h-100"
+                    style={{
+                        backgroundColor: "black",
+                        color: "#ffffff",
                         border: "none",
                         width: "100%"
                     }}
                 >
-                    <div className="mb-3">
+                    <motion.div
+                        className="mb-3"
+                        variants={floatJellyVariants(index)}
+                        initial="initial"
+                        animate="animate"
+                        // Retraso diferente para cada ícono
+                        transition={{
+                            delay: index * 0.5 * index
+                        }}
+                        style={{
+                            display: "inline-block",
+                            transformOrigin: "center center"
+                        }}
+                    >
                         {item.icon()}
-                    </div>
+                    </motion.div>
                     <h4 className='m-0 p-0 mb-2' style={{ fontWeight: "600", fontSize: "clamp(18px, 2vw, 24px)" }}>
                         {item.title}
                     </h4>
-                    <p 
-                        className='p-0 mx-auto mb-0' 
-                        style={{ 
+                    <p
+                        className='p-0 mx-auto mb-0'
+                        style={{
                             fontSize: "clamp(13px, 1.2vw, 14px)",
                             maxWidth: "90%",
                             lineHeight: "1.6"
                         }}
-                        dangerouslySetInnerHTML={{ __html: item.subtitle }} 
+                        dangerouslySetInnerHTML={{ __html: item.subtitle }}
                     />
                 </Card>
             ))}
         </Stack>
     );
 };
+
 
 const data = [
     {

@@ -24,6 +24,7 @@ export const registrarUsuario = async (req, res, next) => {
       lugar,
       desafio,
       sentimiento,
+      mascota,
     } = validacion.data;
     const uid = req.body.uid;
 
@@ -67,6 +68,7 @@ export const registrarUsuario = async (req, res, next) => {
         lugar: lugarFinal,
         desafio,
         sentimiento,
+        mascota,
       },
       create: {
         id: uid,
@@ -79,6 +81,7 @@ export const registrarUsuario = async (req, res, next) => {
         lugar: lugarFinal,
         desafio,
         sentimiento,
+        mascota,
       },
       include: { desafioActual: true },
     });
@@ -119,6 +122,7 @@ export const loginUsuario = async (req, res, next) => {
     res.status(200).json({
       message: "Login exitoso",
       user: {
+        ...usuario,
         id: usuario.id,
         email: usuario.email,
         nombre: usuario.nombre,

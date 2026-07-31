@@ -21,9 +21,10 @@ export default function Header({ showHeader, setShowHeader }) {
   };
 
   const handleLogout = async () => {
+    // Salir de rutas protegidas antes de limpiar sesión para evitar salto a /login.
+    navigate('/', { replace: true });
     try {
       await logout();
-      navigate('/');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     }

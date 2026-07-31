@@ -28,18 +28,18 @@ export const AuthProvider = ({ children }) => {
   const initializationAttempted = useRef(false); // ✅ Evita múltiples inicializaciones
 
   const logout = useCallback(async () => {
+    // Limpieza optimista para evitar mostrar el loader global de inicio de sesión.
+    setSession(null);
+    setProfile(null);
+    setIsNewUser(false);
+    lastFetchedId.current = null;
+    setLoading(false);
+    setInitialized(true);
+
     try {
-      setLoading(true);
       await supabase.auth.signOut();
     } catch (err) {
       console.warn("⚠️ Error al cerrar sesión en Supabase, limpiando estado local.", err);
-    } finally {
-      setSession(null);
-      setProfile(null);
-      setIsNewUser(false);
-      lastFetchedId.current = null;
-      setLoading(false);
-      setInitialized(true); // ✅ Asegurar que se marque como inicializado
     }
   }, []);
 

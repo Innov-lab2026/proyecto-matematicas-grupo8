@@ -32,7 +32,7 @@ import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 const ProtectedRoute = ({ children, requireOnboarding = false }) => {
   const { user, profile, shouldShowOnboarding, loading, initialized } = useAuth();
   const location = useLocation();
-
+  console.log({ user, profile, shouldShowOnboarding, loading, initialized });
   // ⏳ Esperar a que termine la inicialización
   if (loading || !initialized) {
     return <LoadingSpinner message="Validando sesión..." />;
@@ -45,7 +45,7 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
   // ⏳ Si hay sesión pero aún no llega el perfil, evitar rebote a login/dashboard.
   if (!profile) {
-    return requireOnboarding ? children : <Navigate to="/onboarding" replace />;
+    return <LoadingSpinner message="Cargando tu perfil..." />;
   }
 
   // 🎯 Ruta exclusiva para onboarding: si ya completó, enviar al dashboard.
@@ -83,7 +83,7 @@ const PublicRoute = ({ children, redirectAuthenticated = true }) => {
 
   // ⏳ Hay sesión activa pero todavía se está resolviendo el perfil.
   if (!profile) {
-    return <Navigate to="/onboarding" replace />;
+    return <LoadingSpinner message="Cargando tu perfil..." />;
   }
 
   // 🔒 Si está autenticado y debe redirigir
