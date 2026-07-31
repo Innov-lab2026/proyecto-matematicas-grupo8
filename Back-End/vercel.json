@@ -1,17 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "framework": null,
   "installCommand": "npm install",
   "buildCommand": "npm run build",
-  "outputDirectory": "public",
   "functions": {
     "api/index.js": {
-      "includeFiles": "node_modules/.prisma/client/**"
+      "includeFiles": "{prisma/**,node_modules/.prisma/client/**,node_modules/@prisma/client/**}"
     }
   },
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Credentials", "value": "true" },
         { "key": "Access-Control-Allow-Origin", "value": "*" },
