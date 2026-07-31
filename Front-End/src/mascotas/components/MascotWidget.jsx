@@ -16,6 +16,7 @@ export function MascotWidget({
 }) {
   const { mascotId, state, currentMessage, isSpeaking, dismissMessage } = useMascotContext();
   const config = getMascotConfig(mascotId);
+  const mascotName = config?.personality?.name || 'Mascota';
 
   const positionClass = position !== 'inline' ? `mascot-widget--${position}` : '';
 
@@ -24,7 +25,7 @@ export function MascotWidget({
       {showBubble && isSpeaking && currentMessage && (
         <SpeechBubble
           message={currentMessage}
-          mascotName={config.personality.name}
+          mascotName={mascotName}
           onDismiss={dismissMessage}
           position={position === 'bottom-left' ? 'left' : 'top'}
         />

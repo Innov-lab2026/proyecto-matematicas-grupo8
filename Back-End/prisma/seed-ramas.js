@@ -1,10 +1,8 @@
-// Back-End/prisma/seed-ramas.js
-// Crea las Ramas a partir de las categorías existentes en Escenario,
-// y asigna cada Seccion a su Rama correspondiente.
-// Correr con: node prisma/seed-ramas.js
+import prisma from '../src/config/prisma.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
 
 async function main() {
   // 1. Obtener todas las categorías únicas existentes en los Escenarios

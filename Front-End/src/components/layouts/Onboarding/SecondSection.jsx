@@ -1,21 +1,110 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../../../context/AuthContext";
-import api from "../../../config/api";
-import { useNavigate } from "react-router-dom";
-import "./onboarding.css";
-import HeaderMate from "../HeaderMate/HeaderMate";
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../config/api';
+import { useNavigate } from 'react-router-dom';
+import './onboarding.css';
+import HeaderMate from '../HeaderMate/HeaderMate';
+import { useMascot } from '../../../mascotas/core/useMascot';
+import { MascotWidget } from '../../../mascotas/components/MascotWidget';
+import { DivisionMascot } from '../../../mascotas/mascotas/division/DivisionMascot';
+import { MultiMascot } from '../../../mascotas/mascotas/multi/MultiMascot';
+import { SumaMascot } from '../../../mascotas/mascotas/suma/SumaMascot';
+import { RestaMascot } from '../../../mascotas/mascotas/resta/RestaMascot';
 
 const initialFormState = {
-  nombre: "",
-  apellidos: "",
-  uid: "",
-  desafio: "",
-  edad: "",
-  genero: "",
-  sentimiento: "",
-  email: "",
+  nombre: '',
+  apellidos: '',
+  uid: '',
+  desafio: '',
+  edad: '',
+  genero: '',
+  sentimiento: '',
+  email: '',
+  mascota: '' // Campo para guardar la mascota seleccionada
 };
 
+// Componente interno que usa el contexto de mascota
+function MascotaSelection() {
+  const { setMascot, react } = useMascot();
+  const [selectedMascota, setSelectedMascota] = useState('');
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  // Modifica la función handleSelectMascota en el componente MascotaSelection
+  const handleSelectMascota = (mascotaId) => {
+    setSelectedMascota(mascotaId);
+    setMascot(mascotaId);
+
+    // Reacción de celebración al seleccionar
+    setShowCelebration(true);
+    react('celebration', `¡${mascotaId} te acompañará!`);
+
+    setTimeout(() => {
+      setShowCelebration(false);
+    }, 1500);
+
+    // Actualizar el formData del padre
+    window.dispatchEvent(new CustomEvent('mascotaSelected', {
+      detail: { mascota: mascotaId },
+      // Añadir esta propiedad para indicar que NO es un submit
+      bubbles: false,
+      cancelable: false
+    }));
+  };
+
+  return (
+    <div className="mascota-selection-container">
+      <div className="mascota-widget-wrapper">
+        <MascotWidget size={160} />
+        {showCelebration && (
+          <div className="mascota-celebration-badge">
+            ✨ ¡Mascota seleccionada! ✨
+          </div>
+        )}
+      </div>
+
+      <div style={{
+        display: "grid",
+        alignItems: "center",
+        justifyContent: "center",
+        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+        gap: "10px",
+        margin: "0 20px"
+      }}>
+        <button
+          className={`mascota-btn ${selectedMascota === 'division' ? 'selected' : ''}`}
+          onClick={() => handleSelectMascota('division')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <DivisionMascot size={100} className="mx-auto" />
+        </button>
+        <button
+          className={`mascota-btn ${selectedMascota === 'multi' ? 'selected' : ''}`}
+          onClick={() => handleSelectMascota('multi')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <MultiMascot size={100} className="mx-auto" />
+        </button>
+        <button
+          className={`mascota-btn ${selectedMascota === 'suma' ? 'selected' : ''}`}
+          onClick={() => handleSelectMascota('suma')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <SumaMascot size={100} className="mx-auto" />
+        </button>
+        <button
+          className={`mascota-btn ${selectedMascota === 'resta' ? 'selected' : ''}`}
+          onClick={() => handleSelectMascota('resta')}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+        >
+          <RestaMascot size={100} className="mx-auto" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Componente principal del onboarding
 function SecondSection() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -26,8 +115,25 @@ function SecondSection() {
     error: "",
     success: "",
   });
+  const [mascotaSeleccionada, setMascotaSeleccionada] = useState(false);
 
   const stepLabels = ["Paso 1", "Paso 2", "Paso 3", "Paso 4"];
+
+  // Escuchar evento de selección de mascota
+  useEffect(() => {
+    const handleMascotaSelected = (event) => {
+      event.preventDefault();
+
+      const { mascota } = event.detail;
+      setFormData(prev => ({ ...prev, mascota }));
+      setMascotaSeleccionada(true);
+    };
+
+    window.addEventListener('mascotaSelected', handleMascotaSelected);
+    return () => {
+      window.removeEventListener('mascotaSelected', handleMascotaSelected);
+    };
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -44,6 +150,11 @@ function SecondSection() {
   };
 
   const nextStep = () => {
+    // Validación especial para el paso de mascota (ahora paso 4, index 3)
+    if (currentStep === 3 && !mascotaSeleccionada) {
+      return;
+    }
+
     if (currentStep < stepLabels.length - 1) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -96,23 +207,9 @@ function SecondSection() {
     "Estimulación cognitiva",
   ];
 
-  const opcionesSentimientos = [
-    "Relajado",
-    "Ansioso",
-    "Confundido",
-    "Estresado",
-  ];
+  const opcionesTiempo = ['5 minutos', '10 minutos', '15 minutos', '+15 minutos'];
 
-  const opcionesTiempo = [
-    "5 minutos",
-    "10 minutos",
-    "15 minutos",
-    "+15 minutos",
-  ];
-
-  const opcionesGeneros = ["masculino", "femenino", "otro"];
-
-  const opcionesEdades = ["20 a 30 años", "30 a 50 años", "+ 50 años"];
+  const opcionesEdades = ['20 a 30 años', '30 a 50 años', '+ 50 años'];
 
   return (
     <div className="onboarding-container">
@@ -154,7 +251,7 @@ function SecondSection() {
               ))}
             </div>
 
-            <div className="field btns central-btn">
+            <div className="field btns central-btn" style={{}}>
               <button
                 type="button"
                 className="next"
@@ -166,41 +263,7 @@ function SecondSection() {
             </div>
           </div>
 
-          {/* PASO 2: SENTIMIENTOS */}
-          <div className="page">
-            <div className="title">
-              ¿Cómo te sentís normalmente cuando tenés que hacer cuentas frente
-              a otras personas?
-            </div>
-            <div className="options-grid">
-              {opcionesSentimientos.map((opcion) => (
-                <button
-                  key={opcion}
-                  type="button"
-                  className={`option-btn ${formData.sentimiento === opcion ? "selected" : ""}`}
-                  onClick={() => handleSelectOption("sentimiento", opcion)}
-                >
-                  {opcion}
-                </button>
-              ))}
-            </div>
-
-            <div className="field btns">
-              <button type="button" className="prev" onClick={prevStep}>
-                Atrás
-              </button>
-              <button
-                type="button"
-                className="next"
-                onClick={nextStep}
-                disabled={!formData.sentimiento}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-
-          {/* PASO 3: TIEMPO (Para alimentar el gráfico PIE) */}
+          {/* PASO 2: TIEMPO */}
           <div className="page">
             <div className="title">
               ¿Cuánto tiempo podés dedicarle a tu agilidad mental por día?
@@ -232,7 +295,7 @@ function SecondSection() {
             </div>
           </div>
 
-          {/* PASO 4: EDAD */}
+          {/* PASO 3: EDAD */}
           <div className="page">
             <div className="title">¿En qué rango de edad te encontrás?</div>
             <div className="options-grid full-width-options">
@@ -253,20 +316,49 @@ function SecondSection() {
                 Atrás
               </button>
               <button
-                type="submit"
-                className="submit"
-                disabled={status.loading || !formData.edad}
+                type="button"
+                className="next"
+                onClick={nextStep}
+                disabled={!formData.edad}
               >
-                {status.loading ? "Enviando..." : "Enviar"}
+                Siguiente
               </button>
             </div>
           </div>
-        </form>
-      </div>
+
+          {/* PASO 4: MASCOTA (Último paso) */}
+          <div className="page">
+            <div className="title">¡Elegí tu compañero de aprendizaje!</div>
+            <div className="subtitle">Cada mascota tiene una personalidad única que te acompañará en tu viaje</div>
+
+            <div className="mascota-container">
+              <MascotaSelection />
+              {!mascotaSeleccionada && (
+                <div className="mascota-hint">
+                  💡 Hacé clic en una mascota para seleccionarla
+                </div>
+              )}
+            </div>
+
+            <div className="field btns">
+              <button type="button" className="prev" onClick={prevStep}>
+                Atrás
+              </button>
+              <button
+                type="submit"
+                className="submit"
+                disabled={status.loading || !mascotaSeleccionada}
+              >
+                {status.loading ? 'Enviando...' : '¡Comenzar!'}
+              </button>
+            </div>
+          </div>
+        </form >
+      </div >
 
       {status.error && <p className="status-msg error">{status.error}</p>}
       {status.success && <p className="status-msg success">{status.success}</p>}
-    </div>
+    </div >
   );
 }
 
