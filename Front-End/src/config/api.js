@@ -3,9 +3,19 @@ import { supabase } from './supabaseClient';
 
 const rawBaseURL = import.meta.env.VITE_API_URL;
 
-const cleanBaseURL = rawBaseURL
-    ? rawBaseURL.replace(/^VITE_API_URL:/, '').replace(/['"]/g, '')
-    : null;
+const normalizeBaseURL = (url) => {
+    if (!url) return null;
+    let cleaned = url.replace(/^VITE_API_URL:/, '').replace(/['"]/g, '').trim();
+    if (!cleaned) return null;
+    cleaned = cleaned.replace(/\/+$/, '');
+    // El back monta las rutas bajo /api. Si falta, lo agregamos.
+    if (!cleaned.endsWith('/api')) {
+        cleaned = `${cleaned}/api`;
+    }
+    return cleaned;
+};
+
+const cleanBaseURL = normalizeBaseURL(rawBaseURL);
 
 console.log('📡 API BaseURL:', cleanBaseURL || 'Usando fallback');
 

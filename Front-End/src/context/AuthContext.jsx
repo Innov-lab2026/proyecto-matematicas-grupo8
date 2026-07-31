@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
   const [initialized, setInitialized] = useState(false);
   const [isNewUser, setIsNewUser] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [profileError, setProfileError] = useState(null);
   const lastFetchedId = useRef(null);
   const isFetching = useRef(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -54,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     isFetching.current = true;
+    setProfileError(null);
     try {
       console.log(`🔄 Obteniendo perfil para: ${user.id}`);
 
@@ -73,6 +75,7 @@ export const AuthProvider = ({ children }) => {
 
         setProfile(normalizedProfile);
         lastFetchedId.current = user.id;
+        setProfileError(null);
 
         const hasOnboardingData =
           data.edad && data.edad.trim() !== '' &&
@@ -106,6 +109,11 @@ export const AuthProvider = ({ children }) => {
       }
       setProfile(null);
       setIsNewUser(false);
+      setProfileError(
+        error.response?.status
+          ? `No se pudo cargar el perfil (${error.response.status}). Revisá VITE_API_URL.`
+          : "No se pudo conectar con el Back-End."
+      );
     } finally {
       isFetching.current = false;
     }
@@ -382,6 +390,7 @@ export const AuthProvider = ({ children }) => {
       registerLoading,
       googleLoading,
       initialized,
+      profileError,
       login,
       register,
       logout,
@@ -392,7 +401,7 @@ export const AuthProvider = ({ children }) => {
       shouldShowDashboard: !isNewUser && !!session && !!profile,
       shouldShowLogin: !session && initialized && !loading,
     }),
-    [session, profile, isNewUser, loading, registerLoading, googleLoading, initialized,
+    [session, profile, isNewUser, loading, registerLoading, googleLoading, initialized, profileError,
       login, register, logout, loginWithGoogle, completeOnboarding, fetchProfile]
   );
 

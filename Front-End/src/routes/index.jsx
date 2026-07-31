@@ -30,7 +30,7 @@ import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 
 // ✅ Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children, requireOnboarding = false }) => {
-  const { user, profile, shouldShowOnboarding, loading, initialized } = useAuth();
+  const { user, profile, shouldShowOnboarding, loading, initialized, profileError, refreshProfile, logout } = useAuth();
   const location = useLocation();
   console.log({ user, profile, shouldShowOnboarding, loading, initialized });
   // ⏳ Esperar a que termine la inicialización
@@ -45,6 +45,20 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
   // ⏳ Si hay sesión pero aún no llega el perfil, evitar rebote a login/dashboard.
   if (!profile) {
+    if (profileError) {
+      return (
+        <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem", textAlign: "center" }}>
+          <div>
+            <h2>No pudimos cargar tu perfil</h2>
+            <p style={{ color: "#666" }}>{profileError}</p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "1rem" }}>
+              <button type="button" onClick={() => refreshProfile()}>Reintentar</button>
+              <button type="button" onClick={() => logout()}>Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return <LoadingSpinner message="Cargando tu perfil..." />;
   }
 
@@ -64,7 +78,7 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
 // ✅ Componente para rutas públicas (no autenticadas)
 const PublicRoute = ({ children, redirectAuthenticated = true }) => {
-  const { user, profile, shouldShowOnboarding, loading, initialized, registerLoading } = useAuth();
+  const { user, profile, shouldShowOnboarding, loading, initialized, registerLoading, profileError, refreshProfile, logout } = useAuth();
 
   // ⏳ Esperar a que termine la inicialización
   if (loading || !initialized) {
@@ -83,6 +97,20 @@ const PublicRoute = ({ children, redirectAuthenticated = true }) => {
 
   // ⏳ Hay sesión activa pero todavía se está resolviendo el perfil.
   if (!profile) {
+    if (profileError) {
+      return (
+        <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem", textAlign: "center" }}>
+          <div>
+            <h2>No pudimos cargar tu perfil</h2>
+            <p style={{ color: "#666" }}>{profileError}</p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", marginTop: "1rem" }}>
+              <button type="button" onClick={() => refreshProfile()}>Reintentar</button>
+              <button type="button" onClick={() => logout()}>Cerrar sesión</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return <LoadingSpinner message="Cargando tu perfil..." />;
   }
 
