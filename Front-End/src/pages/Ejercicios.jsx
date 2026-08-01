@@ -76,11 +76,14 @@ function ModuloEjercicios() {
 
     try {
       setEnviando(true);
+      setUltimoResultado(null);
       const res = await api.post("/progreso", {
         escenarioId: ejercicioActual.id,
         ...(opcionId ? { opcionId } : { respuestaUsuario }),
       });
       setUltimoResultado(res.data);
+      // Desbloquear UI antes de refrescar perfil (el refresh no debe trabar el feedback)
+      setEnviando(false);
 
       if (
         res.data.esCorrecto ||
@@ -88,7 +91,9 @@ function ModuloEjercicios() {
         (res.data.tokensGanados ?? 0) > 0 ||
         (res.data.nuevosDesbloqueos?.length ?? 0) > 0
       ) {
-        await refreshProfile();
+        refreshProfile().catch((err) =>
+          console.warn("No se pudo refrescar el perfil:", err),
+        );
       }
 
       if (res.data.seccionAprobada) {
@@ -98,7 +103,6 @@ function ModuloEjercicios() {
       }
     } catch (err) {
       console.error("Error al registrar progreso:", err);
-    } finally {
       setEnviando(false);
     }
   };
@@ -201,7 +205,7 @@ function ModuloEjercicios() {
   return (
     <div className="ejercicio-wrapper">
       {/* Contenido principal */}
-      <div className={`ejercicio-content ${enviando ? 'blurred' : ''}`}>
+      <div className="ejercicio-content">
         {ejercicioActual.tipo === "numerico" ? (
           <EjercicioInput
             pregunta={ejercicioActual.pregunta}

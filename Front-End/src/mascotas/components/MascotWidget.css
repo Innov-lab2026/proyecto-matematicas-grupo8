@@ -3,7 +3,8 @@
   flex-direction: column;
   align-items: center;
   pointer-events: none;
-  z-index: 1000;
+  /* Por debajo de botones de acción del ejercicio */
+  z-index: 5;
 }
 
 .mascot-widget > * {

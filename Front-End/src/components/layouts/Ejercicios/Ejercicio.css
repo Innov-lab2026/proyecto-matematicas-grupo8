@@ -157,6 +157,10 @@
   display: flex;
   justify-content: flex-end;
   margin-top: 2rem;
+  /* Espacio para que la mascota fija no tape Continuar en móvil */
+  padding-bottom: 7rem;
+  position: relative;
+  z-index: 2;
 }
 
 /* --- ANIMACIÓN --- */
@@ -193,6 +197,7 @@
 
   .ejercicio-footer {
     justify-content: center; /* Botón continuar centrado en móviles */
+    padding-bottom: 8.5rem;
   }
 }
 

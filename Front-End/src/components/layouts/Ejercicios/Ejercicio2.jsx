@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ButtonContinue from "../../ui/ButtonContinue/ButtonContinue";
 import "./Ejercicio.css";
 import HeaderDesafio from "../Desafios/headerDesafio/HeaderDesafio";
@@ -7,17 +7,19 @@ import HeaderMate from "../HeaderMate/HeaderMate";
 import { MascotWidget } from "../../../mascotas/components/MascotWidget";
 import { useMascotContext } from "../../../mascotas/core/MascotProvider";
 
+const FEEDBACK_CORRECTO_MS = 2200;
+
 function EjercicioChoice({
   pregunta,
   imagenUrl,
-  opciones = [], // [{ id, texto, esCorrecta }]
+  opciones = [],
   onContinue,
-  onResponder, // (opcionId) => void — informa al padre para registrar el progreso
+  onResponder,
   progreso = 0,
   mascotPosition = "bottom-left",
   mascotSize = 160,
-  enviando = false, // ✅ Nuevo prop
-  ultimoResultado = null, // ✅ Nuevo prop para recibir la respuesta del backend
+  enviando = false,
+  ultimoResultado = null,
 }) {
   const isMobile = window.innerWidth <= 900;
   const datosChoiceDePrueba = {
@@ -36,58 +38,82 @@ function EjercicioChoice({
 
   const [seleccionado, setSeleccionado] = useState(null);
   const [esCorrecto, setEsCorrecto] = useState(null);
-  const [respuestaEnviada, setRespuestaEnviada] = useState(false); // ✅ Nuevo estado
   const { react, setState } = useMascotContext();
+  const avanceTimer = useRef(null);
 
-  // ✅ Resetear estado al cambiar de pregunta
   useEffect(() => {
     setSeleccionado(null);
     setEsCorrecto(null);
-    setRespuestaEnviada(false);
     setState("idle");
+    if (avanceTimer.current) {
+      clearTimeout(avanceTimer.current);
+      avanceTimer.current = null;
+    }
   }, [preguntaActual, setState]);
 
-  // ✅ Avanzar cuando el backend termina de procesar
   useEffect(() => {
-    // Si ya se envió la respuesta y el backend ya respondió (enviando = false)
-    if (respuestaEnviada && !enviando && esCorrecto === true) {
-      setRespuestaEnviada(false);
-      setSeleccionado(null);
-      setEsCorrecto(null);
-      // Avanzar al siguiente ejercicio
-      onContinue();
-    }
-  }, [enviando, respuestaEnviada, esCorrecto, onContinue]);
+    return () => {
+      if (avanceTimer.current) clearTimeout(avanceTimer.current);
+    };
+  }, []);
 
-  // ✅ Actualizar el estado con la respuesta del backend
+  // Feedback del backend + desbloqueo / avance
   useEffect(() => {
-    if (ultimoResultado && respuestaEnviada) {
-      // El backend ya respondió, actualizar el estado de correcto
-      setEsCorrecto(ultimoResultado.esCorrecto);
-      
-      if (ultimoResultado.esCorrecto) {
+    if (!ultimoResultado || seleccionado == null || enviando) return;
+
+    const correcto = Boolean(ultimoResultado.esCorrecto);
+    setEsCorrecto(correcto);
+
+    if (correcto) {
+      react("celebration", "¡Excelente! Elegiste la opción correcta.");
+      if (avanceTimer.current) clearTimeout(avanceTimer.current);
+      avanceTimer.current = setTimeout(() => {
+        setSeleccionado(null);
+        setEsCorrecto(null);
+        setState("idle");
+        onContinue();
+      }, FEEDBACK_CORRECTO_MS);
+    } else {
+      react("sad", "Casi. Volvé a intentarlo, vos podés.");
+      // Permite elegir otra opción de inmediato (no bloqueamos el estado)
+    }
+  }, [ultimoResultado, seleccionado, enviando, react, onContinue, setState]);
+
+  const manejarSeleccion = (opcion) => {
+    // Solo bloquear mientras envía o si ya acertó (esperando avanzar)
+    if (enviando || esCorrecto === true) return;
+
+    if (avanceTimer.current) {
+      clearTimeout(avanceTimer.current);
+      avanceTimer.current = null;
+    }
+
+    setSeleccionado(opcion.id);
+    setEsCorrecto(null);
+
+    // Feedback local inmediato (más snappy en móvil)
+    if (typeof opcion.esCorrecta === "boolean") {
+      setEsCorrecto(opcion.esCorrecta);
+      if (opcion.esCorrecta) {
         react("celebration", "¡Excelente! Elegiste la opción correcta.");
       } else {
         react("sad", "Casi. Volvé a intentarlo, vos podés.");
       }
     }
-  }, [ultimoResultado, respuestaEnviada, react]);
 
-  const manejarSeleccion = (opcion) => {
-    // ✅ No permitir seleccionar si ya está enviando, ya respondió correctamente, o ya se envió
-    if (enviando || esCorrecto === true || respuestaEnviada) return;
-
-    setSeleccionado(opcion.id);
-    setRespuestaEnviada(true); // ✅ Marcar que se envió la respuesta
-
-    // ❌ Ya no calculamos esCorrecto localmente, esperamos la respuesta del backend
-    // El backend decidirá si es correcta o no
-
-    // ✅ Enviar la respuesta al backend
     if (onResponder) {
       onResponder(opcion.id);
     }
   };
+
+  const feedbackCorrecto =
+    esCorrecto === true || ultimoResultado?.esCorrecto === true;
+  const feedbackIncorrecto =
+    esCorrecto === false ||
+    (ultimoResultado &&
+      ultimoResultado.esCorrecto === false &&
+      seleccionado != null &&
+      !enviando);
 
   return (
     <div className="ejercicio-page-container">
@@ -120,19 +146,15 @@ function EjercicioChoice({
           <div className="options-grid">
             {opcionesActuales.map((opcion) => {
               let buttonClass = "option-button";
-              
-              // ✅ Mostrar feedback visual según la respuesta del backend
-              if (seleccionado === opcion.id && !enviando && ultimoResultado) {
-                if (ultimoResultado.esCorrecto) {
+
+              if (seleccionado === opcion.id) {
+                if (enviando && esCorrecto == null) {
+                  buttonClass += " option-loading";
+                } else if (feedbackCorrecto && seleccionado === opcion.id) {
                   buttonClass += " option-correct";
-                } else {
+                } else if (feedbackIncorrecto && seleccionado === opcion.id) {
                   buttonClass += " option-incorrect";
                 }
-              }
-              
-              // ✅ Si está enviando y esta es la opción seleccionada, mostrar estado de carga
-              if (seleccionado === opcion.id && enviando) {
-                buttonClass += " option-loading";
               }
 
               return (
@@ -141,49 +163,48 @@ function EjercicioChoice({
                   className={buttonClass}
                   onClick={() => manejarSeleccion(opcion)}
                   type="button"
-                  disabled={enviando || esCorrecto === true || respuestaEnviada}
+                  disabled={enviando || esCorrecto === true}
                 >
-                  {seleccionado === opcion.id && enviando ? "⏳" : opcion.texto}
+                  {seleccionado === opcion.id && enviando && esCorrecto == null
+                    ? "⏳"
+                    : opcion.texto}
                 </button>
               );
             })}
           </div>
 
           <div className="feedback-wrapper">
-            {enviando && (
+            {enviando && esCorrecto == null && (
               <div className="alert-message alert-info animate-pop">
                 <span>⏳ Verificando tu respuesta...</span>
               </div>
             )}
-            {!enviando && ultimoResultado && seleccionado && (
-              <>
-                {ultimoResultado.esCorrecto === true && (
-                  <div className="alert-message alert-success animate-pop">
-                    <span>
-                      🎉 ¡Excelente trabajo! Respuesta correcta. ¡Sigue así!
-                      {ultimoResultado.puntosGanados > 0 && 
-                        ` (+${ultimoResultado.puntosGanados} puntos)`}
-                    </span>
-                  </div>
-                )}
-                {ultimoResultado.esCorrecto === false && (
-                  <div className="alert-message alert-danger animate-pop">
-                    <span>
-                      💪 ¡Casi lo tienes! Intenta analizar la pregunta nuevamente.
-                      {ultimoResultado.feedback && 
-                        ` ${ultimoResultado.feedback}`}
-                    </span>
-                  </div>
-                )}
-              </>
+            {feedbackCorrecto && (
+              <div className="alert-message alert-success animate-pop">
+                <span>
+                  🎉 ¡Excelente trabajo! Respuesta correcta. ¡Seguí así!
+                  {ultimoResultado?.puntosGanados > 0 &&
+                    ` (+${ultimoResultado.puntosGanados} puntos)`}
+                </span>
+              </div>
+            )}
+            {feedbackIncorrecto && !feedbackCorrecto && (
+              <div className="alert-message alert-danger animate-pop">
+                <span>
+                  💪 ¡Casi! Elegí otra opción e intentá de nuevo.
+                  {ultimoResultado?.feedback
+                    ? ` ${ultimoResultado.feedback}`
+                    : ""}
+                </span>
+              </div>
             )}
           </div>
         </div>
 
         <div className="ejercicio-footer">
-          <ButtonContinue 
-            onClick={onContinue} 
-            disabled={esCorrecto !== true || enviando} // ✅ Deshabilitar mientras carga
+          <ButtonContinue
+            onClick={onContinue}
+            disabled={esCorrecto !== true || enviando}
           />
         </div>
       </main>

@@ -65,21 +65,20 @@ function EjercicioInput({
     };
   }, [pregunta, respuestaCorrecta, setState]);
 
-  // ✅ Resetear cuando el backend termina de procesar
+  // Tras acertar: dejar ver la mascota ~2s y después avanzar
   useEffect(() => {
-    if (!enviando && respuestaEnviada) {
-      // El backend ya respondió, ahora podemos avanzar
-      setRespuestaEnviada(false);
-
-      if (resultado === 'correcto') {
-        // Avanzar al siguiente ejercicio
+    if (!enviando && respuestaEnviada && resultado === 'correcto') {
+      const timer = setTimeout(() => {
+        if (!isMounted.current) return;
+        setRespuestaEnviada(false);
         setResultado(null);
         setInputValue('');
         setIntentos(0);
         setYaDioPista(false);
         setState('idle');
         onContinue();
-      }
+      }, 2200);
+      return () => clearTimeout(timer);
     }
   }, [enviando, respuestaEnviada, resultado, onContinue, setState]);
 
