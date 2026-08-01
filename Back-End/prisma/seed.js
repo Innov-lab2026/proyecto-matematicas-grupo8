@@ -61,6 +61,9 @@ async function main() {
         });
     }
 
+    // Nota: insertar solo en Prisma NO alcanza para loguear.
+    // El login usa Supabase Auth. Si tenés SERVICE_ROLE_KEY, sincronizá con:
+    //   npm run seed:auth
     const usuarios = readCSV('usuarios.csv');
     for (const u of usuarios) {
         await prisma.usuario.upsert({
@@ -95,6 +98,11 @@ async function main() {
     }
 
     console.log('Base de datos poblada con éxito');
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY.includes('[')) {
+        console.log('ℹ️  Detecté SERVICE_ROLE_KEY. Para poder loguear esos usuarios corré: npm run seed:auth');
+    } else {
+        console.log('⚠️  Usuarios solo en Postgres. Sin Supabase Auth no van a poder loguear. Corré npm run seed:auth con SUPABASE_SERVICE_ROLE_KEY.');
+    }
 }
 
 main()

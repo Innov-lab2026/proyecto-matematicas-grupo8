@@ -8,6 +8,10 @@
     "start": "node src/app.js",
     "postinstall": "prisma generate --schema=./prisma/schema.prisma",
     "build": "prisma generate --schema=./prisma/schema.prisma",
+    "seed": "node prisma/seed.js",
+    "seed:auth": "node prisma/seed-auth-users.js",
+    "seed:ejercicios": "node prisma/seed-ejercicios.js",
+    "seed:ramas": "node prisma/seed-ramas.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
