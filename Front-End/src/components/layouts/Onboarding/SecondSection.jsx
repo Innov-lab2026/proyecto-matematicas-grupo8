@@ -76,6 +76,7 @@ function MascotaSelection() {
         }}
       >
         <button
+          type="button"
           className={`mascota-btn ${selectedMascota === "division" ? "selected" : ""}`}
           onClick={() => handleSelectMascota("division")}
           style={{
@@ -88,6 +89,7 @@ function MascotaSelection() {
           <DivisionMascot size={100} className="mx-auto" />
         </button>
         <button
+          type="button"
           className={`mascota-btn ${selectedMascota === "multi" ? "selected" : ""}`}
           onClick={() => handleSelectMascota("multi")}
           style={{
@@ -100,6 +102,7 @@ function MascotaSelection() {
           <MultiMascot size={100} className="mx-auto" />
         </button>
         <button
+          type="button"
           className={`mascota-btn ${selectedMascota === "suma" ? "selected" : ""}`}
           onClick={() => handleSelectMascota("suma")}
           style={{
@@ -112,6 +115,7 @@ function MascotaSelection() {
           <SumaMascot size={100} className="mx-auto" />
         </button>
         <button
+          type="button"
           className={`mascota-btn ${selectedMascota === "resta" ? "selected" : ""}`}
           onClick={() => handleSelectMascota("resta")}
           style={{
@@ -130,7 +134,7 @@ function MascotaSelection() {
 
 // Componente principal del onboarding
 function SecondSection() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState(initialFormState);
@@ -204,6 +208,7 @@ function SecondSection() {
 
     try {
       await api.post("/usuarios/registro", dataToSubmit);
+      await refreshProfile();
       setStatus({
         loading: false,
         error: "",
