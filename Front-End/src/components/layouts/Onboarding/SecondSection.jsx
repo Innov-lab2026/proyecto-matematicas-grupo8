@@ -1,33 +1,33 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import api from '../../../config/api';
-import { useNavigate } from 'react-router-dom';
-import './onboarding.css';
-import HeaderMate from '../HeaderMate/HeaderMate';
-import { useMascot } from '../../../mascotas/core/useMascot';
-import { MascotWidget } from '../../../mascotas/components/MascotWidget';
-import { DivisionMascot } from '../../../mascotas/mascotas/division/DivisionMascot';
-import { MultiMascot } from '../../../mascotas/mascotas/multi/MultiMascot';
-import { SumaMascot } from '../../../mascotas/mascotas/suma/SumaMascot';
-import { RestaMascot } from '../../../mascotas/mascotas/resta/RestaMascot';
+import { useState, useEffect } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import api from "../../../config/api";
+import { useNavigate } from "react-router-dom";
+import "./onboarding.css";
+import HeaderMate from "../HeaderMate/HeaderMate";
+import { useMascot } from "../../../mascotas/core/useMascot";
+import { MascotWidget } from "../../../mascotas/components/MascotWidget";
+import { DivisionMascot } from "../../../mascotas/mascotas/division/DivisionMascot";
+import { MultiMascot } from "../../../mascotas/mascotas/multi/MultiMascot";
+import { SumaMascot } from "../../../mascotas/mascotas/suma/SumaMascot";
+import { RestaMascot } from "../../../mascotas/mascotas/resta/RestaMascot";
 
 const initialFormState = {
-  nombre: '',
-  apellidos: '',
-  uid: '',
-  desafio: '',
-  edad: '',
-  genero: '',
-  sentimiento: '',
-  email: '',
-  mascota: '' // Campo para guardar la mascota seleccionada
+  nombre: "",
+  apellidos: "",
+  uid: "",
+  desafio: "",
+  edad: "",
+  genero: "",
+  sentimiento: "",
+  email: "",
+  mascota: "", // Campo para guardar la mascota seleccionada
 };
 
 // Componente interno que usa el contexto de mascota
 function MascotaSelection() {
   const { setMascot, react } = useMascot();
-  const [selectedMascota, setSelectedMascota] = useState('');
+  const [selectedMascota, setSelectedMascota] = useState("");
   const [showCelebration, setShowCelebration] = useState(false);
 
   // Modifica la función handleSelectMascota en el componente MascotaSelection
@@ -37,19 +37,21 @@ function MascotaSelection() {
 
     // Reacción de celebración al seleccionar
     setShowCelebration(true);
-    react('celebration', `¡${mascotaId} te acompañará!`);
+    react("celebration", `¡${mascotaId} te acompañará!`);
 
     setTimeout(() => {
       setShowCelebration(false);
     }, 1500);
 
     // Actualizar el formData del padre
-    window.dispatchEvent(new CustomEvent('mascotaSelected', {
-      detail: { mascota: mascotaId },
-      // Añadir esta propiedad para indicar que NO es un submit
-      bubbles: false,
-      cancelable: false
-    }));
+    window.dispatchEvent(
+      new CustomEvent("mascotaSelected", {
+        detail: { mascota: mascotaId },
+        // Añadir esta propiedad para indicar que NO es un submit
+        bubbles: false,
+        cancelable: false,
+      }),
+    );
   };
 
   return (
@@ -63,39 +65,61 @@ function MascotaSelection() {
         )}
       </div>
 
-      <div style={{
-        display: "grid",
-        alignItems: "center",
-        justifyContent: "center",
-        gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-        gap: "10px",
-        margin: "0 20px"
-      }}>
+      <div
+        style={{
+          display: "grid",
+          alignItems: "center",
+          justifyContent: "center",
+          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+          gap: "10px",
+          margin: "0 20px",
+        }}
+      >
         <button
-          className={`mascota-btn ${selectedMascota === 'division' ? 'selected' : ''}`}
-          onClick={() => handleSelectMascota('division')}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className={`mascota-btn ${selectedMascota === "division" ? "selected" : ""}`}
+          onClick={() => handleSelectMascota("division")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
           <DivisionMascot size={100} className="mx-auto" />
         </button>
         <button
-          className={`mascota-btn ${selectedMascota === 'multi' ? 'selected' : ''}`}
-          onClick={() => handleSelectMascota('multi')}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className={`mascota-btn ${selectedMascota === "multi" ? "selected" : ""}`}
+          onClick={() => handleSelectMascota("multi")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
           <MultiMascot size={100} className="mx-auto" />
         </button>
         <button
-          className={`mascota-btn ${selectedMascota === 'suma' ? 'selected' : ''}`}
-          onClick={() => handleSelectMascota('suma')}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className={`mascota-btn ${selectedMascota === "suma" ? "selected" : ""}`}
+          onClick={() => handleSelectMascota("suma")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
           <SumaMascot size={100} className="mx-auto" />
         </button>
         <button
-          className={`mascota-btn ${selectedMascota === 'resta' ? 'selected' : ''}`}
-          onClick={() => handleSelectMascota('resta')}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className={`mascota-btn ${selectedMascota === "resta" ? "selected" : ""}`}
+          onClick={() => handleSelectMascota("resta")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: 0,
+            cursor: "pointer",
+          }}
         >
           <RestaMascot size={100} className="mx-auto" />
         </button>
@@ -125,13 +149,13 @@ function SecondSection() {
       event.preventDefault();
 
       const { mascota } = event.detail;
-      setFormData(prev => ({ ...prev, mascota }));
+      setFormData((prev) => ({ ...prev, mascota }));
       setMascotaSeleccionada(true);
     };
 
-    window.addEventListener('mascotaSelected', handleMascotaSelected);
+    window.addEventListener("mascotaSelected", handleMascotaSelected);
     return () => {
-      window.removeEventListener('mascotaSelected', handleMascotaSelected);
+      window.removeEventListener("mascotaSelected", handleMascotaSelected);
     };
   }, []);
 
@@ -192,10 +216,7 @@ function SecondSection() {
     } catch (error) {
       const errorMsg = error.response?.data?.error || error.message;
       setStatus({ loading: false, error: errorMsg, success: "" });
-    } finally {
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
+      // No navegamos si falló — así el usuario ve el error y no queda en loop
     }
   };
 
@@ -207,9 +228,14 @@ function SecondSection() {
     "Estimulación cognitiva",
   ];
 
-  const opcionesTiempo = ['5 minutos', '10 minutos', '15 minutos', '+15 minutos'];
+  const opcionesTiempo = [
+    "5 minutos",
+    "10 minutos",
+    "15 minutos",
+    "+15 minutos",
+  ];
 
-  const opcionesEdades = ['20 a 30 años', '30 a 50 años', '+ 50 años'];
+  const opcionesEdades = ["20 a 30 años", "30 a 50 años", "+ 50 años"];
 
   return (
     <div className="onboarding-container">
@@ -329,7 +355,10 @@ function SecondSection() {
           {/* PASO 4: MASCOTA (Último paso) */}
           <div className="page">
             <div className="title">¡Elegí tu compañero de aprendizaje!</div>
-            <div className="subtitle">Cada mascota tiene una personalidad única que te acompañará en tu viaje</div>
+            <div className="subtitle">
+              Cada mascota tiene una personalidad única que te acompañará en tu
+              viaje
+            </div>
 
             <div className="mascota-container">
               <MascotaSelection />
@@ -349,16 +378,16 @@ function SecondSection() {
                 className="submit"
                 disabled={status.loading || !mascotaSeleccionada}
               >
-                {status.loading ? 'Enviando...' : '¡Comenzar!'}
+                {status.loading ? "Enviando..." : "¡Comenzar!"}
               </button>
             </div>
           </div>
-        </form >
-      </div >
+        </form>
+      </div>
 
       {status.error && <p className="status-msg error">{status.error}</p>}
       {status.success && <p className="status-msg success">{status.success}</p>}
-    </div >
+    </div>
   );
 }
 

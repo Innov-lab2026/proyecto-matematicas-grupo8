@@ -15,6 +15,7 @@ export function MascotWidget({
   className = '',
 }) {
   const { mascotId, state, currentMessage, isSpeaking, dismissMessage } = useMascotContext();
+  if (!mascotId) return null;
   const config = getMascotConfig(mascotId);
   const mascotName = config?.personality?.name || 'Mascota';
 
