@@ -7,25 +7,25 @@ import {
 } from "react-router-dom";
 
 import Register from "../pages/Register";
-import Landing from '../pages/Landing.jsx';
-import Dashboard from '../pages/Dashboard.jsx';
-import Profile from '../pages/Profile';
-import NotFound from '../pages/NotFound';
-import LoginPage from '../pages/Login';
-import ConsolaAdmin from '../pages/ConsolaAdmin';
-import { useAuth } from '../context/AuthContext';
-import StartedPage from '../pages/Started.jsx';
-import Onboarding from '../pages/Onboarding';
-import Nosotros from '../pages/Nosotros.jsx';
-import Desafios from '../pages/Desafios.jsx';
-import AuthCallback from '../pages/AuthCallback.jsx';
-import ModuloEjercicios from '../pages/Ejercicios.jsx';
-import DragConstraints from '../components/layouts/Ejercicios/DropAndDown.jsx';
-import TermsOfService from '../pages/TermsOfService.jsx';
-import MixtoPage from '../pages/Mixto.jsx';
-import RankingPage from '../pages/Ranking.jsx';
-import Configuracion from '../components/layouts/Configuracion/Configuracion.jsx';
-import Perfil from '../components/layouts/Perfil/Perfil.jsx';
+import Landing from "../pages/Landing.jsx";
+import Dashboard from "../pages/Dashboard.jsx";
+import Profile from "../pages/Profile";
+import NotFound from "../pages/NotFound";
+import LoginPage from "../pages/Login";
+import ConsolaAdmin from "../pages/ConsolaAdmin";
+import { useAuth } from "../context/AuthContext";
+import StartedPage from "../pages/Started.jsx";
+import Onboarding from "../pages/Onboarding";
+import Nosotros from "../pages/Nosotros.jsx";
+import Desafios from "../pages/Desafios.jsx";
+import AuthCallback from "../pages/AuthCallback.jsx";
+import ModuloEjercicios from "../pages/Ejercicios.jsx";
+import DragConstraints from "../components/layouts/Ejercicios/DropAndDown.jsx";
+import TermsOfService from "../pages/TermsOfService.jsx";
+import MixtoPage from "../pages/Mixto.jsx";
+import RankingPage from "../pages/Ranking.jsx";
+import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx";
+import Perfil from "../components/layouts/Perfil/Perfil.jsx";
 import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 
 // ✅ Componente para proteger rutas autenticadas
@@ -64,7 +64,11 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 
   // 🎯 Ruta exclusiva para onboarding: si ya completó, enviar al dashboard.
   if (requireOnboarding) {
-    return shouldShowOnboarding ? children : <Navigate to="/dashboard" replace />;
+    return shouldShowOnboarding ? (
+      children
+    ) : (
+      <Navigate to="/dashboard" replace />
+    );
   }
 
   // 🎯 Si todavía necesita onboarding, cualquier otra ruta protegida debe ir allí.
@@ -196,7 +200,7 @@ export default function AppRouter() {
           }
         />
 
-        {/* 📊 Dashboard - Ruta principal después del onboarding */}
+        {/* Dashboard - Ruta principal después del onboarding */}
         <Route
           path="/dashboard"
           element={

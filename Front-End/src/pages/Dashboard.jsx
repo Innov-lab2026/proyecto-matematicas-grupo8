@@ -87,7 +87,7 @@ const DashboardPage = () => {
                         transform: showHeader ? "translateY(0)" : "translateY(-20px)",
                         transition: "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}>
-                        <HeaderSection />
+                        <HeaderSection isOpen={showHeader} />
                     </div>
                 </div>
 

@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Oval, ThreeDots } from "react-loader-spinner"; // ✅ npm install react-loader-spinner
+import { Oval } from "react-loader-spinner"; // ✅ npm install react-loader-spinner
 import EjercicioInput from "../components/layouts/Ejercicios/Ejercicio1";
 import EjercicioChoice from "../components/layouts/Ejercicios/Ejercicio2";
 import api from "../config/api";
 import { useAuth } from "../context/AuthContext";
 import { useMascotContext } from "../mascotas/core/MascotProvider";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
+import '../components/layouts/Ejercicios/ModuloEjercicios.css';
 
-// Sección de respaldo si se entra a /ejercicios sin indicar cuál (ej. durante pruebas)
 const SECCION_ID_POR_DEFECTO = 7;
 
 function ModuloEjercicios() {
@@ -22,7 +23,11 @@ function ModuloEjercicios() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
   const [ultimoResultado, setUltimoResultado] = useState(null);
-  const [enviando, setEnviando] = useState(false); // ✅ Estado para envío de respuesta
+  const [enviando, setEnviando] = useState(false);
+
+  const progresoRonda = escenarios.length
+    ? Math.round(((indexActual + 1) / escenarios.length) * 100)
+    : 0;
 
   useEffect(() => {
     const mascotaSeleccionada = profile?.mascota || mascotId;
@@ -66,10 +71,9 @@ function ModuloEjercicios() {
 
   const ejercicioActual = escenarios[indexActual];
 
-  // Se llama cuando el usuario responde (elige una opción o envía un número).
   const manejarRespuesta = async ({ opcionId, respuestaUsuario }) => {
     if (!ejercicioActual || enviando) return;
-    
+
     try {
       setEnviando(true);
       const res = await api.post("/progreso", {
@@ -78,8 +82,13 @@ function ModuloEjercicios() {
       });
       setUltimoResultado(res.data);
 
-      if (res.data.esCorrecto) {
-        refreshProfile();
+      if (
+        res.data.esCorrecto ||
+        Boolean(res.data.seccionAprobada) ||
+        (res.data.tokensGanados ?? 0) > 0 ||
+        (res.data.nuevosDesbloqueos?.length ?? 0) > 0
+      ) {
+        await refreshProfile();
       }
 
       if (res.data.seccionAprobada) {
@@ -103,7 +112,7 @@ function ModuloEjercicios() {
     }
   };
 
-  const manejarContinuar = () => {
+  const manejarContinuar = async () => {
     if (indexActual < escenarios.length - 1) {
       setIndexActual(indexActual + 1);
       setUltimoResultado(null);
@@ -111,43 +120,18 @@ function ModuloEjercicios() {
       alert(
         "🎉 ¡Felicidades! Has completado todos los ejercicios de esta sección.",
       );
+      await refreshProfile();
       navigate("/dashboard");
     }
   };
 
-  // ✅ Spinner de carga con react-loader-spinner
   if (cargando) {
-    return (
-      <div 
-        className="ejercicio-page-container"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "60vh",
-          gap: "1.5rem",
-        }}
-      >
-        <Oval
-          height={60}
-          width={60}
-          color="#28a745"
-          secondaryColor="#e8f5e9"
-          strokeWidth={4}
-          strokeWidthSecondary={4}
-          ariaLabel="cargando-ejercicios"
-        />
-        <p style={{ color: "#666", fontSize: "1rem", fontWeight: 500 }}>
-          Cargando ejercicios...
-        </p>
-      </div>
-    );
+    return <LoadingSpinner message="Cargando ejercicios..." />;
   }
 
   if (error) {
     return (
-      <div 
+      <div
         className="ejercicio-page-container"
         style={{
           display: "flex",
@@ -197,7 +181,7 @@ function ModuloEjercicios() {
 
   if (escenarios.length === 0) {
     return (
-      <div 
+      <div
         className="ejercicio-page-container"
         style={{
           display: "flex",
@@ -213,36 +197,58 @@ function ModuloEjercicios() {
     );
   }
 
-  // Ejercicios de tipo numérico
-  if (ejercicioActual.tipo === "numerico") {
-    return (
-      <EjercicioInput
-        pregunta={ejercicioActual.pregunta}
-        imagenUrl={ejercicioActual.imagenUrl}
-        respuestaCorrecta={ejercicioActual.respuestaCorrecta}
-        onBack={manejarAtras}
-        onContinue={manejarContinuar}
-        onResponder={(respuestaUsuario) =>
-          manejarRespuesta({ respuestaUsuario })
-        }
-        ultimoResultado={ultimoResultado}
-        enviando={enviando}
-      />
-    );
-  }
-
-  // Ejercicios de opción múltiple
+  // ✅ Renderizar con overlay de carga
   return (
-    <EjercicioChoice
-      pregunta={ejercicioActual.pregunta}
-      imagenUrl={ejercicioActual.imagenUrl}
-      opciones={ejercicioActual.opciones || []}
-      onBack={manejarAtras}
-      onContinue={manejarContinuar}
-      onResponder={(opcionId) => manejarRespuesta({ opcionId })}
-      ultimoResultado={ultimoResultado}
-      enviando={enviando}
-    />
+    <div className="ejercicio-wrapper">
+      {/* Contenido principal */}
+      <div className={`ejercicio-content ${enviando ? 'blurred' : ''}`}>
+        {ejercicioActual.tipo === "numerico" ? (
+          <EjercicioInput
+            pregunta={ejercicioActual.pregunta}
+            imagenUrl={ejercicioActual.imagenUrl}
+            respuestaCorrecta={ejercicioActual.respuestaCorrecta}
+            onBack={manejarAtras}
+            onContinue={manejarContinuar}
+            onResponder={(respuestaUsuario) =>
+              manejarRespuesta({ respuestaUsuario })
+            }
+            ultimoResultado={ultimoResultado}
+            enviando={enviando} // ✅ Pasar el estado
+            progreso={progresoRonda}
+          />
+        ) : (
+          <EjercicioChoice
+            pregunta={ejercicioActual.pregunta}
+            imagenUrl={ejercicioActual.imagenUrl}
+            opciones={ejercicioActual.opciones || []}
+            onBack={manejarAtras}
+            onContinue={manejarContinuar}
+            onResponder={(opcionId) => manejarRespuesta({ opcionId })}
+            ultimoResultado={ultimoResultado}
+            enviando={enviando} // ✅ Pasar el estado
+            progreso={progresoRonda}
+          />
+        )}
+      </div>
+
+      {/* ✅ Spinner overlay - transparente, no tapa a la mascota */}
+      {enviando && (
+        <div className="spinner-overlay" style={{ backgroundColor: "transparent !important" }}>
+          <div className="spinner-container">
+            <Oval
+              height={50}
+              width={50}
+              color="#28a745"
+              secondaryColor="#e8f5e9"
+              strokeWidth={4}
+              strokeWidthSecondary={4}
+              ariaLabel="verificando-respuesta"
+            />
+            <p className="spinner-text">Verificando respuesta...</p>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

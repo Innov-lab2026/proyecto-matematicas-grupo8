@@ -38,7 +38,7 @@ export default function HeaderDesafio({ progreso = 100 }) {
 
       <div className="header-desafio">
         <div className="header-desafio-progress">
-          <Link to="/" className="header-desafio-back">
+          <Link to="/dashboard" className="header-desafio-back">
             <img src="/login/iconButton.png" alt="volver" className="back-icon" />
           </Link>
 

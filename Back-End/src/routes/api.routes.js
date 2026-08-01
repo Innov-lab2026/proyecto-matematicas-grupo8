@@ -3,6 +3,7 @@ import seccionRoutes from "./seccion.routes.js";
 import usuariosRoutes from "./usuarios.routes.js";
 import progresoRoutes from "./progreso.routes.js";
 import ramaRoutes from "./rama.routes.js";
+import rankingRoutes from "./ranking.routes.js";
 import { getLogs } from "../controllers/auditoria.controller.js";
 import * as admin from "../controllers/admin.controller.js";
 import { checkAuth, checkRole } from "../middlewares/auth.middleware.js";
@@ -21,6 +22,7 @@ router.use("/secciones", checkAuth, auditMiddleware, seccionRoutes);
 router.use("/usuarios", auditMiddleware, usuariosRoutes);
 router.use("/ramas", checkAuth, auditMiddleware, ramaRoutes);
 router.use("/progreso", checkAuth, auditMiddleware, progresoRoutes);
+router.use("/ranking", checkAuth, auditMiddleware, rankingRoutes);
 router.get("/logs", checkAuth, getLogs);
 
 // Admin-BE: Centro de Mando Brutalista

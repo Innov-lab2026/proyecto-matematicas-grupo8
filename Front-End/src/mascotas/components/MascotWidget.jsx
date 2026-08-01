@@ -15,13 +15,14 @@ export function MascotWidget({
   className = '',
 }) {
   const { mascotId, state, currentMessage, isSpeaking, dismissMessage } = useMascotContext();
+  if (!mascotId) return null;
   const config = getMascotConfig(mascotId);
   const mascotName = config?.personality?.name || 'Mascota';
 
   const positionClass = position !== 'inline' ? `mascot-widget--${position}` : '';
 
   return (
-    <div className={`mascot-widget ${positionClass} ${className}`}>
+    <div className={`mascot-widget ${positionClass} ${className}`} style={{ zIndex: "10000 !important" }}>
       {showBubble && isSpeaking && currentMessage && (
         <SpeechBubble
           message={currentMessage}
