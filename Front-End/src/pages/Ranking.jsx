@@ -4,40 +4,100 @@ import HeaderDash from '../components/layouts/Desafios/headerDash/HeaderDash';
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import FooterDash from "../components/layouts/FooterDash/FooterDash";
 import HeaderSection from "../components/layouts/HeaderDashboardCollapse/HeaderDashboardCollapse";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../config/api";
+import LoadingSpinner from "../components/ui/LoadingSpinner";
 
-// Assets 
-const RANKING = [
-    {
-        id: 4,
-        name: "Emma",
-        titulo: "As de la Suma",
+// ============================================
+// SERVICIO DE RANKING (integrado)
+// ============================================
+const rankingService = {
+    getRanking: async (limit = 10) => {
+        const response = await api.get(`/ranking?limit=${limit}`);
+        return response.data;
     },
-    {
-        id: 5,
-        name: "Leo",
-        titulo: "Imparable de las Fracciones",
+    getPodio: async () => {
+        const response = await api.get('/ranking/podio');
+        return response.data;
     },
-    {
-        id: 6,
-        name: "Fabi",
-        titulo: "Mente Matemática",
-    },
-    {
-        id: 7,
-        name: "Emma",
-        titulo: "As de la Suma",
-    },
-    {
-        id: 8,
-        name: "Manu",
-        titulo: "Ninja Calculador",
+    getMiEstadistica: async () => {
+        const response = await api.get('/ranking/mi-estadistica');
+        return response.data;
     }
-]
-
+};
+// ============================================
+// COMPONENTE PRINCIPAL
+// ============================================
 const RankingPage = () => {
     const [showHeader, setShowHeader] = useState(false);
+    const [ranking, setRanking] = useState([]);
+    const [podio, setPodio] = useState([]);
+    const [usuarioActual, setUsuarioActual] = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
     const isMobile = useMediaQuery("(max-width: 768px)");
+
+    useEffect(() => {
+        const cargarRanking = async () => {
+            try {
+                setCargando(true);
+                setError(null);
+
+                // Obtener podio y ranking en paralelo
+                const [podioData, rankingData] = await Promise.all([
+                    rankingService.getPodio(),
+                    rankingService.getRanking(10)
+                ]);
+
+                setPodio(podioData.podio || []);
+                setRanking(rankingData.ranking || []);
+                setUsuarioActual(podioData.usuarioActual || rankingData.usuarioActual);
+            } catch (err) {
+                console.error("Error al cargar ranking:", err);
+                setError("No se pudo cargar el ranking. Intentá de nuevo más tarde.");
+            } finally {
+                setCargando(false);
+            }
+        };
+
+        cargarRanking();
+    }, []);
+
+    if (cargando) {
+        return <LoadingSpinner message="Cargando ranking..." />;
+    }
+
+    if (error) {
+        return (
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "60vh",
+                gap: "1rem",
+                padding: "2rem"
+            }}>
+                <p style={{ color: "#dc2626", fontSize: "1rem", textAlign: "center" }}>
+                    {error}
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    style={{
+                        padding: "0.5rem 1.5rem",
+                        backgroundColor: "#28a745",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: 500
+                    }}
+                >
+                    Reintentar
+                </button>
+            </div>
+        );
+    }
 
     return (
         <main style={{
@@ -95,12 +155,12 @@ const RankingPage = () => {
                         transform: showHeader ? "translateY(0)" : "translateY(-20px)",
                         transition: "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}>
-                        <HeaderSection />
+                        <HeaderSection isOpen={showHeader} />
                     </div>
                 </div>
 
-                <PodioUsuarios />
-
+                {/* Podio con datos reales */}
+                <PodioUsuarios podio={podio} usuarioActual={usuarioActual} />
 
                 <div style={{
                     position: "relative",
@@ -122,9 +182,9 @@ const RankingPage = () => {
                             justifyContent: "center"
                         }}
                     >
-                        {RANKING.map((mixto) => (
+                        {ranking.map((usuario) => (
                             <Col
-                                key={mixto.id}
+                                key={usuario.id}
                                 xs={12}
                                 style={{
                                     display: "flex",
@@ -133,28 +193,62 @@ const RankingPage = () => {
                                 }}
                             >
                                 <CardRanking
-                                    titulo={mixto.name}
-                                    index={mixto.id}
-                                    subtitulo={mixto.titulo}
+                                    titulo={usuario.nombre}
+                                    index={usuario.posicion}
+                                    subtitulo={usuario.titulo}
+                                    monedas={usuario.puntos}
+                                    esUsuarioActual={usuario.esUsuarioActual}
+                                    avatar={usuario.mascota ? `/avatars/${usuario.mascota}.png` : "/user.png"}
                                 />
                             </Col>
                         ))}
                     </Row>
+
+                    {/* Mostrar usuario actual si no está en el top */}
+                    {usuarioActual && !ranking.some(u => u.id === usuarioActual.id) && (
+                        <div style={{
+                            width: "100%",
+                            marginTop: "1rem",
+                            borderTop: "2px dashed #ccc",
+                            paddingTop: "1rem"
+                        }}>
+                            <p style={{ color: "#666", fontSize: "0.9rem", textAlign: "center", marginBottom: "1rem" }}>
+                                ⭐ Tu posición
+                            </p>
+                            <CardRanking
+                                titulo={usuarioActual.nombre || "Tú"}
+                                index={usuarioActual.posicion}
+                                subtitulo={usuarioActual.titulo}
+                                monedas={usuarioActual.puntos}
+                                esUsuarioActual={true}
+                                avatar={usuarioActual.mascota ? `/avatars/${usuarioActual.mascota}.png` : "/user.png"}
+                            />
+                        </div>
+                    )}
                 </div>
             </Container>
 
             <FooterDash />
-        </main >
+        </main>
     );
-}
+};
 
 export default RankingPage;
 
-const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/user.png" }) => {
+// ============================================
+// COMPONENTE: CardRanking
+// ============================================
+const CardRanking = ({
+    titulo,
+    index,
+    subtitulo,
+    monedas = "0",
+    avatar = "/user.png",
+    esUsuarioActual = false
+}) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
 
-    // Determinar tamaños según dispositivo
     const getSizes = () => {
         if (isMobile) {
             return {
@@ -191,7 +285,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
 
     const sizes = getSizes();
 
-    // Colores según posición (top 3)
     const getPositionColors = () => {
         if (index === 1) {
             return {
@@ -215,15 +308,14 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
             };
         }
         return {
-            bg: "#FFFFFF",
-            border: "none",
-            shadow: "0 2px 8px rgba(0,0,0,0.06)"
+            bg: esUsuarioActual ? "#FFF8E1" : "#FFFFFF",
+            border: esUsuarioActual ? "2px solid #FFD700" : "none",
+            shadow: esUsuarioActual ? "0 4px 12px rgba(255, 215, 0, 0.3)" : "0 2px 8px rgba(0,0,0,0.06)"
         };
     };
 
     const colors = getPositionColors();
 
-    // Medallas para top 3
     const getMedalIcon = () => {
         if (index === 1) return "🥇";
         if (index === 2) return "🥈";
@@ -232,6 +324,11 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
     };
 
     const medal = getMedalIcon();
+
+    // Formatear monedas
+    const monedasFormateadas = typeof monedas === 'number'
+        ? monedas.toLocaleString('es-ES')
+        : monedas;
 
     return (
         <div style={{
@@ -253,7 +350,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
             overflow: "hidden",
             minHeight: isMobile ? "70px" : "80px",
         }}
-            // Efecto hover
             onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.02)";
                 e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.1)";
@@ -263,12 +359,29 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                 e.currentTarget.style.boxShadow = colors.shadow;
             }}
         >
-            {/* Indicador de posición destacada en mobile */}
-            {isMobile && medal && (
+            {/* Badge "TÚ" si es el usuario actual */}
+            {esUsuarioActual && (
                 <div style={{
                     position: "absolute",
                     top: "4px",
                     right: "8px",
+                    fontSize: "12px",
+                    backgroundColor: "#FFD700",
+                    padding: "2px 10px",
+                    borderRadius: "12px",
+                    color: "white",
+                    fontWeight: "bold",
+                    zIndex: 2
+                }}>
+                    ⭐ TÚ
+                </div>
+            )}
+
+            {isMobile && medal && (
+                <div style={{
+                    position: "absolute",
+                    top: "4px",
+                    right: esUsuarioActual ? "60px" : "8px",
                     fontSize: "20px",
                     opacity: 0.8
                 }}>
@@ -276,7 +389,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                 </div>
             )}
 
-            {/* Sección izquierda: número, avatar, nombre */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -286,7 +398,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                 minWidth: isMobile ? "0" : "auto",
                 width: isMobile ? "100%" : "auto",
             }}>
-                {/* Número de posición */}
                 <span style={{
                     fontSize: sizes.numberFontSize,
                     fontWeight: "700",
@@ -298,7 +409,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                     #{index}
                 </span>
 
-                {/* Avatar */}
                 <div
                     style={{
                         position: "relative",
@@ -313,7 +423,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                         border: index <= 3 ? `2px solid ${index === 1 ? "#FFD700" : index === 2 ? "#C0C0C0" : "#CD7F32"}` : "none",
                     }}
                 >
-                    {/* Indicador de top 3 en desktop */}
                     {!isMobile && medal && (
                         <div style={{
                             position: "absolute",
@@ -336,14 +445,13 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                     )}
                 </div>
 
-                {/* Información del usuario */}
                 <div style={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "flex-start",
                     justifyContent: "center",
                     gap: "2px",
-                    minWidth: 0, // Permite truncar texto
+                    minWidth: 0,
                     flex: "1",
                 }}>
                     <h3 style={{
@@ -355,7 +463,7 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                         textOverflow: "ellipsis",
                         maxWidth: isMobile ? "120px" : "200px",
                     }}>
-                        {titulo}
+                        {titulo} {esUsuarioActual && "⭐"}
                     </h3>
                     <p style={{
                         color: "#52C5FE",
@@ -371,7 +479,6 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                 </div>
             </div>
 
-            {/* Sección derecha: monedas y tendencia */}
             <div style={{
                 display: "flex",
                 alignItems: "center",
@@ -397,10 +504,9 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
                     fontWeight: "600",
                     fontVariantNumeric: "tabular-nums",
                 }}>
-                    {typeof monedas === 'number' ? monedas.toLocaleString() : monedas}
+                    {monedasFormateadas}
                 </p>
 
-                {/* Indicador de tendencia */}
                 <div style={{
                     display: "flex",
                     alignItems: "center",
@@ -433,6 +539,9 @@ const CardRanking = ({ titulo, index, subtitulo, monedas = "52.425", avatar = "/
     );
 };
 
+// ============================================
+// COMPONENTE: UserCard (para el podio)
+// ============================================
 const UserCard = ({
     name,
     title,
@@ -447,7 +556,6 @@ const UserCard = ({
     const isMobile = useMediaQuery("(max-width: 768px)");
     const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
 
-    // Escalas según la posición y dispositivo
     const getScale = () => {
         if (isMobile) {
             if (isFirst) return "scale(1)";
@@ -461,7 +569,6 @@ const UserCard = ({
         return "scale(1)";
     };
 
-    // Tamaños según dispositivo
     const getSizes = () => {
         if (isMobile) {
             return {
@@ -492,11 +599,16 @@ const UserCard = ({
 
     const sizes = getSizes();
 
+    // Formatear monedas
+    const monedasFormateadas = typeof coins === 'number'
+        ? coins.toLocaleString('es-ES')
+        : coins;
+
     return (
         <div
             style={{
                 boxShadow: "0px 1px 3px 1px #00000026",
-                backgroundColor: isYou ? "#FFF8E1" : "#FFFFFF", // Resaltar al usuario
+                backgroundColor: isYou ? "#FFF8E1" : "#FFFFFF",
                 padding: sizes.padding,
                 display: "flex",
                 flexDirection: "column",
@@ -509,12 +621,11 @@ const UserCard = ({
                 transition: "all 0.3s ease",
                 width: isMobile ? "100%" : "auto",
                 maxWidth: isMobile ? "200px" : "none",
-                border: isYou ? "3px solid #FFD700" : "none", // Borde dorado para el usuario
+                border: isYou ? "3px solid #FFD700" : "none",
                 position: "relative",
                 order: isMobile ? (isSecond ? -1 : 0) : 0,
             }}
         >
-            {/* Indicador de posición en mobile */}
             {isMobile && (
                 <div style={{
                     position: "absolute",
@@ -585,15 +696,39 @@ const UserCard = ({
                 textAlign: "center",
                 color: "#52C5FE"
             }}>
-                {coins} Monedas+
+                {monedasFormateadas} Monedas+
             </span>
         </div>
     );
 };
 
-// Componente principal del podio
-const PodioUsuarios = () => {
+// ============================================
+// COMPONENTE: PodioUsuarios
+// ============================================
+const PodioUsuarios = ({ podio = [] }) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
+
+    if (podio.length === 0) {
+        return (
+            <div style={{
+                textAlign: "center",
+                padding: "2rem",
+                color: "#666"
+            }}>
+                <p>No hay usuarios en el podio todavía.</p>
+                <p style={{ fontSize: "0.9rem" }}>¡Completa ejercicios para aparecer aquí!</p>
+            </div>
+        );
+    }
+
+    // Obtener los 3 primeros
+    const [primero, segundo, tercero] = podio;
+
+    // En mobile, el orden es: 2do, 1ro, 3ro
+    const ordenMobile = [segundo, primero, tercero].filter(Boolean);
+    const ordenDesktop = [segundo, primero, tercero];
+
+    const usuariosOrdenados = isMobile ? ordenMobile : ordenDesktop;
 
     return (
         <div
@@ -608,36 +743,20 @@ const PodioUsuarios = () => {
                 minHeight: isMobile ? "auto" : "300px",
             }}
         >
-            {/* Segundo puesto (izquierda en desktop, arriba en mobile) */}
-            <UserCard
-                name="Juanok"
-                title="As de la Suma"
-                coins="93.499,38"
-                isSecond={true}
-                userImage="/user.png"
-                medalImage="/medalla.png"
-            />
-
-            {/* Primer puesto (centro, más grande) */}
-            <UserCard
-                name="John Doe (tú)"
-                title="Mente Matemática"
-                coins="93.499,38"
-                isFirst={true}
-                isYou={true}
-                userImage="/user.png"
-                medalImage="/medalla.png"
-            />
-
-            {/* Tercer puesto (derecha en desktop, abajo en mobile) */}
-            <UserCard
-                name="Marta"
-                title="Ninja Calculador"
-                coins="93.499,38"
-                isThird={true}
-                userImage="/user.png"
-                medalImage="/medalla.png"
-            />
+            {usuariosOrdenados.map((usuario) => (
+                <UserCard
+                    key={usuario.id}
+                    name={usuario.nombre}
+                    title={usuario.titulo}
+                    coins={usuario.puntos || 0}
+                    isFirst={usuario.posicion === 1}
+                    isSecond={usuario.posicion === 2}
+                    isThird={usuario.posicion === 3}
+                    isYou={usuario.esUsuarioActual}
+                    userImage={usuario.mascota ? `/avatars/${usuario.mascota}.png` : "/user.png"}
+                    medalImage="/medalla.png"
+                />
+            ))}
         </div>
     );
 };

@@ -1,11 +1,46 @@
+import { useEffect, useRef, useState } from "react";
+import { Oval } from "react-loader-spinner";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuth } from "../../../context/AuthContext";
 
 // ============= HEADER SECTION =============
-const HeaderSection = () => {
+const HeaderSection = ({ isOpen = false }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
+  const [loadingHeader, setLoadingHeader] = useState(false);
+  const fetchedOnCurrentOpen = useRef(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      fetchedOnCurrentOpen.current = false;
+      return;
+    }
+
+    if (fetchedOnCurrentOpen.current) return;
+    fetchedOnCurrentOpen.current = true;
+
+    let isActive = true;
+
+    const loadHeaderData = async () => {
+      setLoadingHeader(true);
+      try {
+        await Promise.resolve(refreshProfile?.());
+      } catch (error) {
+        console.error("Error al refrescar datos del header:", error);
+      } finally {
+        if (isActive) {
+          setLoadingHeader(false);
+        }
+      }
+    };
+
+    loadHeaderData();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isOpen, refreshProfile]);
 
   const KPIs = [
     { title: "Racha", value: profile?.racha ?? 0, icon: "kpis/streak.png" },
@@ -92,6 +127,34 @@ const HeaderSection = () => {
       >
         {profile?.desafioActual?.nombre || "Elegí un desafío"}{" "}
       </h4>
+
+      {loadingHeader ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: "2rem 0",
+            width: "100%",
+            minHeight: "140px",
+          }}
+        >
+          <Oval
+            height={40}
+            width={40}
+            color="#111111"
+            secondaryColor="#cccccc"
+            strokeWidth={4}
+            strokeWidthSecondary={4}
+            ariaLabel="loading-header"
+          />
+          <span
+            style={{ marginLeft: "0.75rem", color: "#666", fontSize: "0.9rem" }}
+          >
+            Cargando métricas...
+          </span>
+        </div>
+      ) : (
 
       <div
         className="d-flex align-items-center justify-content-start gap-2"
@@ -202,6 +265,7 @@ const HeaderSection = () => {
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 };

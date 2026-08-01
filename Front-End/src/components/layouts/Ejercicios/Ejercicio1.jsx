@@ -7,25 +7,26 @@ import HeaderDesafio from '../Desafios/headerDesafio/HeaderDesafio';
 import HeaderMate from '../HeaderMate/HeaderMate';
 import { useMascotContext } from '../../../mascotas/core/MascotProvider';
 
-function EjercicioInput({ 
-  pregunta, 
-  imagenUrl, 
+function EjercicioInput({
+  pregunta,
+  imagenUrl,
   respuestaCorrecta,
   onContinue,
-  onResponder, 
+  onResponder,
+  progreso = 0,
   mascotPosition = 'bottom-left',
   mascotSize = 160,
   maxIntentos = 3,
+  enviando = false, // ✅ Nuevo prop
 }) {
   const isMobile = window.innerWidth <= 900;
   const [inputValue, setInputValue] = useState('');
   const [resultado, setResultado] = useState(null);
   const [intentos, setIntentos] = useState(0);
   const [yaDioPista, setYaDioPista] = useState(false);
-  
-  // 👇 Referencia para saber si el componente está montado
-  const isMounted = useRef(true);
+  const [respuestaEnviada, setRespuestaEnviada] = useState(false); // ✅ Para saber si ya se envió
 
+  const isMounted = useRef(true);
   const { say, react, setState } = useMascotContext();
 
   // 🎯 Dar pista después de varios intentos fallidos
@@ -56,13 +57,31 @@ function EjercicioInput({
     setResultado(null);
     setIntentos(0);
     setYaDioPista(false);
-    // Resetear mascota a idle
+    setRespuestaEnviada(false); // ✅ Resetear
     setState('idle');
-    
+
     return () => {
       isMounted.current = false;
     };
   }, [pregunta, respuestaCorrecta, setState]);
+
+  // ✅ Resetear cuando el backend termina de procesar
+  useEffect(() => {
+    if (!enviando && respuestaEnviada) {
+      // El backend ya respondió, ahora podemos avanzar
+      setRespuestaEnviada(false);
+
+      if (resultado === 'correcto') {
+        // Avanzar al siguiente ejercicio
+        setResultado(null);
+        setInputValue('');
+        setIntentos(0);
+        setYaDioPista(false);
+        setState('idle');
+        onContinue();
+      }
+    }
+  }, [enviando, respuestaEnviada, resultado, onContinue, setState]);
 
   const handleInputChange = (e) => {
     const value = e.target.value;
@@ -73,15 +92,15 @@ function EjercicioInput({
 
   const verificarRespuesta = (e) => {
     e.preventDefault();
-    
-    // Validaciones
+
+    if (enviando) return; // ✅ No permitir enviar mientras carga
+
     if (!inputValue) {
       say('thinking_prompt');
       return;
     }
 
     if (resultado === 'correcto') {
-      // Ya respondió correctamente, no hacer nada
       return;
     }
 
@@ -89,13 +108,17 @@ function EjercicioInput({
 
     if (isCorrect) {
       setResultado('correcto');
-      // 🎉 Celebramos con animación y mensaje custom
       react('celebration', '🎉 ¡Perfecto! ¡Sos un genio!');
+
+      // ✅ Enviar respuesta al backend
+      setRespuestaEnviada(true);
+      if (onResponder) {
+        onResponder(inputValue);
+      }
     } else {
       setResultado('incorrecto');
       setIntentos(prev => prev + 1);
 
-      // 😅 Mensajes según el intento
       const mensajesError = [
         '❌ Intentálo de nuevo. ¡Vos podés!',
         '❌ Casi... ¡Dale otra oportunidad!',
@@ -108,20 +131,17 @@ function EjercicioInput({
     }
   };
 
-  // 🔄 Función para avanzar manualmente (si es necesario)
+  // ✅ Función para avanzar manualmente (solo cuando no está cargando)
   const handleContinue = () => {
-    if (resultado === 'correcto') {
-      // Resetear estado antes de avanzar
+    // Si ya se envió la respuesta y el backend ya respondió
+    if (respuestaEnviada && !enviando && resultado === 'correcto') {
+      setRespuestaEnviada(false);
       setResultado(null);
       setInputValue('');
       setIntentos(0);
       setYaDioPista(false);
       setState('idle');
       onContinue();
-    }
-
-    if (onResponder) {
-      onResponder(inputValue);
     }
   };
 
@@ -135,7 +155,7 @@ function EjercicioInput({
 
       <main className="ejercicio-page-content">
         <HeaderMate />
-        <HeaderDesafio progreso={100} />
+        <HeaderDesafio progreso={progreso} />
 
         <div className="ejercicio-grid">
           <div className="ejercicio-col-left">
@@ -151,14 +171,14 @@ function EjercicioInput({
                   onChange={handleInputChange}
                   className={`ejercicio-input ${resultado === 'correcto' ? 'ejercicio-input--success' : ''}`}
                   autoFocus
-                  disabled={resultado === 'correcto'}
+                  disabled={resultado === 'correcto' || enviando}
                 />
-                <button 
-                  type="submit" 
-                  className={`button-check ${resultado === 'correcto' ? 'button-check--disabled' : ''}`}
-                  disabled={resultado === 'correcto'}
+                <button
+                  type="submit"
+                  className={`button-check ${resultado === 'correcto' || enviando ? 'button-check--disabled' : ''}`}
+                  disabled={resultado === 'correcto' || enviando}
                 >
-                  {resultado === 'correcto' ? '✅' : 'Comprobar'}
+                  {enviando ? '⏳' : resultado === 'correcto' ? '✅' : 'Comprobar'}
                 </button>
               </div>
             </form>
@@ -177,8 +197,8 @@ function EjercicioInput({
 
         <div className="ejercicio-footer">
           <ButtonContinue
-            onClick={handleContinue} // 👈 Usar handler personalizado
-            disabled={resultado !== 'correcto'}
+            onClick={handleContinue}
+            disabled={resultado !== 'correcto' || enviando}
           />
         </div>
       </main>

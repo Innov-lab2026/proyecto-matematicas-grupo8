@@ -14,7 +14,7 @@ const api = axios.create({
         import.meta.env.MODE === 'production'
         ? '/api'
         : 'http://localhost:3001/api'),
-    timeout: 15000
+    timeout: 30000
 });
 
 api.interceptors.request.use(async (config) => {

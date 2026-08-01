@@ -21,7 +21,7 @@ export function MascotWidget({
   const positionClass = position !== 'inline' ? `mascot-widget--${position}` : '';
 
   return (
-    <div className={`mascot-widget ${positionClass} ${className}`}>
+    <div className={`mascot-widget ${positionClass} ${className}`} style={{ zIndex: "10000 !important" }}>
       {showBubble && isSpeaking && currentMessage && (
         <SpeechBubble
           message={currentMessage}
