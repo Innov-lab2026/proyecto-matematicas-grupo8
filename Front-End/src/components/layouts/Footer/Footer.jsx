@@ -1,7 +1,7 @@
 import { Row, Col, Nav } from 'react-bootstrap';
 import './Footer.css';
 import { FaFacebook, FaGithub, FaLinkedin } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Footer = () => {
     const navigate = useNavigate();
@@ -9,13 +9,13 @@ const Footer = () => {
 
     const handleScrollToSection = (sectionId) => {
         if (window.location.pathname !== '/') {
-            navigate('/');
+            navigate(`/#${sectionId}`);
             setTimeout(() => {
                 const element = document.getElementById(sectionId);
                 if (element) {
                     element.scrollIntoView({ behavior: 'smooth' });
                 }
-            }, 100);
+            }, 150);
         } else {
             const element = document.getElementById(sectionId);
             if (element) {
@@ -28,10 +28,9 @@ const Footer = () => {
         <footer className="footer-wrapper" role="contentinfo">
             <div className="footer">
                 <Row className="justify-content-between w-100">
-                    {/* Columna 1 - Logo y descripción */}
                     <Col xs={12} sm={12} md={12} lg={4} className="mb-4 mb-lg-0">
                         <div className="footer-section d-flex align-items-center align-items-lg-start flex-column gap-3">
-                            <img 
+                            <img
                                 src="/logo.png"
                                 alt="Logo de MATE+"
                                 style={{ width: 100, height: 'auto', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)', borderRadius: '100%' }}
@@ -40,57 +39,91 @@ const Footer = () => {
                                 Nuestra visión es hacerte el aprendizaje más fácil y ayudarte a dominar las matemáticas que necesitás para potenciar tu día a día.
                             </p>
                             <div className="footer-social-icons justify-content-start">
-                                <FaFacebook
-                                    size={24}
+                                <a
+                                    href="https://www.facebook.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="footer-social-link"
-                                    aria-label="Facebook"
-                                />
-                                <FaLinkedin
-                                    size={24}
+                                    aria-label="Facebook de Mate+"
+                                >
+                                    <FaFacebook size={24} aria-hidden="true" />
+                                </a>
+                                <a
+                                    href="https://www.linkedin.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="footer-social-link"
-                                    aria-label="LinkedIn"
-                                />
-                                <FaGithub
-                                    size={24}
+                                    aria-label="LinkedIn de Mate+"
+                                >
+                                    <FaLinkedin size={24} aria-hidden="true" />
+                                </a>
+                                <a
+                                    href="https://github.com/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="footer-social-link"
-                                    aria-label="GitHub"
-                                />
+                                    aria-label="GitHub de Mate+"
+                                >
+                                    <FaGithub size={24} aria-hidden="true" />
+                                </a>
                             </div>
                         </div>
                     </Col>
 
-                    {/* Columna 2 - Acerca */}
                     <Col xs={4} sm={4} md={4} lg={2}>
                         <Nav className="footer-section d-flex align-items-center flex-column gap-2">
                             <p className="footer-social-title m-0">Acerca</p>
-                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ whiteSpace: "nowrap" }}>¿Qué es MATE+?</Nav.Link>
-                            <Nav.Link onClick={() => handleScrollToSection("about")} href="#" className="footer-link" style={{ whiteSpace: "nowrap" }}>Sobre nosotros</Nav.Link>
+                            <Nav.Link
+                                onClick={() => handleScrollToSection("about")}
+                                href="/#about"
+                                className="footer-link"
+                                style={{ whiteSpace: "nowrap" }}
+                            >
+                                ¿Qué es MATE+?
+                            </Nav.Link>
+                            <Nav.Link
+                                as={Link}
+                                to="/nosotros"
+                                className="footer-link"
+                                style={{ whiteSpace: "nowrap" }}
+                            >
+                                Sobre nosotros
+                            </Nav.Link>
                         </Nav>
                     </Col>
 
-                    {/* Columna 3 - Comunidad */}
                     <Col xs={4} sm={4} md={4} lg={2}>
                         <div className="footer-section d-flex align-items-center flex-column gap-2">
                             <p className="footer-social-title m-0">Comunidad</p>
-                            <a href="#" className="footer-link">Foro</a>
-                            <a href="#" className="footer-link">Blog</a>
+                            <span className="footer-link footer-link-disabled" title="Próximamente">
+                                Foro (próximamente)
+                            </span>
+                            <span className="footer-link footer-link-disabled" title="Próximamente">
+                                Blog (próximamente)
+                            </span>
                         </div>
                     </Col>
 
-                    {/* Columna 4 - Redes */}
                     <Col xs={4} sm={4} md={4} lg={2}>
                         <div className="footer-section d-flex flex-column align-items-center align-items-lg-end gap-2">
                             <p className="footer-social-title m-0">Redes</p>
-                            <a href="#" className="footer-link">LinkedIn</a>
-                            <a href="#" className="footer-link">Equipo 8</a>
+                            <a
+                                href="https://www.linkedin.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="footer-link"
+                            >
+                                LinkedIn
+                            </a>
+                            <Link to="/nosotros" className="footer-link">
+                                Equipo 8
+                            </Link>
                         </div>
                     </Col>
                 </Row>
 
-                {/* Línea divisoria */}
                 <div className="w-100 my-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.15)' }} />
 
-                {/* Footer inferior */}
                 <Row className="w-100 align-items-center">
                     <Col xs={12} md={6} className="text-center text-md-start">
                         <p className="footer-copyright">
@@ -98,22 +131,20 @@ const Footer = () => {
                         </p>
                     </Col>
                     <Col xs={12} md={6} className="d-flex justify-content-center justify-content-md-end gap-4 gap-md-5 mt-2 mt-md-0">
-                        <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); navigate('/TermsOfService', { state: { tab: 'privacidad' } }); }}
-                            className="footer-copyright"
-                            style={{ textDecoration: 'none', cursor: 'pointer' }}
+                        <Link
+                            to="/privacidad"
+                            state={{ tab: 'privacidad' }}
+                            className="footer-copyright footer-legal-link"
                         >
                             Política de Privacidad
-                        </a>
-                        <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); navigate('/TermsOfService', { state: { tab: 'terminos' } }); }}
-                            className="footer-copyright"
-                            style={{ textDecoration: 'none', cursor: 'pointer' }}
+                        </Link>
+                        <Link
+                            to="/terminos"
+                            state={{ tab: 'terminos' }}
+                            className="footer-copyright footer-legal-link"
                         >
                             Términos y Condiciones
-                        </a>
+                        </Link>
                     </Col>
                 </Row>
             </div>

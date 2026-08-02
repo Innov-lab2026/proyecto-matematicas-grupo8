@@ -12,13 +12,14 @@ import {
   ToastContainer,
   InputGroup,
   Modal,
+  Spinner,
 } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../../src/components/layouts/header/Header";
 
 const useRegisterForm = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, loginWithGoogle, googleLoading } = useAuth();
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,8 +59,14 @@ const useRegisterForm = () => {
       setShowToast(true);
       return;
     }
-    if (password.length < 8) {
-      setToastMessage("❌ La contraseña debe tener al menos 8 caracteres");
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[^A-Za-z0-9]/.test(password)
+    ) {
+      setToastMessage(
+        "❌ La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial",
+      );
       setToastVariant("danger");
       setShowToast(true);
       return;
@@ -130,8 +137,12 @@ const useRegisterForm = () => {
     toastVariant,
     showToast,
     setShowToast,
+    setToastMessage,
+    setToastVariant,
     handleSubmit,
     handleCompleteProfile,
+    loginWithGoogle,
+    googleLoading,
   };
 };
 
@@ -161,10 +172,24 @@ const RegisterPage = () => {
     toastMessage,
     toastVariant,
     setShowToast,
+    setToastMessage,
+    setToastVariant,
     handleChangeValue,
     handleSubmit,
     handleCompleteProfile,
+    loginWithGoogle,
+    googleLoading,
   } = useRegisterForm();
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle(`${window.location.origin}/auth/callback`);
+    } catch (error) {
+      setToastMessage("❌ Error al iniciar sesión con Google. Intentá nuevamente.");
+      setToastVariant("danger");
+      setShowToast(true);
+    }
+  };
 
   return (
     <>
@@ -232,7 +257,7 @@ const RegisterPage = () => {
             >
               Bienvenido a MATE+
             </h3>
-            <Form onSubmit={handleSubmit} className="px-2">
+            <Form method="post" action="#" onSubmit={handleSubmit} className="px-2">
               <Form.Group className="mb-3" controlId="registerEmail">
                 <Form.Label className="visually-hidden">Email</Form.Label>
                 <div
@@ -244,6 +269,8 @@ const RegisterPage = () => {
                       <Form.Control
                         type="email"
                         name="email"
+                        autoComplete="email"
+                        required
                         placeholder="Email"
                         value={email}
                         onChange={handleChangeValue}
@@ -297,6 +324,9 @@ const RegisterPage = () => {
                     <Form.Control
                       type={showPassword ? "text" : "password"}
                       name="password"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
                       placeholder="Contraseña"
                       value={password}
                       onChange={handleChangeValue}
@@ -314,7 +344,7 @@ const RegisterPage = () => {
                     {password && (
                       <img
                         src="/login/icon2.png"
-                        alt="borrar"
+                        alt="Borrar contraseña"
                         onClick={() => setPassword("")}
                         style={{
                           position: "absolute",
@@ -358,6 +388,9 @@ const RegisterPage = () => {
                     <Form.Control
                       type={showConfirmPassword ? "text" : "password"}
                       name="confirmPassword"
+                      autoComplete="new-password"
+                      required
+                      minLength={8}
                       placeholder="Repetir contraseña"
                       value={confirmPassword}
                       onChange={handleChangeValue}
@@ -437,8 +470,9 @@ const RegisterPage = () => {
               >
                 <img
                   src="/login/icon.png"
-                  alt="Google"
-                  style={{ width: 18, height: 18, bacgroundColor: "#E7E7E7" }}
+                  alt=""
+                  aria-hidden="true"
+                  style={{ width: 18, height: 18 }}
                 />
                 Registrarse
               </Button>
@@ -450,20 +484,49 @@ const RegisterPage = () => {
               </div>
               {/* Google */}
               <Button
+                type="button"
                 variant="outline-secondary"
+                onClick={handleGoogleLogin}
+                disabled={googleLoading}
                 className="w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2"
+                style={{ borderColor: "#ddd" }}
               >
-                <img
-                  src="/login/icon.png"
-                  alt="Google"
-                  style={{
-                    width: 18,
-                    height: 18,
-                    bacgroundColor: "#E7E7E7",
-                    color: "#E7E7E7",
-                  }}
-                />
-                Iniciar sesión con Google
+                {googleLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" />
+                    Conectando con Google...
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <g fill="none" fillRule="evenodd">
+                        <path
+                          d="M9 3.48c1.69 0 2.83.73 3.48 1.34l2.54-2.48C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.96l2.91 2.26C4.6 5.05 6.62 3.48 9 3.48z"
+                          fill="#EA4335"
+                        />
+                        <path
+                          d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M3.88 10.78A5.44 5.44 0 0 1 3.6 9c0-.62.1-1.22.28-1.78L.97 4.96A9.06 9.06 0 0 0 0 9c0 1.45.35 2.82.97 4.04l2.91-2.26z"
+                          fill="#FBBC05"
+                        />
+                        <path
+                          d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.4-1.57-5.12-3.74l-2.91 2.26C2.44 15.98 5.48 18 9 18z"
+                          fill="#34A853"
+                        />
+                      </g>
+                    </svg>
+                    Iniciar sesión con Google
+                  </>
+                )}
               </Button>
             </Form>
             <p className="text-center mt-3 small text-muted">
@@ -480,9 +543,9 @@ const RegisterPage = () => {
         </div>
       </Container>
       <ToastContainer
-        position="top-end"
+        position="top-center"
         className="p-3"
-        style={{ zIndex: 99999, position: "fixed" }}
+        style={{ zIndex: 99999, position: "fixed", top: "80px" }}
       >
         <Toast
           onClose={() => setShowToast(false)}

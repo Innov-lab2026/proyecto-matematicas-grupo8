@@ -7,6 +7,7 @@ import {
   ToastContainer,
   InputGroup,
   Spinner,
+  Alert,
 } from "react-bootstrap";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -21,9 +22,10 @@ const useLoginForm = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastVariant, setToastVariant] = useState("success");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showRecuperar, setShowRecuperar] = useState(false);
+  const [formError, setFormError] = useState("");
   const handleChangeValue = (e) => {
     const { name, value } = e.target;
     if (name === "email") {
@@ -31,13 +33,17 @@ const useLoginForm = () => {
     } else if (name === "password") {
       setPassword(value);
     }
+    if (formError) setFormError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
 
     if (!email || !password) {
-      setToastMessage("❌ Por favor, completa todos los campos");
+      const msg = "Por favor, completá todos los campos";
+      setFormError(msg);
+      setToastMessage(`❌ ${msg}`);
       setToastVariant("danger");
       setShowToast(true);
       return;
@@ -45,7 +51,9 @@ const useLoginForm = () => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      setToastMessage("❌ Ingresa un correo electrónico válido");
+      const msg = "Ingresá un correo electrónico válido";
+      setFormError(msg);
+      setToastMessage(`❌ ${msg}`);
       setToastVariant("danger");
       setShowToast(true);
       return;
@@ -53,15 +61,24 @@ const useLoginForm = () => {
 
     setLoading(true);
     try {
-      await login(email, password);
+      await login(email.trim(), password, { rememberMe });
       setToastMessage("✅ ¡Inicio de sesión exitoso! Redirigiendo...");
       setToastVariant("success");
       setShowToast(true);
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
-      setToastMessage("❌ Error al iniciar sesión. Verificá tus credenciales.");
+      const raw = error?.message || "";
+      let msg = "Credenciales inválidas. Revisá tu email y contraseña.";
+      if (/email not confirmed/i.test(raw)) {
+        msg = "Confirmá tu email antes de iniciar sesión.";
+      } else if (/too many|rate limit|429/i.test(raw)) {
+        msg = "Demasiados intentos. Probá de nuevo en unos minutos.";
+      }
+      setFormError(msg);
+      setToastMessage(`❌ ${msg}`);
       setToastVariant("danger");
       setShowToast(true);
+      setPassword("");
     } finally {
       setLoading(false);
     }
@@ -106,6 +123,7 @@ const useLoginForm = () => {
     googleLoading,
     showRecuperar,
     setShowRecuperar,
+    formError,
   };
 };
 
@@ -129,6 +147,7 @@ const LoginPage = () => {
     googleLoading,
     showRecuperar,
     setShowRecuperar,
+    formError,
   } = useLoginForm();
 
   return (
@@ -196,7 +215,12 @@ const LoginPage = () => {
             >
               ¡Qué bueno verte de vuelta!
             </h3>
-            <Form onSubmit={handleSubmit} className="px-2">
+            <Form method="post" action="#" onSubmit={handleSubmit} className="px-2">
+              {formError && (
+                <Alert variant="danger" role="alert" className="py-2">
+                  {formError}
+                </Alert>
+              )}
               <Form.Group className="mb-3" controlId="loginEmail">
                 <Form.Label className="visually-hidden">Correo electrónico</Form.Label>
                 <div
@@ -208,9 +232,12 @@ const LoginPage = () => {
                       <Form.Control
                         type="email"
                         name="email"
+                        autoComplete="email"
+                        required
                         placeholder="Correo electrónico"
                         value={email}
                         onChange={handleChangeValue}
+                        aria-invalid={Boolean(formError)}
                         style={{
                           width: "100%",
                           backgroundColor: "#f5f5f5",
@@ -261,9 +288,12 @@ const LoginPage = () => {
                     <Form.Control
                       type={showPassword ? "text" : "password"}
                       name="password"
+                      autoComplete="current-password"
+                      required
                       placeholder="Contraseña"
                       value={password}
                       onChange={handleChangeValue}
+                      aria-invalid={Boolean(formError)}
                       style={{
                         width: "100%",
                         backgroundColor: "#f5f5f5",
@@ -277,7 +307,7 @@ const LoginPage = () => {
                     {password && (
                       <img
                         src="/login/icon2.png"
-                        alt="borrar"
+                        alt="Borrar contraseña"
                         onClick={() => setPassword("")}
                         style={{
                           position: "absolute",
@@ -308,10 +338,11 @@ const LoginPage = () => {
                 <Form.Check
                   type="checkbox"
                   id="rememberMe"
-                  label="Recordarme"
+                  label="Recordarme en este dispositivo"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                   variant="dark"
+                  title="Si lo desmarcás, la sesión se cierra al cerrar el navegador"
                 />
                 <span
                   onClick={() => setShowRecuperar(true)}
@@ -407,9 +438,9 @@ const LoginPage = () => {
         </div>
       </Container>
       <ToastContainer
-        position="top-end"
+        position="top-center"
         className="p-3"
-        style={{ zIndex: 1050, position: "fixed" }}
+        style={{ zIndex: 1050, position: "fixed", top: "80px" }}
       >
         <Toast
           onClose={() => setShowToast(false)}

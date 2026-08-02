@@ -13,6 +13,15 @@ function TermsOfService() {
  const navigate = useNavigate();
 
  useEffect(() => {
+   const path = location.pathname.toLowerCase();
+   if (path.includes('privacidad')) {
+     setActiveTab('privacidad');
+     return;
+   }
+   if (path.includes('terminos')) {
+     setActiveTab('terminos');
+     return;
+   }
    const tabFromState = location?.state?.tab;
    const params = new URLSearchParams(location.search);
    const tabFromQuery = params.get('tab');

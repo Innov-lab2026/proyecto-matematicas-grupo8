@@ -8,12 +8,40 @@ const isValidConfig = supabaseUrl &&
                      !supabaseUrl.includes('[TU_PROYECTO]') &&
                      !supabaseKey.includes('[ANON_KEY]');
 
+const authStorage = {
+    getItem: (key) => {
+        return sessionStorage.getItem(key) ?? localStorage.getItem(key);
+    },
+    setItem: (key, value) => {
+        const ephemeral = sessionStorage.getItem('mate_auth_ephemeral') === '1';
+        if (ephemeral) {
+            sessionStorage.setItem(key, value);
+            localStorage.removeItem(key);
+        } else {
+            localStorage.setItem(key, value);
+            sessionStorage.removeItem(key);
+        }
+    },
+    removeItem: (key) => {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
+    },
+};
+
 let supabase;
 
 if (isValidConfig) {
-    console.log('Supabase Client (Front-End): Intentando inicializar con credenciales reales.');
+    if (import.meta.env.DEV) {
+        console.log('Supabase Client (Front-End): Intentando inicializar con credenciales reales.');
+    }
     try {
-        supabase = createClient(supabaseUrl, supabaseKey);
+        supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                storage: authStorage,
+                persistSession: true,
+                autoRefreshToken: true,
+            },
+        });
         // Limpieza de seguridad para evitar sesiones "fantasma" del modo mock
         if (localStorage.getItem('supabase.mock.session')) localStorage.removeItem('supabase.mock.session');
     } catch (error) {

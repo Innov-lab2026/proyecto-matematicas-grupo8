@@ -9,7 +9,6 @@ import {
 import Register from "../pages/Register";
 import Landing from "../pages/Landing.jsx";
 import Dashboard from "../pages/Dashboard.jsx";
-import Profile from "../pages/Profile";
 import NotFound from "../pages/NotFound";
 import LoginPage from "../pages/Login";
 import ConsolaAdmin from "../pages/ConsolaAdmin";
@@ -27,14 +26,14 @@ import RankingPage from "../pages/Ranking.jsx";
 import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx";
 import Perfil from "../components/layouts/Perfil/Perfil.jsx";
 import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
+import ResetPassword from "../pages/ResetPassword.jsx";
 
 // ✅ Componente para proteger rutas autenticadas
-const ProtectedRoute = ({ children, requireOnboarding = false }) => {
+const ProtectedRoute = ({ children, requireOnboarding = false, requireAdmin = false }) => {
   const { user, profile, shouldShowOnboarding, loading, initialized, profileError, refreshProfile, logout } = useAuth();
   const location = useLocation();
-  console.log({ user, profile, shouldShowOnboarding, loading, initialized });
   // ⏳ Esperar a que termine la inicialización
-  if (loading || !initialized) {
+  if (!initialized || loading) {
     return <LoadingSpinner message="Validando sesión..." />;
   }
 
@@ -76,6 +75,13 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
+  if (requireAdmin) {
+    const rol = profile?.rol;
+    if (rol !== "admin" && rol !== "superadmin") {
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
   // ✅ Si todo está bien, mostrar la ruta
   return children;
 };
@@ -84,14 +90,19 @@ const ProtectedRoute = ({ children, requireOnboarding = false }) => {
 const PublicRoute = ({ children, redirectAuthenticated = true }) => {
   const { user, profile, shouldShowOnboarding, loading, initialized, registerLoading, profileError, refreshProfile, logout } = useAuth();
 
-  // ⏳ Esperar a que termine la inicialización
-  if (loading || !initialized) {
+  // Solo bloquear en la primera carga; no desmontar login/register en requests locales.
+  if (!initialized) {
     return <LoadingSpinner message="Iniciando sesión..." />;
   }
 
   // ⏳ Mostrar spinner durante el registro
   if (registerLoading) {
     return <LoadingSpinner message="Creando tu cuenta..." />;
+  }
+
+  // Evitar spinner global por loading de perfil cuando aún no hay sesión
+  if (loading && user) {
+    return <LoadingSpinner message="Iniciando sesión..." />;
   }
 
   // 🔓 Si no está autenticado, mostrar la ruta pública
@@ -130,10 +141,10 @@ const PublicRoute = ({ children, redirectAuthenticated = true }) => {
 };
 
 export default function AppRouter() {
-  const { loading, initialized } = useAuth();
+  const { initialized } = useAuth();
 
-  // ⏳ Loading global mientras se inicializa la autenticación
-  if (loading || !initialized) {
+  // ⏳ Loading global solo hasta inicializar auth (no en cada login)
+  if (!initialized) {
     return <LoadingSpinner message="Iniciando sesión..." />;
   }
 
@@ -142,7 +153,10 @@ export default function AppRouter() {
       <Routes>
         {/* 🌐 Rutas públicas (siempre accesibles) */}
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/TermsOfService" element={<TermsOfService />} />
+        <Route path="/terminos" element={<TermsOfService />} />
+        <Route path="/privacidad" element={<TermsOfService />} />
         <Route path="/nosotros" element={<Nosotros />} />
 
         {/* 📄 Landing - Página principal pública */}
@@ -183,10 +197,31 @@ export default function AppRouter() {
           }
         />
 
-        {/* 📚 Rutas de previsualización (públicas) */}
-        <Route path="/desafios" element={<Desafios />} />
-        <Route path="/ejercicios/:seccionId?" element={<ModuloEjercicios />} />
-        <Route path="/ejercicios2" element={<DragConstraints />} />
+        {/* 📚 Aprendizaje (requieren autenticación) */}
+        <Route
+          path="/desafios"
+          element={
+            <ProtectedRoute>
+              <Desafios />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ejercicios/:seccionId?"
+          element={
+            <ProtectedRoute>
+              <ModuloEjercicios />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ejercicios2"
+          element={
+            <ProtectedRoute>
+              <DragConstraints />
+            </ProtectedRoute>
+          }
+        />
 
         {/* 🔒 Rutas protegidas (requieren autenticación) */}
 
@@ -213,11 +248,7 @@ export default function AppRouter() {
         {/* 👤 Perfil y Configuración */}
         <Route
           path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/perfil" replace />}
         />
         <Route
           path="/perfil"
@@ -260,7 +291,7 @@ export default function AppRouter() {
         <Route
           path="/admin-be"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin>
               <ConsolaAdmin />
             </ProtectedRoute>
           }

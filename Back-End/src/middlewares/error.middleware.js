@@ -7,7 +7,15 @@ export const errorHandler = (err, req, res, next) => {
     let message = 'Evento inesperado en el núcleo del servidor';
     let errors = [];
 
-    if (err instanceof ZodError) {
+    // Body JSON inválido (express.json / body-parser)
+    if (
+        err instanceof SyntaxError &&
+        (err.status === 400 || err.statusCode === 400 || 'body' in err)
+    ) {
+        statusCode = 400;
+        message = 'JSON malformado en el cuerpo de la solicitud';
+        errors = [message];
+    } else if (err instanceof ZodError) {
         statusCode = 400;
         message = 'Inconsistencia en datos ingresados';
         errors = err.issues.map(issue => `${issue.path.join('.')} ${issue.message}`);

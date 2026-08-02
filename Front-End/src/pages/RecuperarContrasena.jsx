@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import {
   Modal,
   Button,
@@ -7,6 +6,7 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
+import { supabase } from "../config/supabaseClient";
 
 const RecuperarContrasena = ({ show, onHide }) => {
   const [email, setEmail] = useState("");
@@ -25,22 +25,25 @@ const RecuperarContrasena = ({ show, onHide }) => {
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
-    setToastMessage("❌ Ingresá un correo electrónico válido");
-    setToastVariant("danger");
-    setShowToast(true);
-    return;
-  }
+    if (!emailRegex.test(email.trim())) {
+      setToastMessage("❌ Ingresá un correo electrónico válido");
+      setToastVariant("danger");
+      setShowToast(true);
+      return;
+    }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://localhost:5173/reset-password",
-        // cambiar por la URL de producción de Vercel
+      const siteUrl =
+        import.meta.env.VITE_SITE_URL || window.location.origin;
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${siteUrl.replace(/\/$/, "")}/reset-password`,
       });
 
       if (error) throw error;
 
-      setToastMessage("✅ Te enviamos un correo electrónico para restablecer tu contraseña");
+      setToastMessage(
+        "✅ Te enviamos un correo electrónico para restablecer tu contraseña",
+      );
       setToastVariant("success");
       setShowToast(true);
       setEmail("");
@@ -60,15 +63,17 @@ const RecuperarContrasena = ({ show, onHide }) => {
         <Modal.Header closeButton>
           <Modal.Title>Recuperar contraseña</Modal.Title>
         </Modal.Header>
-        <Form onSubmit={handleSubmit}>
+        <Form method="post" onSubmit={handleSubmit}>
           <Modal.Body>
             <p className="text-muted mb-3">
-              Ingresá tu correo electrónico y te enviaremos un link para restablecer tu
-              contraseña.
+              Ingresá tu correo electrónico y te enviaremos un link para
+              restablecer tu contraseña.
             </p>
             <Form.Group controlId="forgotEmail">
               <Form.Control
                 type="email"
+                autoComplete="email"
+                required
                 placeholder="tu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -91,9 +96,9 @@ const RecuperarContrasena = ({ show, onHide }) => {
       </Modal>
 
       <ToastContainer
-        position="top-end"
+        position="top-center"
         className="p-3"
-        style={{ zIndex: 99999, position: "fixed" }}
+        style={{ zIndex: 99999, position: "fixed", top: "80px" }}
       >
         <Toast
           onClose={() => setShowToast(false)}

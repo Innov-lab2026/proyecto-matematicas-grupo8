@@ -218,6 +218,27 @@ export const actualizarPerfil = async (req, res, next) => {
   }
 };
 
+export const getDesafioActual = async (req, res, next) => {
+  try {
+    const uid = req.user.id;
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: uid },
+      select: {
+        desafioActualId: true,
+        desafioActual: true,
+      },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    return res.status(200).json(usuario);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const actualizarDesafioActual = async (req, res, next) => {
   try {
     const uid = req.user.id;

@@ -20,11 +20,26 @@ import errorHandler from "./middlewares/error.middleware.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configuración de CORS para permitir solicitudes desde el frontend
+const allowedOrigins = [
+  "https://matemas.vercel.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  ...(process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+];
+
 app.use(
   cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    origin(origin, callback) {
+      // Permitir tools sin Origin (curl, healthchecks) y orígenes whitelisteados
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );

@@ -39,19 +39,40 @@
     line-height: 1.6;
 }
 
-/* Enlaces del footer */
-.footer-link {
-    color: rgba(0, 0, 0, 0.85);
+/* Enlaces del footer — contraste WCAG AA sobre #8FD8FD */
+.footer-link,
+.footer a.footer-link,
+.footer .nav-link.footer-link {
+    color: #0A3D91 !important;
     text-decoration: none;
     font-size: clamp(0.85rem, 1vw, 1rem);
-    font-weight: 400;
+    font-weight: 500;
     transition: color 0.3s ease;
     position: relative;
     padding: 0.25rem 0;
 }
 
-.footer-link:hover {
-    color: black;
+.footer-link:hover,
+.footer a.footer-link:hover,
+.footer .nav-link.footer-link:hover {
+    color: #062555 !important;
+}
+
+.footer-link-disabled {
+    color: #1a1a1a !important;
+    opacity: 0.75;
+    cursor: default;
+}
+
+.footer-legal-link {
+    color: #0A3D91 !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-legal-link:hover {
+    color: #062555 !important;
+    text-decoration: underline;
 }
 
 .footer-link:focus-visible {
@@ -77,7 +98,7 @@
 }
 
 .footer-social-link {
-    color: rgba(0, 0, 0, 0.85);
+    color: #0A3D91;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -85,7 +106,7 @@
     width: clamp(20px, 4vw, 30px);
     height: clamp(20px, 4vw, 30px);
     border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(10, 61, 145, 0.12);
     text-decoration: none;
     padding: 6px;
     cursor: pointer;

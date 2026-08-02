@@ -35,6 +35,15 @@ const Landing = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const hash = window.location.hash?.replace('#', '');
+        if (!hash) return;
+        const timer = setTimeout(() => {
+            document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth' });
+        }, 200);
+        return () => clearTimeout(timer);
+    }, []);
+
     const scrollToTop = () => {
         const container = containerRef.current;
         if (container?.scrollTop > 0) {
@@ -45,11 +54,16 @@ const Landing = () => {
 
     return (
         <Container ref={containerRef} fluid className="p-0 m-0 overflow-auto overflow-x-hidden" style={{ backgroundColor: "#F0F1EB" }}>
+            <a href="#contenido-principal" className="skip-link">
+                Saltar al contenido
+            </a>
             <Header />
-            <FirstSection navigate={navigate} />
-            <Banner />
-            <Introduction />
-            <SecondSection />
+            <main id="contenido-principal">
+                <FirstSection navigate={navigate} />
+                <Banner />
+                <Introduction />
+                <SecondSection />
+            </main>
             <Footer />
 
             {/* Botón de Instalación PWA */}

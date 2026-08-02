@@ -260,16 +260,30 @@ export const AuthProvider = ({ children }) => {
     }
   }, [session?.user]);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, options = {}) => {
+    const { rememberMe = true } = options;
+    // No tocar loading global: desmontaría /login y borraría el formulario (BUG-001).
     try {
-      setLoading(true);
+      if (rememberMe) {
+        sessionStorage.removeItem("mate_auth_ephemeral");
+      } else {
+        sessionStorage.setItem("mate_auth_ephemeral", "1");
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        if (error.status === 400) throw error;
+        const isCredentialError =
+          error.status === 400 ||
+          error.status === 401 ||
+          error.code === "invalid_credentials" ||
+          /invalid login|invalid_credentials|email not confirmed/i.test(
+            error.message || "",
+          );
+        if (isCredentialError) throw error;
         throw new Error("SUPABASE_UNAVAILABLE");
       }
 
@@ -284,10 +298,8 @@ export const AuthProvider = ({ children }) => {
         lastFetchedId.current = null;
         await fetchProfile(data.user);
       }
-      setLoading(false);
       return data;
     } catch (err) {
-      setLoading(false);
       const isMockMode = !import.meta.env.VITE_SUPABASE_URL ||
         import.meta.env.VITE_SUPABASE_URL.includes("[TU_PROYECTO]");
 

@@ -26,14 +26,12 @@ function NotFound() {
           <div className="not-found-text-box">
             <h1 className="not-found-title">ERROR 404</h1>
             <p className="not-found-description">
-              Lo sentimos, la página que estás buscando no existe. Podés volver a{' '}
-              <a 
-                href="https://matemas.vercel.app/" 
+              Lo sentimos, la página que estás buscando no existe. Podés volver al{' '}
+              <a
+                href="/"
                 className="not-found-link"
-                target="_blank" 
-                rel="noopener noreferrer"
               >
-                matemas.com
+                inicio de Mate+
               </a>
             </p>
           </div>

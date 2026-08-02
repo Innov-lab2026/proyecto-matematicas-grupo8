@@ -9,24 +9,25 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Mate+',        // Nombre completo
-        short_name: 'Mate+',             // Nombre corto
-        description: 'Aplicación de matemáticas',
-        theme_color: '#ffffff',          // Color de la barra de título
-        background_color: '#ffffff',     // Color de fondo al cargar
-        display: 'fullscreen',           // Apariencia (standalone, fullscreen, etc.)
-        start_url: '/login',                  // URL de inicio
-        icons: [                         // ¡ICONOS OBLIGATORIOS!
+        name: 'Mate+',
+        short_name: 'Mate+',
+        description: 'Aprendé matemáticas a tu ritmo con Mate+',
+        lang: 'es',
+        theme_color: '#8FD8FD',
+        background_color: '#F0F1EB',
+        display: 'standalone',
+        start_url: '/',
+        icons: [
           {
-            src: '/192x192.png',    // Ruta al icono (debes crearlo)
+            src: '/192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/512x512.png',    // Ruta al icono (debes crearlo)
+            src: '/512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'      // Para mejor adaptación
+            purpose: 'any maskable'
           }
         ]
       },

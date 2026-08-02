@@ -16,6 +16,27 @@ function VideoPage({
   // Condición opcional: deshabilitar "Continuar" si es el último video del array
   const isLastVideo = currentIndex === totalVideos - 1;
 
+  const toEmbedUrl = (url) => {
+    if (!url) return '';
+    if (url.includes('youtube-nocookie.com/embed/') || url.includes('youtube.com/embed/')) {
+      return url.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
+    }
+    try {
+      const parsed = new URL(url);
+      const id =
+        parsed.searchParams.get('v') ||
+        (parsed.pathname.startsWith('/embed/')
+          ? parsed.pathname.split('/')[2]
+          : parsed.pathname.replace('/', ''));
+      if (id) return `https://www.youtube-nocookie.com/embed/${id}`;
+    } catch {
+      /* ignore */
+    }
+    return url;
+  };
+
+  const embedSrc = toEmbedUrl(videoUrl);
+
   return (
     <div className="video-page-container">
       {/* Header fijo */}
@@ -35,12 +56,13 @@ function VideoPage({
 
         {/* Contenedor del Video Dinámico */}
         <div className="video-wrapper">
-          <iframe 
+          <iframe
             className="video-player"
-            src={videoUrl} 
-            title={title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+            src={embedSrc}
+            title={title || 'Video explicativo de Mate+'}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
           ></iframe>
         </div>
 
