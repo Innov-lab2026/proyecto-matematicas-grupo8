@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Oval } from "react-loader-spinner";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useAuth } from "../../../context/AuthContext";
+import useCountUp from "../../../hooks/useCountUp";
 
 // ============= HEADER SECTION =============
-const HeaderSection = ({ isOpen = false }) => {
+const HeaderSection = ({ isOpen = false, animateRewards = false }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
   const { profile, refreshProfile } = useAuth();
@@ -45,7 +46,11 @@ const HeaderSection = ({ isOpen = false }) => {
   const KPIs = [
     { title: "Racha", value: profile?.racha ?? 0, icon: "kpis/streak.png" },
     { title: "Monedas", value: profile?.tokens ?? 0, icon: "kpis/coin.png" },
-    { title: "Trofeos", value: 0, icon: "kpis/cup.png" },
+    {
+      title: "Trofeos",
+      value: profile?.seccionesAprobadasCount ?? 0,
+      icon: "kpis/cup.png",
+    },
     {
       title: "Experiencia",
       value: profile?.puntos ?? 0,
@@ -59,6 +64,15 @@ const HeaderSection = ({ isOpen = false }) => {
           100,
       )
     : 0;
+
+  const progresoAnimado = useCountUp(progresoPorcentaje, {
+    enabled: isOpen && animateRewards && !loadingHeader,
+    durationMs: 1200,
+  });
+  const progresoMostrado =
+    isOpen && animateRewards && !loadingHeader
+      ? progresoAnimado
+      : progresoPorcentaje;
 
   // Tamaños responsive
   const getSizes = () => {
@@ -223,11 +237,11 @@ const HeaderSection = ({ isOpen = false }) => {
               >
                 <div
                   style={{
-                    width: `${progresoPorcentaje}%`,
+                    width: `${progresoMostrado}%`,
                     height: "100%",
                     backgroundColor: "#FFDB54",
                     borderRadius: "20px",
-                    transition: "width 0.5s ease",
+                    transition: "width 0.2s linear",
                   }}
                 />
               </div>
@@ -239,7 +253,7 @@ const HeaderSection = ({ isOpen = false }) => {
                 fontWeight: 400,
               }}
             >
-              Progreso {progresoPorcentaje}%
+              Progreso {progresoMostrado}%
             </span>
           </div>
 
@@ -252,14 +266,15 @@ const HeaderSection = ({ isOpen = false }) => {
               width: "100%",
             }}
           >
-            {KPIs.map((kpi, index) => (
+            {KPIs.map((kpi) => (
               <CardKPI
-                key={index}
+                key={kpi.title}
                 title={kpi.title}
                 value={kpi.value}
                 icon={kpi.icon}
                 isMobile={isMobile}
                 sizes={sizes}
+                animate={isOpen && animateRewards && !loadingHeader}
               />
             ))}
           </div>
@@ -271,7 +286,10 @@ const HeaderSection = ({ isOpen = false }) => {
 };
 
 // ============= CARD KPI =============
-const CardKPI = ({ title, value, icon, isMobile, sizes }) => {
+const CardKPI = ({ title, value, icon, isMobile, sizes, animate = false }) => {
+  const animatedValue = useCountUp(value, { enabled: animate, durationMs: 1000 });
+  const shown = animate ? animatedValue : value;
+
   return (
     <div
       className="d-flex flex-column align-items-center justify-content-between"
@@ -324,7 +342,7 @@ const CardKPI = ({ title, value, icon, isMobile, sizes }) => {
               fontWeight: 700,
             }}
           >
-            {value}
+            {shown}
           </p>
         </div>
       </div>

@@ -59,7 +59,8 @@ export default function CursoSection() {
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
   const handleToDesafios = () => {
-    navigate("/desafios");
+    const seccionActual = lecciones[currentIndex];
+    navigate(seccionActual ? `/desafios/${seccionActual.id}` : "/desafios");
     setShow(false);
   };
   const handleToEjercicios = () => {

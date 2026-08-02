@@ -6,14 +6,25 @@ import ButtonFloat from "../components/ui/ButtonFloat/ButtonFloat";
 import CursoSection from "../components/cursos/Section";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import FooterDash from "../components/layouts/FooterDash/FooterDash";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import HeaderSection from "../components/layouts/HeaderDashboardCollapse/HeaderDashboardCollapse";
 import SidebarEscenarios from "../components/layouts/SidebarDesafios/SidebarDesafios";
 
 const DashboardPage = () => {
     const isMobile = useMediaQuery("(max-width: 768px)");
-    const [showHeader, setShowHeader] = useState(false);
+    const location = useLocation();
+    const [showHeader, setShowHeader] = useState(Boolean(location.state?.openRewards));
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [rewardPulse, setRewardPulse] = useState(location.state?.rewardPulse || null);
+
+    useEffect(() => {
+        if (!location.state?.openRewards) return;
+        setShowHeader(true);
+        setRewardPulse(location.state.rewardPulse || null);
+        // Limpiar state para no reabrir al refrescar
+        window.history.replaceState({}, document.title);
+    }, [location.state]);
 
     return (
         <main style={{
@@ -87,7 +98,7 @@ const DashboardPage = () => {
                         transform: showHeader ? "translateY(0)" : "translateY(-20px)",
                         transition: "opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                     }}>
-                        <HeaderSection isOpen={showHeader} />
+                        <HeaderSection isOpen={showHeader} animateRewards={Boolean(rewardPulse)} />
                     </div>
                 </div>
 

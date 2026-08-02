@@ -11,3 +11,10 @@ logs
 .project
 .DS_Store
 Thumbs.db
+
+# Local / sensibles (no subir)
+tmp-*/
+tmp-*.txt
+Back-End/data/lecciones.csv
+docs/VIDEOS-CLOUDINARY.md
+*.local

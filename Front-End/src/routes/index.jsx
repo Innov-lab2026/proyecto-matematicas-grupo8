@@ -27,6 +27,7 @@ import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx
 import Perfil from "../components/layouts/Perfil/Perfil.jsx";
 import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
 import ResetPassword from "../pages/ResetPassword.jsx";
+import LeccionCompleta from "../components/layouts/LeccionCompleta/LeccionCompleta.jsx";
 
 // ✅ Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children, requireOnboarding = false, requireAdmin = false }) => {
@@ -199,7 +200,7 @@ export default function AppRouter() {
 
         {/* 📚 Aprendizaje (requieren autenticación) */}
         <Route
-          path="/desafios"
+          path="/desafios/:seccionId?"
           element={
             <ProtectedRoute>
               <Desafios />
@@ -219,6 +220,14 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <DragConstraints />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leccion-completa"
+          element={
+            <ProtectedRoute>
+              <LeccionCompleta />
             </ProtectedRoute>
           }
         />

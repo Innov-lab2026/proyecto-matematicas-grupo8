@@ -24,6 +24,15 @@ function ModuloEjercicios() {
   const [error, setError] = useState(null);
   const [ultimoResultado, setUltimoResultado] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [sessionStats, setSessionStats] = useState({
+    correctas: 0,
+    respondidas: 0,
+    xpGanado: 0,
+    monedasGanadas: 0,
+    racha: profile?.racha ?? 0,
+    seccionNombre: null,
+    seccionAprobada: false,
+  });
 
   const progresoRonda = escenarios.length
     ? Math.round(((indexActual + 1) / escenarios.length) * 100)
@@ -85,6 +94,16 @@ function ModuloEjercicios() {
       // Desbloquear UI antes de refrescar perfil (el refresh no debe trabar el feedback)
       setEnviando(false);
 
+      setSessionStats((prev) => ({
+        correctas: prev.correctas + (res.data.esCorrecto ? 1 : 0),
+        respondidas: prev.respondidas + 1,
+        xpGanado: prev.xpGanado + (res.data.puntosGanados ?? 0),
+        monedasGanadas: prev.monedasGanadas + (res.data.tokensGanados ?? 0),
+        racha: res.data.racha ?? prev.racha,
+        seccionNombre: res.data.seccionAprobada || prev.seccionNombre,
+        seccionAprobada: prev.seccionAprobada || Boolean(res.data.seccionAprobada),
+      }));
+
       if (
         res.data.esCorrecto ||
         Boolean(res.data.seccionAprobada) ||
@@ -93,12 +112,6 @@ function ModuloEjercicios() {
       ) {
         refreshProfile().catch((err) =>
           console.warn("No se pudo refrescar el perfil:", err),
-        );
-      }
-
-      if (res.data.seccionAprobada) {
-        console.log(
-          `🏆 ¡Sección "${res.data.seccionAprobada}" aprobada! +${res.data.tokensGanados} tokens`,
         );
       }
     } catch (err) {
@@ -120,13 +133,49 @@ function ModuloEjercicios() {
     if (indexActual < escenarios.length - 1) {
       setIndexActual(indexActual + 1);
       setUltimoResultado(null);
-    } else {
-      alert(
-        "🎉 ¡Felicidades! Has completado todos los ejercicios de esta sección.",
-      );
-      await refreshProfile();
-      navigate("/dashboard");
+      return;
     }
+
+    try {
+      await refreshProfile();
+    } catch {
+      /* ignore */
+    }
+
+    const total = Math.max(sessionStats.respondidas, escenarios.length, 1);
+    const porcentajeCorrectas = Math.round(
+      (sessionStats.correctas / total) * 100,
+    );
+    // Si acabamos de aprobar, el perfil en memoria puede estar un tick atrasado.
+    const aprobadas =
+      (profile?.seccionesAprobadasCount ?? 0) +
+      (sessionStats.seccionAprobada && sessionStats.monedasGanadas > 0 ? 1 : 0);
+    const progresoGlobal =
+      profile?.totalSecciones > 0
+        ? Math.min(
+            100,
+            Math.round((aprobadas / profile.totalSecciones) * 100),
+          )
+        : null;
+
+    navigate("/leccion-completa", {
+      replace: true,
+      state: {
+        rewards: {
+          racha: sessionStats.racha || profile?.racha || 1,
+          xpGanado: sessionStats.xpGanado,
+          xpTotal: (profile?.puntos ?? 0) + sessionStats.xpGanado,
+          monedasGanadas: sessionStats.monedasGanadas,
+          porcentajeCorrectas,
+          progresoGlobal,
+          seccionNombre:
+            sessionStats.seccionNombre ||
+            ejercicioActual?.categoria ||
+            "Módulo completado",
+          seccionAprobada: sessionStats.seccionAprobada,
+        },
+      },
+    });
   };
 
   if (cargando) {

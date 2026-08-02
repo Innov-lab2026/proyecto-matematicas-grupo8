@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
 
-const SlideCard = ({ isActive, onClick, onNext, children }) => {
+const SlideCard = ({ isActive, onClick, onNext, children, nextLabel = "Siguiente" }) => {
   return (
     <div
       onClick={onClick}
@@ -28,7 +28,7 @@ const SlideCard = ({ isActive, onClick, onNext, children }) => {
           onNext();
         }}
       >
-        Siguiente
+        {nextLabel}
       </Button>
     </div>
   );
