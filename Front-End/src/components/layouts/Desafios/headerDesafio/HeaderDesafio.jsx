@@ -5,7 +5,7 @@ import ModalAyuda from '../../Consejos/ModalAyuda.jsx';
 import ModalCalculadora from '../../Calculadora/Calculadora.jsx';
 import "./headerDesafio.css";
 
-export default function HeaderDesafio({ progreso = 100 }) {
+export default function HeaderDesafio({ progreso = 100, seccionId = null }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +31,12 @@ export default function HeaderDesafio({ progreso = 100 }) {
     setIsOpen(false);
   };
 
+  const openLevelVideo = () => {
+    if (!seccionId) return;
+    const returnTo = encodeURIComponent(location.pathname + location.search);
+    navigate(`/desafios/${seccionId}?next=${returnTo}`);
+  };
+
   return (
     <>
       <ModalAyuda isOpen={isOpen} onClose={closeHelpModal} />
@@ -51,8 +57,15 @@ export default function HeaderDesafio({ progreso = 100 }) {
         </div>
 
         <div className="header-desafio-icons">
-          <button className="icon-btn" type="button">
-            <img src="/icons/Book.png" alt="book" />
+          <button
+            className="icon-btn"
+            type="button"
+            onClick={openLevelVideo}
+            disabled={!seccionId}
+            title={seccionId ? "Ver video de este nivel" : "Video no disponible"}
+            aria-label="Ver video de este nivel"
+          >
+            <img src="/icons/Book.png" alt="" />
           </button>
 
           <button className="icon-btn" type="button" onClick={() => setIsOpenCalculator(true)} title="Abrir calculadora">

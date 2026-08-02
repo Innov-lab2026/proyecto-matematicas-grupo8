@@ -12,7 +12,8 @@ import fotoPerfilUser from '../../../../assets/Foto_perfil.png';
 export default function Header({ showHeader, setShowHeader }) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
+  const displayName = profile?.nombre?.trim() || profile?.email?.split("@")[0] || "Usuario";
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -88,7 +89,7 @@ export default function Header({ showHeader, setShowHeader }) {
             <Dropdown.Menu className="dropdown-menu-custom mt-2 shadow-lg" style={{ minWidth: '220px' }}>
               <Dropdown.Item onClick={handleProfile} className="py-2">
                 <FaUser className="me-2" />
-                Paula
+                {displayName}
               </Dropdown.Item>
 
               <Dropdown.Item onClick={handleSettings} className="py-2">

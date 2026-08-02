@@ -266,8 +266,9 @@ function ModuloEjercicios() {
               manejarRespuesta({ respuestaUsuario })
             }
             ultimoResultado={ultimoResultado}
-            enviando={enviando} // ✅ Pasar el estado
+            enviando={enviando}
             progreso={progresoRonda}
+            seccionId={idSeccionActual}
           />
         ) : (
           <EjercicioChoice
@@ -278,8 +279,9 @@ function ModuloEjercicios() {
             onContinue={manejarContinuar}
             onResponder={(opcionId) => manejarRespuesta({ opcionId })}
             ultimoResultado={ultimoResultado}
-            enviando={enviando} // ✅ Pasar el estado
+            enviando={enviando}
             progreso={progresoRonda}
+            seccionId={idSeccionActual}
           />
         )}
       </div>

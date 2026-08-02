@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Button } from "react-bootstrap";
-import { IoPlayCircleOutline } from "react-icons/io5";
+import { IoPlayCircleOutline, IoLockClosed, IoCheckmarkCircle } from "react-icons/io5";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 
 export default function SectionItem({
@@ -10,35 +10,37 @@ export default function SectionItem({
   setCurrentIndex,
   index,
   handleShow,
+  locked = false,
+  aprobado = false,
 }) {
   const isActive = index === currentIndex;
   const isMobile = useMediaQuery("(max-width: 768px)");
-
-  // Calcular posición relativa (distancia desde el índice activo)
   const distance = index - currentIndex;
 
-  // Valores de animación basados en la distancia
   let opacity = 0;
   let yOffset = 0;
   let zIndex = 0;
   let scale = 1;
 
   if (distance === 0) {
-    opacity = 1;
+    opacity = locked ? 0.75 : 1;
     yOffset = 0;
     zIndex = 10;
     scale = 1;
   } else if (distance === 1) {
     opacity = 0.5;
-    yOffset = isMobile ? -150 : -150;
+    yOffset = -150;
     zIndex = 5;
     scale = 0.9;
   } else if (distance === 2) {
     opacity = 0.15;
-    yOffset = isMobile ? -250 : -250;
+    yOffset = -250;
     zIndex = 3;
     scale = 0.8;
   }
+
+  const nivelNumero = leccion.grado || index + 1;
+  const accent = locked ? "#94A3B8" : isActive ? "#52C5FE" : "white";
 
   return (
     <motion.div
@@ -55,8 +57,9 @@ export default function SectionItem({
         backgroundPosition: "center",
         boxShadow: isActive ? "0px -3px 4.4px 0px #FFFFFF4F" : "none",
         cursor: "pointer",
-        backgroundColor: "#FFE16F",
+        backgroundColor: locked ? "#E2E8F0" : "#FFE16F",
         zIndex: zIndex,
+        filter: locked ? "grayscale(0.35)" : "none",
       }}
       initial={false}
       animate={{
@@ -82,7 +85,7 @@ export default function SectionItem({
           width: "100%",
           height: "100%",
           zIndex: -1,
-          opacity: isActive ? 0.1 : 0,
+          opacity: isActive && !locked ? 0.1 : 0,
           backgroundImage: isActive ? "url(/bg-selected.jpg)" : "none",
           borderTopLeftRadius: "80px",
           borderTopRightRadius: "80px",
@@ -103,13 +106,15 @@ export default function SectionItem({
       >
         <h3
           style={{
-            color: isActive ? "#52C5FE" : "white",
+            color: accent,
             fontWeight: "bold",
             fontSize: "10rem",
             textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+            margin: 0,
+            lineHeight: 1,
           }}
         >
-          {index + 1}
+          {nivelNumero}
         </h3>
 
         <div
@@ -125,23 +130,52 @@ export default function SectionItem({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              opacity: locked ? 0.7 : 1,
             }}
-            onClick={() => handleShow()}
+            disabled={locked}
+            title={locked ? "Completá el nivel anterior para desbloquear" : "Ver video / empezar"}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!locked) handleShow();
+            }}
           >
-            <IoPlayCircleOutline
-              style={{
-                width: "5rem",
-                height: "5rem",
-                color: isActive ? "#52C5FE" : "white",
-              }}
-            />
+            {locked ? (
+              <IoLockClosed
+                style={{
+                  width: "4.5rem",
+                  height: "4.5rem",
+                  color: accent,
+                }}
+              />
+            ) : aprobado ? (
+              <IoCheckmarkCircle
+                style={{
+                  width: "5rem",
+                  height: "5rem",
+                  color: "#22C55E",
+                }}
+              />
+            ) : (
+              <IoPlayCircleOutline
+                style={{
+                  width: "5rem",
+                  height: "5rem",
+                  color: accent,
+                }}
+              />
+            )}
           </Button>
 
           <p
-            className=""
-            style={{ color: "#52C5FE", fontWeight: 700, fontSize: "1.25rem" }}
+            style={{
+              color: locked ? "#64748B" : "#52C5FE",
+              fontWeight: 700,
+              fontSize: "1.25rem",
+              margin: 0,
+            }}
           >
             {leccion.titulo}
+            {locked ? " (bloqueado)" : ""}
           </p>
         </div>
       </div>

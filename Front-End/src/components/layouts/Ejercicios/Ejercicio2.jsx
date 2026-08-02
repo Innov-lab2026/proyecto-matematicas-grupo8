@@ -20,6 +20,7 @@ function EjercicioChoice({
   mascotSize = 160,
   enviando = false,
   ultimoResultado = null,
+  seccionId = null,
 }) {
   const isMobile = window.innerWidth <= 900;
   const datosChoiceDePrueba = {
@@ -125,7 +126,7 @@ function EjercicioChoice({
 
       <main className="ejercicio-page-content">
         <HeaderMate />
-        <HeaderDesafio progreso={progreso} />
+        <HeaderDesafio progreso={progreso} seccionId={seccionId} />
 
         <div className="ejercicio-choice-container">
           <h2 className="ejercicio-pregunta-centered">{preguntaActual}</h2>

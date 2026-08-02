@@ -18,6 +18,7 @@ function EjercicioInput({
   mascotSize = 160,
   maxIntentos = 3,
   enviando = false, // ✅ Nuevo prop
+  seccionId = null,
 }) {
   const isMobile = window.innerWidth <= 900;
   const [inputValue, setInputValue] = useState('');
@@ -154,7 +155,7 @@ function EjercicioInput({
 
       <main className="ejercicio-page-content">
         <HeaderMate />
-        <HeaderDesafio progreso={progreso} />
+        <HeaderDesafio progreso={progreso} seccionId={seccionId} />
 
         <div className="ejercicio-grid">
           <div className="ejercicio-col-left">

@@ -9,6 +9,7 @@ function Desafios() {
   const { seccionId: seccionParam } = useParams();
   const [searchParams] = useSearchParams();
   const seccionId = seccionParam || searchParams.get('seccionId');
+  const nextPath = searchParams.get('next') || (seccionId ? `/ejercicios/${seccionId}` : '/dashboard');
 
   const [indexActual, setIndexActual] = useState(0);
   const [videos, setVideos] = useState([]);
@@ -57,7 +58,7 @@ function Desafios() {
   }, [seccionId]);
 
   if (cargando) {
-    return <LoadingSpinner message="Cargando videos..." />;
+    return <LoadingSpinner message="Cargando video..." />;
   }
 
   if (error || !videos.length) {
@@ -67,40 +68,34 @@ function Desafios() {
           <p style={{ color: '#dc2626' }}>{error || 'Sin videos'}</p>
           <button
             type="button"
-            onClick={() => navigate(seccionId ? `/ejercicios/${seccionId}` : '/dashboard')}
+            onClick={() => navigate(nextPath)}
             style={{ marginTop: '1rem', padding: '0.6rem 1.2rem' }}
           >
-            {seccionId ? 'Ir a los ejercicios' : 'Volver al dashboard'}
+            Ir a los ejercicios
           </button>
         </div>
       </div>
     );
   }
 
-  const videoActual = videos[indexActual];
+  // Solo el video de este nivel (orden 1 o el primero)
+  const videoActual = videos[Math.min(indexActual, videos.length - 1)];
 
   const manejarAtras = () => {
-    if (indexActual > 0) {
-      setIndexActual(indexActual - 1);
-    } else {
-      navigate('/dashboard');
-    }
+    navigate('/dashboard');
   };
 
   const manejarContinuar = () => {
-    if (indexActual < videos.length - 1) {
-      setIndexActual(indexActual + 1);
-    } else {
-      navigate(`/ejercicios/${seccionId}`);
-    }
+    // Un nivel = un video → a ejercicios de ese nivel
+    navigate(nextPath);
   };
 
   return (
     <VideoPage
       title={videoActual.titulo}
       videoUrl={videoActual.url}
-      currentIndex={indexActual}
-      totalVideos={videos.length}
+      currentIndex={0}
+      totalVideos={1}
       onBack={manejarAtras}
       onContinue={manejarContinuar}
     />

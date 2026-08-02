@@ -8,11 +8,15 @@ import iconAvatar from '../../../assets/icono_avatar.png';
 import iconMarcos from '../../../assets/icono_marcos.png';
 import iconTitulos from '../../../assets/icono_titulos.png';
 import iconMascotas from '../../../assets/icono_mascota.png';
+import { useAuth } from '../../../context/AuthContext';
 
 import './Perfil.css';
 
 function Perfil() {
+  const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('marcos');
+  const [showHeader, setShowHeader] = useState(false);
+  const displayName = profile?.nombre?.trim() || profile?.email?.split('@')[0] || 'Usuario';
 
   // Menú ajustado con las imágenes importadas
   const opcionesMenu = [
@@ -25,7 +29,7 @@ function Perfil() {
 
   return (
     <div className="perfil-page-container">
-      <Header />
+      <Header showHeader={showHeader} setShowHeader={setShowHeader} />
 
       <div 
         className="perfil-main-content"
@@ -66,7 +70,7 @@ function Perfil() {
               </div>
               
               <div className="perfil-user-meta">
-                <h2 className="perfil-username">Paula</h2>
+                <h2 className="perfil-username">{displayName}</h2>
                 <div className="perfil-badge-tag">
                   As de la Suma
                 </div>

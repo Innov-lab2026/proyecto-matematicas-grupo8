@@ -9,7 +9,7 @@ import api from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
 
 export default function CursoSection() {
-  const { profile } = useAuth();
+  const { profile, refreshProfile } = useAuth();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const navigate = useNavigate();
   const containerRef = useRef(null);
@@ -17,9 +17,40 @@ export default function CursoSection() {
   const [, setScrollDirection] = useState(0);
   const isTransitioning = useRef(false);
   const [lecciones, setLecciones] = useState([]);
-  const desafioKey = String(profile?.desafioActualId ?? "all");
+  const desafioKey = String(profile?.desafioActualId ?? profile?.desafio ?? "all");
   const [desafioCargadoKey, setDesafioCargadoKey] = useState(null);
   const loadingLecciones = desafioCargadoKey !== desafioKey;
+
+  // Si el onboarding guardó el texto pero no el id de rama, linkear ahora.
+  useEffect(() => {
+    let activo = true;
+    const linkDesafio = async () => {
+      if (profile?.desafioActualId || !profile?.desafio) return;
+      try {
+        const { data: ramas } = await api.get("/ramas");
+        const key = String(profile.desafio)
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+        const rama = (ramas || []).find((r) => {
+          const rn = String(r.nombre)
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          return key.includes(rn) || rn.includes(key.split(" ")[0]);
+        });
+        if (!rama || !activo) return;
+        await api.patch("/usuarios/desafio-actual", { desafioActualId: rama.id });
+        await refreshProfile?.();
+      } catch (err) {
+        console.warn("No se pudo sincronizar desafío con rama:", err);
+      }
+    };
+    linkDesafio();
+    return () => {
+      activo = false;
+    };
+  }, [profile?.desafio, profile?.desafioActualId, refreshProfile]);
 
   useEffect(() => {
     let activo = true;
@@ -33,7 +64,21 @@ export default function CursoSection() {
           secciones = secciones.filter(
             (s) => s.ramaId === profile.desafioActualId,
           );
+        } else if (profile?.desafio) {
+          // Fallback por nombre hasta que se linkee la rama
+          const key = String(profile.desafio).toLowerCase();
+          secciones = secciones.filter((s) => {
+            const ramaNombre = s.rama?.nombre?.toLowerCase() || "";
+            return (
+              key.includes(ramaNombre) ||
+              ramaNombre.includes(key.split(" ")[0]) ||
+              s.nombre?.toLowerCase().includes(key.split(" ")[0])
+            );
+          });
         }
+        secciones = [...secciones].sort(
+          (a, b) => (a.grado ?? 0) - (b.grado ?? 0) || a.id - b.id,
+        );
         const conTitulo = secciones.map((s) => ({ ...s, titulo: s.nombre }));
         setLecciones(conTitulo);
         setCurrentIndex(0);
@@ -49,7 +94,7 @@ export default function CursoSection() {
     return () => {
       activo = false;
     };
-  }, [profile?.desafioActualId, desafioKey]);
+  }, [profile?.desafioActualId, profile?.desafio, desafioKey]);
 
   // Estados para touch events
   const [touchStartY, setTouchStartY] = useState(0);
@@ -57,10 +102,19 @@ export default function CursoSection() {
 
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+  const handleShow = () => {
+    const seccionActual = lecciones[currentIndex];
+    if (seccionActual && seccionActual.estaDesbloqueada === false) return;
+    setShow(true);
+  };
   const handleToDesafios = () => {
     const seccionActual = lecciones[currentIndex];
-    navigate(seccionActual ? `/desafios/${seccionActual.id}` : "/desafios");
+    // Solo el video de ESTE nivel, luego ejercicios del mismo nivel
+    navigate(
+      seccionActual
+        ? `/desafios/${seccionActual.id}?next=/ejercicios/${seccionActual.id}`
+        : "/desafios",
+    );
     setShow(false);
   };
   const handleToEjercicios = () => {
@@ -229,8 +283,9 @@ export default function CursoSection() {
 
         <TitleSection
           title={
-            lecciones[currentIndex]?.rama?.nombre ||
             profile?.desafioActual?.nombre ||
+            lecciones[0]?.rama?.nombre ||
+            profile?.desafio ||
             "Elegí un desafío"
           }
         />
@@ -304,6 +359,8 @@ export default function CursoSection() {
               setCurrentIndex={setCurrentIndex}
               index={index}
               handleShow={handleShow}
+              locked={leccion.estaDesbloqueada === false}
+              aprobado={Boolean(leccion.estaAprobada)}
             />
           ))}
         </div>

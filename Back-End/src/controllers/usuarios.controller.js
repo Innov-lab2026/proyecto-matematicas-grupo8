@@ -6,6 +6,7 @@ import {
   loginSchema,
 } from "../validators/usuarios.validator.js";
 import { obtenerUbicacionPorIP } from "../services/geolocation.service.js";
+import { resolveRamaIdFromDesafio } from "../utils/desafioRama.js";
 
 export const registrarUsuario = async (req, res, next) => {
   try {
@@ -77,6 +78,8 @@ export const registrarUsuario = async (req, res, next) => {
       ]);
     }
 
+    const ramaIdFromDesafio = await resolveRamaIdFromDesafio(prisma, desafio);
+
     const usuario = await prisma.usuario.upsert({
       where: { id: uid },
       update: {
@@ -89,6 +92,7 @@ export const registrarUsuario = async (req, res, next) => {
         desafio,
         sentimiento,
         ...(mascota ? { mascota } : {}),
+        ...(ramaIdFromDesafio ? { desafioActualId: ramaIdFromDesafio } : {}),
       },
       create: {
         id: uid,
@@ -102,19 +106,44 @@ export const registrarUsuario = async (req, res, next) => {
         desafio,
         sentimiento,
         mascota: mascota || "multi",
+        ...(ramaIdFromDesafio ? { desafioActualId: ramaIdFromDesafio } : {}),
       },
       include: { desafioActual: true },
     });
     console.log(`✅ Usuario sincronizado: ${usuario.email} [${usuario.rol}]`);
 
+    // Si ya tenía desafío textual pero sin rama, intentar linkear.
+    let usuarioFinal = usuario;
+    if (!usuario.desafioActualId && usuario.desafio) {
+      const ramaId = await resolveRamaIdFromDesafio(prisma, usuario.desafio);
+      if (ramaId) {
+        usuarioFinal = await prisma.usuario.update({
+          where: { id: uid },
+          data: { desafioActualId: ramaId },
+          include: { desafioActual: true },
+        });
+      }
+    }
+
+    const ramaFilter = usuarioFinal.desafioActualId
+      ? { ramaId: usuarioFinal.desafioActualId }
+      : {};
+
     const [totalSecciones, seccionesAprobadasCount] = await Promise.all([
-      prisma.seccion.count(),
-      prisma.seccionAprobada.count({ where: { usuarioId: uid } }),
+      prisma.seccion.count({ where: ramaFilter }),
+      prisma.seccionAprobada.count({
+        where: {
+          usuarioId: uid,
+          ...(usuarioFinal.desafioActualId
+            ? { seccion: { ramaId: usuarioFinal.desafioActualId } }
+            : {}),
+        },
+      }),
     ]);
 
     res
       .status(201)
-      .json({ ...usuario, totalSecciones, seccionesAprobadasCount });
+      .json({ ...usuarioFinal, totalSecciones, seccionesAprobadasCount });
   } catch (error) {
     next(error);
   }

@@ -139,7 +139,7 @@ const HeaderSection = ({ isOpen = false, animateRewards = false }) => {
           marginBottom: "0.5rem",
         }}
       >
-        {profile?.desafioActual?.nombre || "Elegí un desafío"}{" "}
+        {profile?.desafioActual?.nombre || profile?.desafio || "Elegí un desafío"}{" "}
       </h4>
 
       {loadingHeader ? (

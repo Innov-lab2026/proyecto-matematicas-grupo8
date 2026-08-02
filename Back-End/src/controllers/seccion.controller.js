@@ -2,23 +2,58 @@ import prisma from '../config/prisma.js';
 import { crearEditarSeccionSchema } from '../validators/seccion.validator.js';
 
 export const getSecciones = async (req, res, next) => {
-    const { usuarioId } = req.query;
     try {
-        let puntosUsuario = 0;
-        if (usuarioId) {
-            const usuario = await prisma.usuario.findUnique({
-                where: { id: usuarioId },
-                select: { puntos: true }
-            });
-            puntosUsuario = usuario?.puntos || 0;
-        }
+        const usuarioId = req.user?.id;
+
         const secciones = await prisma.seccion.findMany({
-            include: { escenarios: true }
+            include: {
+                rama: true,
+                escenarios: { select: { id: true } },
+            },
+            orderBy: [{ ramaId: 'asc' }, { grado: 'asc' }, { id: 'asc' }],
         });
-        const seccionesConEstado = secciones.map(s => ({
+
+        let aprobadasIds = new Set();
+        if (usuarioId) {
+            const aprobadas = await prisma.seccionAprobada.findMany({
+                where: { usuarioId },
+                select: { seccionId: true },
+            });
+            aprobadasIds = new Set(aprobadas.map((a) => a.seccionId));
+        }
+
+        // Desbloqueo secuencial por grado dentro de cada rama:
+        // grado 1 libre; grado N libre si el grado N-1 de la misma rama está aprobado.
+        const porRama = new Map();
+        for (const s of secciones) {
+            const key = s.ramaId ?? 'none';
+            if (!porRama.has(key)) porRama.set(key, []);
+            porRama.get(key).push(s);
+        }
+
+        const desbloqueadas = new Set();
+        for (const lista of porRama.values()) {
+            const ordenadas = [...lista].sort((a, b) => a.grado - b.grado || a.id - b.id);
+            ordenadas.forEach((s, idx) => {
+                if (idx === 0) {
+                    desbloqueadas.add(s.id);
+                    return;
+                }
+                const prev = ordenadas[idx - 1];
+                if (aprobadasIds.has(prev.id)) {
+                    desbloqueadas.add(s.id);
+                }
+            });
+        }
+
+        const seccionesConEstado = secciones.map((s) => ({
             ...s,
-            estaDesbloqueada: puntosUsuario >= s.puntosRequeridos
+            escenarios: undefined,
+            escenariosCount: s.escenarios?.length ?? 0,
+            estaAprobada: aprobadasIds.has(s.id),
+            estaDesbloqueada: desbloqueadas.has(s.id) || aprobadasIds.has(s.id),
         }));
+
         return res.json(seccionesConEstado);
     } catch (error) {
         next(error);
@@ -30,7 +65,7 @@ export const getSeccionById = async (req, res, next) => {
     try {
         const seccion = await prisma.seccion.findUnique({
             where: { id: parseInt(id) },
-            include: { escenarios: true }
+            include: { escenarios: true, rama: true, lecciones: { orderBy: { orden: 'asc' } } },
         });
         if (!seccion) return res.status(404).json({ error: 'Sección no encontrada' });
         return res.json(seccion);
@@ -81,7 +116,6 @@ export const actualizarSeccion = async (req, res, next) => {
             where: { id: parseInt(id) },
             data: { nombre, descripcion, grado, umbralAprobacion, puntosRecompensa, puntosRequeridos }
         });
-
         return res.json(seccion);
     } catch (error) {
         next(error);

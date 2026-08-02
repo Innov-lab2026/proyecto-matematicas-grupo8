@@ -1,15 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import HeaderDashboard from '../Desafios/headerDash/HeaderDash';
 import avatarUser from '../../../assets/Foto_perfil.png'; 
 import './Configuracion.css';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../config/api';
 
 function Configuracion() {
+  const { profile, refreshProfile } = useAuth();
+  const [showHeader, setShowHeader] = useState(false);
+
   // Datos del formulario
   const [formData, setFormData] = useState({
-    nombre: 'Paula',
-    email: 'Paula@gmail.com',
+    nombre: profile?.nombre || '',
+    email: profile?.email || '',
     password: '*************'
   });
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      nombre: profile?.nombre || '',
+      email: profile?.email || '',
+    }));
+  }, [profile?.nombre, profile?.email]);
 
   // Estados para saber qué campos están en modo edición
   const [isEditing, setIsEditing] = useState({
@@ -54,11 +67,17 @@ function Configuracion() {
   };
 
   // Guardar Cambios
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    // Bloqueamos la edición de todos los campos al guardar
     setIsEditing({ nombre: false, email: false, password: false });
-    alert('¡Cambios guardados con éxito!');
+    try {
+      await api.put('/usuarios/perfil', { nombre: formData.nombre });
+      await refreshProfile?.();
+      alert('¡Cambios guardados con éxito!');
+    } catch (err) {
+      console.error(err);
+      alert('No se pudieron guardar los cambios. Intentá de nuevo.');
+    }
   };
 
   // Eliminar Cuenta
@@ -70,7 +89,7 @@ function Configuracion() {
 
   return (
     <div className="config-page-container">
-      <HeaderDashboard />
+      <HeaderDashboard showHeader={showHeader} setShowHeader={setShowHeader} />
 
       <main className="config-main-content">
         <div className="config-card">
