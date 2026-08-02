@@ -231,15 +231,24 @@ export const actualizarPerfil = async (req, res, next) => {
       throw validacion.error;
     }
 
-    const { nombre } = validacion.data;
+    const { nombre, email } = validacion.data;
+    const data = {};
+    if (nombre !== undefined) data.nombre = nombre;
+    if (email !== undefined) data.email = email;
+
+    if (email) {
+      const otro = await prisma.usuario.findFirst({
+        where: { email, NOT: { id: uid } },
+      });
+      if (otro) {
+        return res.status(409).json({ error: "Ese email ya está en uso" });
+      }
+    }
 
     const usuario = await prisma.usuario.update({
-      where: {
-        id: uid,
-      },
-      data: {
-        nombre,
-      },
+      where: { id: uid },
+      data,
+      include: { desafioActual: true },
     });
     return res.status(200).json(usuario);
   } catch (error) {

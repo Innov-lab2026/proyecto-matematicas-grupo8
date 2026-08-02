@@ -1,5 +1,6 @@
 import prisma from '../config/prisma.js';
 import { generarFeedbackPedagogico } from '../services/gemini.service.js';
+import { calcularRachaDiaria } from '../utils/racha.js';
 
 export const registrarProgreso = async (req, res, next) => {
     const usuarioId = req.user.id;
@@ -71,12 +72,14 @@ export const registrarProgreso = async (req, res, next) => {
 
         console.log(`👤 Usuario encontrado: Puntos=${usuario.puntos}, Tokens=${usuario.tokens}, Racha=${usuario.racha}`);
 
-        // Calcular racha
-        const ultimaConexionBase = usuario.ultimaConexion ? new Date(usuario.ultimaConexion) : new Date();
         const ahora = new Date();
-        const diferenciaDias = Math.floor((ahora - ultimaConexionBase) / (1000 * 60 * 60 * 24));
-        console.log(`📅 Última conexión: ${ultimaConexionBase.toISOString()}`);
-        console.log(`📅 Días de diferencia: ${diferenciaDias}`);
+        const { nuevaRacha, cambio: cambioRacha } = calcularRachaDiaria(
+            usuario.racha,
+            usuario.ultimaConexion,
+            ahora,
+        );
+        console.log(`📅 Última conexión: ${usuario.ultimaConexion?.toISOString?.() || usuario.ultimaConexion || 'nunca'}`);
+        console.log(`📅 Racha: ${usuario.racha} → ${nuevaRacha} (${cambioRacha})`);
 
         // Verificar progreso existente
         console.log('🔍 Verificando progreso existente...');
@@ -106,18 +109,6 @@ export const registrarProgreso = async (req, res, next) => {
                 console.error('❌ Error generando feedback:', error.message);
                 feedbackFinal = escenario.explicacion || 'Respuesta incorrecta. Intenta de nuevo.';
             }
-        }
-
-        // Calcular nueva racha
-        let nuevaRacha = usuario.racha;
-        if (diferenciaDias === 1) {
-            nuevaRacha += 1;
-            console.log(`📈 Racha incrementada: ${usuario.racha} → ${nuevaRacha}`);
-        } else if (diferenciaDias > 1) {
-            nuevaRacha = 1;
-            console.log(`📈 Racha reiniciada: ${usuario.racha} → ${nuevaRacha}`);
-        } else {
-            console.log(`📈 Racha sin cambios: ${nuevaRacha}`);
         }
 
         // Guardar progreso

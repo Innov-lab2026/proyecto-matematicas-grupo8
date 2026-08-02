@@ -104,16 +104,10 @@ function ModuloEjercicios() {
         seccionAprobada: prev.seccionAprobada || Boolean(res.data.seccionAprobada),
       }));
 
-      if (
-        res.data.esCorrecto ||
-        Boolean(res.data.seccionAprobada) ||
-        (res.data.tokensGanados ?? 0) > 0 ||
-        (res.data.nuevosDesbloqueos?.length ?? 0) > 0
-      ) {
-        refreshProfile().catch((err) =>
-          console.warn("No se pudo refrescar el perfil:", err),
-        );
-      }
+      // Siempre refrescar: la racha sube con cualquier ejercicio del día (correcto o no).
+      refreshProfile().catch((err) =>
+        console.warn("No se pudo refrescar el perfil:", err),
+      );
     } catch (err) {
       console.error("Error al registrar progreso:", err);
       setEnviando(false);
@@ -162,7 +156,7 @@ function ModuloEjercicios() {
       replace: true,
       state: {
         rewards: {
-          racha: sessionStats.racha || profile?.racha || 1,
+          racha: sessionStats.racha ?? profile?.racha ?? 0,
           xpGanado: sessionStats.xpGanado,
           xpTotal: (profile?.puntos ?? 0) + sessionStats.xpGanado,
           monedasGanadas: sessionStats.monedasGanadas,

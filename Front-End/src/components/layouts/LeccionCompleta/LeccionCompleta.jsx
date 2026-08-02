@@ -16,7 +16,7 @@ const DesafioCompletado = () => {
   const [index, setIndex] = useState(0);
 
   const rewards = location.state?.rewards || {};
-  const racha = rewards.racha ?? 1;
+  const racha = rewards.racha ?? 0;
   const xp = rewards.xpGanado ?? rewards.xp ?? 0;
   const xpTotal = rewards.xpTotal ?? xp;
   const porcentaje = rewards.porcentajeCorrectas ?? rewards.porcentaje ?? 100;
