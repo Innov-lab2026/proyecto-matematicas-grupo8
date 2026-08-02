@@ -34,6 +34,14 @@ export const perfilSchema = z.object({
     nombre: z.string()
         .min(2, { message: "El nombre es muy corto" })
         .max(50)
+        .optional(),
+    email: z.string()
+        .email({ message: "Formato de email inválido" })
+        .trim()
+        .toLowerCase()
+        .optional(),
+}).refine((data) => Boolean(data.nombre || data.email), {
+    message: "Debés enviar al menos nombre o email",
 });
 
 export const actualizarPerfilSchema = z.object({
