@@ -202,7 +202,7 @@ const LoginPage = () => {
                 Registrarse
               </Link>
             </div>
-            <div className="text-center mb-3">
+            <div className="d-flex justify-content-center align-items-center mb-3 w-100">
               <img
                 src="/login/login.png"
                 alt="login"
@@ -215,7 +215,7 @@ const LoginPage = () => {
             >
               ¡Qué bueno verte de vuelta!
             </h3>
-            <Form method="post" action="#" onSubmit={handleSubmit} className="px-2">
+            <Form method="post" action="#" onSubmit={handleSubmit} >
               {formError && (
                 <Alert variant="danger" role="alert" className="py-2">
                   {formError}
