@@ -5,9 +5,11 @@ const Introduction = () => {
         <Stack id="about" direction="horizontal" className="justify-content-center align-items-center px-3 relative py-5" style={{ backgroundColor: "#8FD8FD", color: "#000000", minHeight: "calc(100vh)", position: "relative" }}>
             <Svg1 style={{ position: "absolute", zIndex: 3, right: "10%", top: "15%" }} />
             <h4 className="mx-auto text-center" style={{ fontSize: "32px", fontWeight: "400", fontStyle: "italic", zIndex: 4, width: "80%" }}>
-                MATE+ es una plataforma educativa que transforma el aprendizaje de las matemáticas.
+                Con Mate+ aprendes matemática útil, en minutos y sin vergüenza
                 <br />
-                A través de una experiencia interactiva y adaptada a tus necesidades, te ayudamos a perder el miedo a los números y a dominar la materia.
+                <br />
+                A través de una experiencia interactiva y adaptada a tus necesidades, te ayudamos a ganar confianza en los números y recuperar la autonomía financiera.
+
             </h4>
             <Svg2 style={{ position: "absolute", zIndex: 3, left: "10%", bottom: "20%" }} />
         </Stack>

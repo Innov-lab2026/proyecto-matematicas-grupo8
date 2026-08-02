@@ -33,7 +33,6 @@
   z-index: 0;
 }
 
-
 .container-firstSection {
   display: flex;
   flex-direction: column;
@@ -268,6 +267,18 @@
   }
 }
 
+.container-thirdSection {
+  width: 100%;
+  max-width: none;
+  padding: 80px 24px 60px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  margin: 0 auto;
+}
+
 .title-thirdSection{
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 40px;
@@ -276,7 +287,74 @@
   line-height: 1.2;
   letter-spacing: -0.5px;
   margin-bottom: 24px;
-  
+  align-self: center;
+  text-align: center;
+}
 
+/* Estilos para el párrafo largo de la sección "Nosotros" */
+.subtitle-thirdSection{
+  width: min(100%, 1100px);
+  max-width: 100%;
+  margin: 0 auto 32px;
+  padding: 0 0 0 0;
+  color: #222222;
+  font-size: 18px;
+  line-height: 1.7;
+  font-weight: 400;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
+.subtitle-thirdSection p{
+  margin: 0 0 16px 0;
+}
+
+.subtitle-thirdSection strong{
+  font-weight: 700;
+  color: #000000;
+}
+
+@media (max-width: 1024px) {
+  .container-thirdSection {
+    padding: 60px 20px 40px;
+  }
+
+  .subtitle-thirdSection {
+    font-size: 17px;
+    max-width: 900px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-thirdSection {
+    padding: 50px 18px 32px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .title-thirdSection {
+    font-size: 32px;
+  }
+
+  .subtitle-thirdSection {
+    font-size: 16px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-thirdSection {
+    padding: 40px 16px 28px;
+  }
+
+  .title-thirdSection {
+    font-size: 26px;
+    margin-bottom: 18px;
+  }
+
+  .subtitle-thirdSection {
+    font-size: 14px;
+    line-height: 1.6;
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
 }
