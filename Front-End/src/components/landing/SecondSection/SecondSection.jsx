@@ -5,16 +5,16 @@ const steps = [
     {
         id: 1,
         title: "Práctico y fácil de entender",
-        subtitle: "Aprendé con ejemplos reales como compras, descuentos, precios y cuentas del día a día.",
+        subtitle: "Aprendé con ejercicios reales como compras, descuentos, precios y cuentas del día a día.",
         src: '/landing/step-1.png',
-        alt: "Ilustración práctica y fácil de entender - Ejemplos de la vida cotidiana"
+        alt: "Ilustración práctica y fácil de entender - Ejercicios de la vida cotidiana"
     },
     {
         id: 2,
         title: "Explicado paso a paso",
-        subtitle: "Lecciones claras y simples para ganar confianza resolviendo problemas cotidianos.",
+        subtitle: "Videos claros y simples para ganar confianza resolviendo problemas cotidianos.",
         src: '/landing/step-2.png',
-        alt: "Ilustración explicado paso a paso - Lecciones claras y simples"
+        alt: "Ilustración explicado paso a paso - Videos claros y simples"
     },
     {
         id: 3,

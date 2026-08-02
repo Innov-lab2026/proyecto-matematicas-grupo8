@@ -7,6 +7,7 @@ import RominaPhoto from '../../../assets/Fotos/Romina.jpg';
 import SolPhoto from '../../../assets/Fotos/Sol.jpg';
 import FlorPhoto from '../../../assets/Fotos/Flor.jpg';
 import SofiaPhoto from '../../../assets/Fotos/Sofia.jpg';
+import MaribelPhoto from '../../../assets/Fotos/Maribel.jpg';
 import hernanPhoto from '../../../assets/Fotos/hernan.jpg';
 import GustavoPhoto from '../../../assets/Fotos/Gustavo.jpg';
 import Container from 'react-bootstrap/Container';
@@ -71,21 +72,14 @@ const teamMembers = [
     linkedin: 'https://www.linkedin.com/in/sofía-inés-digiano',
     github: 'https://github.com/SofiaDigiano',
   },
-  {
-    name: 'Mayra Capra',
-    role: 'Diseñadora UX/UI',
-    quote: 'Diseño productos intuitivos que conectan con el usuario y potencian el aprendizaje.',
-    image: teamPhoto,
-    linkedin: '#',
-    github: '#',
-  },
+
     {
     name: 'Maribel Chura Yujra',
     role: 'Tester QA',
     quote: 'Exploro cada rincón de la aplicación buscando fallos para garantizar que la experiencia del usuario sea impecable.',
-    image: teamPhoto,
+    image: MaribelPhoto,
     linkedin: '#',
-    github: '#',
+    github: 'https://github.com/maribelchurayujra-cyber',
   },
   {
     name: 'Hernán Luciano',
@@ -95,22 +89,7 @@ const teamMembers = [
     linkedin: 'https://www.linkedin.com/in/hernanluciano/',
     github: 'https://github.com/hernycai',
   },
-  {
-    name: 'Marcos Marfeo',
-    role: 'Data Analytics',
-    quote: 'Transformo datos puros en información estratégica, ayudando al equipo a tomar decisiones basadas en la realidad.',
-    image: teamPhoto,
-    linkedin: '#',
-    github: '#',
-  },
-  {
-    name: 'Tony Arturo Curi Caballero',
-    role: 'Data Analytics',
-    quote: 'Analizo los patrones de aprendizaje para entender dónde se divierten más los usuarios y dónde necesitan más apoyo.',
-    image: teamPhoto,
-    linkedin: '#',
-    github: 'https://github.com/tonycuri',
-  },
+ 
     {
     name: 'Gustavo Ovejero',
     role: 'Coordinador de Proyecto',
