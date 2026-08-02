@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +8,7 @@ import ModalConfirmacion from "./ModalConfirmacion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import api from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
+import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 
 export default function CursoSection() {
   const { profile, refreshProfile } = useAuth();
@@ -65,7 +67,6 @@ export default function CursoSection() {
             (s) => s.ramaId === profile.desafioActualId,
           );
         } else if (profile?.desafio) {
-          // Fallback por nombre hasta que se linkee la rama
           const key = String(profile.desafio).toLowerCase();
           secciones = secciones.filter((s) => {
             const ramaNombre = s.rama?.nombre?.toLowerCase() || "";
@@ -80,7 +81,9 @@ export default function CursoSection() {
           (a, b) => (a.grado ?? 0) - (b.grado ?? 0) || a.id - b.id,
         );
         const conTitulo = secciones.map((s) => ({ ...s, titulo: s.nombre }));
+        // MANTENER ORDEN ASCENDENTE: nivel 1 primero, nivel 6 al final
         setLecciones(conTitulo);
+        // Iniciar en el nivel 1 (primer elemento)
         setCurrentIndex(0);
         setDesafioCargadoKey(desafioKey);
       })
@@ -109,7 +112,6 @@ export default function CursoSection() {
   };
   const handleToDesafios = () => {
     const seccionActual = lecciones[currentIndex];
-    // Solo el video de ESTE nivel, luego ejercicios del mismo nivel
     navigate(
       seccionActual
         ? `/desafios/${seccionActual.id}?next=/ejercicios/${seccionActual.id}`
@@ -144,12 +146,11 @@ export default function CursoSection() {
     [currentIndex, lecciones.length],
   );
 
-  // Manejo de scroll con rueda del mouse (solo desktop)
+  // Manejo de scroll con rueda del mouse
   useEffect(() => {
     const handleWheel = (e) => {
-      // Si es mobile, no usar wheel (puede causar conflictos con scroll nativo)
       if (isMobile) return;
-
+      // Scroll abajo = bajar (índice mayor), Scroll arriba = subir (índice menor)
       const direction = e.deltaY > 0 ? 1 : -1;
       changeLesson(direction);
     };
@@ -158,13 +159,10 @@ export default function CursoSection() {
     return () => window.removeEventListener("wheel", handleWheel);
   }, [changeLesson, isMobile]);
 
-  // Manejo de teclas de flecha (solo desktop)
+  // Manejo de teclas de flecha
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Solo si el modal NO está abierto
       if (show) return;
-
-      // En mobile, las teclas de flecha no son relevantes
       if (isMobile) return;
 
       if (e.key === "ArrowDown") {
@@ -183,45 +181,46 @@ export default function CursoSection() {
   // Manejo de touch events para mobile
   const handleTouchStart = useCallback((e) => {
     if (isTransitioning.current) return;
-    // Guardar la posición Y inicial del touch
     setTouchStartY(e.touches[0].clientY);
   }, []);
 
   const handleTouchMove = useCallback((e) => {
-    // Prevenir scroll mientras se desliza
     if (isTransitioning.current) {
       e.preventDefault();
       return;
     }
-    // Actualizar la posición Y actual durante el movimiento
     setTouchEndY(e.touches[0].clientY);
   }, []);
 
   const handleTouchEnd = useCallback(() => {
     if (isTransitioning.current) return;
-
-    // Si no hay inicio o fin de touch, salir
     if (touchStartY === 0 || touchEndY === 0) return;
 
-    // Calcular la distancia del swipe
     const distance = touchStartY - touchEndY;
-    const minSwipeDistance = 50; // Distancia mínima para considerar un swipe
+    const minSwipeDistance = 50;
 
-    // Determinar dirección del swipe
     if (Math.abs(distance) > minSwipeDistance) {
       if (distance > 0) {
-        // Swipe hacia arriba -> siguiente lección
-        changeLesson(1);
-      } else {
-        // Swipe hacia abajo -> lección anterior
+        // Swipe hacia arriba = subir (índice menor)
         changeLesson(-1);
+      } else {
+        // Swipe hacia abajo = bajar (índice mayor)
+        changeLesson(1);
       }
     }
 
-    // Resetear valores
     setTouchStartY(0);
     setTouchEndY(0);
   }, [touchStartY, touchEndY, changeLesson]);
+
+  // Función para navegar con botones
+  const handleNext = useCallback(() => {
+    changeLesson(1); // Bajar (siguiente nivel)
+  }, [changeLesson]);
+
+  const handlePrev = useCallback(() => {
+    changeLesson(-1); // Subir (nivel anterior)
+  }, [changeLesson]);
 
   return (
     <>
@@ -246,8 +245,7 @@ export default function CursoSection() {
           flexDirection: "column",
           justifyContent: "flex-end",
           alignItems: "center",
-          // Añadir touch events al contenedor
-          touchAction: isMobile ? "none" : "auto", // Prevenir scroll nativo en mobile
+          touchAction: isMobile ? "none" : "auto",
         }}
         onTouchStart={isMobile ? handleTouchStart : undefined}
         onTouchMove={isMobile ? handleTouchMove : undefined}
@@ -365,16 +363,126 @@ export default function CursoSection() {
           ))}
         </div>
 
+        {/* ===== BOTONES DE NAVEGACIÓN ===== */}
+        <NavigationButtons
+          currentIndex={currentIndex}
+          totalItems={lecciones.length}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          isMobile={isMobile}
+        />
+
         <style>{`
-                    @keyframes pulse {
-                        0%, 100% { opacity: 0.3; transform: translateY(0); }
-                        50% { opacity: 1; transform: translateY(5px); }
-                    }
-                `}</style>
+          @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(5px); }
+          }
+        `}</style>
       </div>
     </>
   );
 }
+
+// ===== COMPONENTE DE BOTONES DE NAVEGACIÓN =====
+const NavigationButtons = ({ currentIndex, totalItems, onPrev, onNext, isMobile }) => {
+  if (totalItems <= 1) return null;
+
+  // El nivel es el índice + 1 (porque el array está en orden ascendente)
+  const nivelActual = currentIndex + 1;
+  const nivelTotal = totalItems;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right: isMobile ? "10px" : "20px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        zIndex: 100,
+        display: "flex",
+        flexDirection: "column",
+        gap: isMobile ? "8px" : "12px",
+        opacity: 1,
+        transition: "opacity 0.3s ease-in-out",
+      }}
+    >
+      {/* Botón para subir (nivel superior) */}
+      <motion.button
+        onClick={onNext}
+        disabled={currentIndex === totalItems - 1}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        style={{
+          width: isMobile ? "44px" : "48px",
+          height: isMobile ? "44px" : "48px",
+          borderRadius: "50%",
+          border: "none",
+          backgroundColor: currentIndex === totalItems - 1
+            ? "rgba(0,0,0,0.2)"
+            : "rgba(0,0,0,0.6)",
+          color: "white",
+          cursor: currentIndex === totalItems - 1 ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: isMobile ? "20px" : "24px",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          transition: "all 0.2s ease",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        <FiChevronUp />
+      </motion.button>
+
+      {/* Indicador de posición - NIVEL REAL */}
+      <div
+        style={{
+          textAlign: "center",
+          color: "white",
+          fontSize: isMobile ? "11px" : "13px",
+          fontWeight: "bold",
+          textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          backgroundColor: "rgba(0,0,0,0.4)",
+          padding: "2px 8px",
+          borderRadius: "12px",
+          backdropFilter: "blur(4px)",
+        }}
+      >
+        Nivel {nivelActual}/{nivelTotal}
+      </div>
+
+      {/* Botón para bajar (nivel inferior) */}
+      <motion.button
+        onClick={onPrev}
+        disabled={currentIndex === 0}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        style={{
+          width: isMobile ? "44px" : "48px",
+          height: isMobile ? "44px" : "48px",
+          borderRadius: "50%",
+          border: "none",
+          backgroundColor: currentIndex === 0
+            ? "rgba(0,0,0,0.2)"
+            : "rgba(0,0,0,0.6)",
+          color: "white",
+          cursor: currentIndex === 0 ? "not-allowed" : "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: isMobile ? "20px" : "24px",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          transition: "all 0.2s ease",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        <FiChevronDown />
+      </motion.button>
+    </div>
+  );
+};
 
 const TitleSection = ({ title }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
