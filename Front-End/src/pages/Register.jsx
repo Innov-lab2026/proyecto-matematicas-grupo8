@@ -185,7 +185,9 @@ const RegisterPage = () => {
     try {
       await loginWithGoogle(`${window.location.origin}/auth/callback`);
     } catch (error) {
-      setToastMessage("❌ Error al iniciar sesión con Google. Intentá nuevamente.");
+      setToastMessage(
+        "❌ Error al iniciar sesión con Google. Intentá nuevamente.",
+      );
       setToastVariant("danger");
       setShowToast(true);
     }
@@ -194,12 +196,11 @@ const RegisterPage = () => {
   return (
     <>
       <Header />
-      <Container
+     <Container
         fluid
         className="d-flex align-items-center justify-content-center"
         style={{
           backgroundImage: "url('/login/fondo.png')",
-          backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           backgroundColor: "#8FD8FD",
@@ -210,11 +211,20 @@ const RegisterPage = () => {
         }}
       >
         <div style={{ position: "relative", width: "100%", maxWidth: 400 }}>
-          <Link to="/" style={{ position: "absolute", left: -70, top: 30 }}>
+          <Link
+            to="/"
+            className="d-none d-md-block"
+            style={{
+              position: "absolute",
+              left: "-60px",
+              top: "10px",
+              zIndex: 10,
+            }}
+          >
             <img
               src="/login/iconButton.png"
-              alt="button"
-              style={{ width: 50, height: 50 }}
+              alt="Volver"
+              style={{ width: 45, height: 45 }}
             />
           </Link>
           <div
@@ -244,7 +254,7 @@ const RegisterPage = () => {
                 Registrarse
               </span>
             </div>
-            <div className="text-center mb-3">
+            <div className="d-flex justify-content-center align-items-center mb-3 w-100">
               <img
                 src="/login/registroform.png"
                 alt="login"
@@ -257,7 +267,12 @@ const RegisterPage = () => {
             >
               Bienvenido a MATE+
             </h3>
-            <Form method="post" action="#" onSubmit={handleSubmit} className="px-2">
+            <Form
+              method="post"
+              action="#"
+              onSubmit={handleSubmit}
+              className="px-2"
+            >
               <Form.Group className="mb-3" controlId="registerEmail">
                 <Form.Label className="visually-hidden">Email</Form.Label>
                 <div

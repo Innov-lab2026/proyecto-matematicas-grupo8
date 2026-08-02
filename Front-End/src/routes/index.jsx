@@ -5,29 +5,31 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { lazy, Suspense } from "react";//
+import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";//
 
-import Register from "../pages/Register";
-import Landing from "../pages/Landing.jsx";
-import Dashboard from "../pages/Dashboard.jsx";
-import NotFound from "../pages/NotFound";
-import LoginPage from "../pages/Login";
-import ConsolaAdmin from "../pages/ConsolaAdmin";
 import { useAuth } from "../context/AuthContext";
-import StartedPage from "../pages/Started.jsx";
-import Onboarding from "../pages/Onboarding";
-import Nosotros from "../pages/Nosotros.jsx";
-import Desafios from "../pages/Desafios.jsx";
-import AuthCallback from "../pages/AuthCallback.jsx";
-import ModuloEjercicios from "../pages/Ejercicios.jsx";
-import DragConstraints from "../components/layouts/Ejercicios/DropAndDown.jsx";
-import TermsOfService from "../pages/TermsOfService.jsx";
-import MixtoPage from "../pages/Mixto.jsx";
-import RankingPage from "../pages/Ranking.jsx";
-import Configuracion from "../components/layouts/Configuracion/Configuracion.jsx";
-import Perfil from "../components/layouts/Perfil/Perfil.jsx";
-import LoadingSpinner from "../components/ui/LoadingSpinner.jsx";
-import ResetPassword from "../pages/ResetPassword.jsx";
-import LeccionCompleta from "../components/layouts/LeccionCompleta/LeccionCompleta.jsx";
+// Lazy imports — se cargan solo cuando se visitan
+const Register = lazy(() => import("../pages/Register"));
+const Landing = lazy(() => import("../pages/Landing.jsx"));
+const Dashboard = lazy(() => import("../pages/Dashboard.jsx"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+const LoginPage = lazy(() => import("../pages/Login"));
+const ConsolaAdmin = lazy(() => import("../pages/ConsolaAdmin"));
+const StartedPage = lazy(() => import("../pages/Started.jsx"));
+const Onboarding = lazy(() => import("../pages/Onboarding"));
+const Nosotros = lazy(() => import("../pages/Nosotros.jsx"));
+const Desafios = lazy(() => import("../pages/Desafios.jsx"));
+const AuthCallback = lazy(() => import("../pages/AuthCallback.jsx"));
+const ModuloEjercicios = lazy(() => import("../pages/Ejercicios.jsx"));
+const DragConstraints = lazy(() => import("../components/layouts/Ejercicios/DropAndDown.jsx"));
+const TermsOfService = lazy(() => import("../pages/TermsOfService.jsx"));
+const MixtoPage = lazy(() => import("../pages/Mixto.jsx"));
+const RankingPage = lazy(() => import("../pages/Ranking.jsx"));
+const Configuracion = lazy(() => import("../components/layouts/Configuracion/Configuracion.jsx"));
+const Perfil = lazy(() => import("../components/layouts/Perfil/Perfil.jsx"));
+const ResetPassword = lazy(() => import("../pages/ResetPassword.jsx"));
+const LeccionCompleta = lazy(() => import("../components/layouts/LeccionCompleta/LeccionCompleta.jsx"));
 
 // ✅ Componente para proteger rutas autenticadas
 const ProtectedRoute = ({ children, requireOnboarding = false, requireAdmin = false }) => {
@@ -151,6 +153,7 @@ export default function AppRouter() {
 
   return (
     <Router>
+      <Suspense fallback={<LoadingSpinner message="Cargando..." />}>
       <Routes>
         {/* 🌐 Rutas públicas (siempre accesibles) */}
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -314,6 +317,7 @@ export default function AppRouter() {
         {/* ❌ 404 - Not Found */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+       </Suspense>
     </Router>
   );
 }
