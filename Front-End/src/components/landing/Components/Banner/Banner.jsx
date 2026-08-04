@@ -104,7 +104,7 @@ const data = [
             // </svg>
         ),
         title: "Casos de la vida real",
-        subtitle: "Las lecciones son claras y fáciles de entender, para practicar y mejorar tus habilidades matemáticas cada día."
+        subtitle: "Explicaciones en micro-videos de menos de 3 minutos, claras y al grano, con ejemplos prácticos como compras, descuentos y finanzas diarias."
     },
     {
         icon: () => (
