@@ -15,6 +15,7 @@ const Landing = () => {
     const navigate = useNavigate();
     const containerRef = useRef(null);
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const [installHint, setInstallHint] = useState('');
     const { isInstallable, isInstalled, installApp } = usePWAInstall();
 
     useEffect(() => {
@@ -44,12 +45,44 @@ const Landing = () => {
         return () => clearTimeout(timer);
     }, []);
 
+    useEffect(() => {
+        if (!installHint) return;
+        const timer = setTimeout(() => setInstallHint(''), 4500);
+        return () => clearTimeout(timer);
+    }, [installHint]);
+
     const scrollToTop = () => {
         const container = containerRef.current;
         if (container?.scrollTop > 0) {
             container.scrollTo({ top: 0, behavior: 'smooth' });
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleInstallClick = async () => {
+        const result = await installApp();
+
+        if (result === 'accepted') {
+            setInstallHint('Instalacion iniciada correctamente.');
+            return;
+        }
+
+        if (result === 'dismissed') {
+            setInstallHint('Instalacion cancelada por el usuario.');
+            return;
+        }
+
+        if (result === 'manual-ios') {
+            setInstallHint('En iOS: Compartir > Agregar a pantalla de inicio.');
+            return;
+        }
+
+        if (result === 'unavailable') {
+            setInstallHint('Tu navegador no habilito la instalacion todavia.');
+            return;
+        }
+
+        setInstallHint('No se pudo abrir la instalacion. Intenta de nuevo.');
     };
 
     return (
@@ -69,11 +102,12 @@ const Landing = () => {
         </Container>
 
         {/* Botón de Instalación PWA */}
-        {isInstallable && !isInstalled && (
+        {!isInstalled && (
             <button
                 type="button"
-                onClick={installApp}
+                onClick={handleInstallClick}
                 aria-label="Instalar aplicación"
+                title={isInstallable ? 'Instalar aplicacion' : 'Instalacion no disponible aun'}
                 style={{
                     position: 'fixed',
                     right: '40px',
@@ -93,6 +127,7 @@ const Landing = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     animation: 'pulse 2s infinite',
+                    opacity: isInstallable ? 1 : 0.8,
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';
@@ -103,6 +138,29 @@ const Landing = () => {
             >
                 <FaDownload />
             </button>
+        )}
+
+        {installHint && (
+            <div
+                role="status"
+                aria-live="polite"
+                style={{
+                    position: 'fixed',
+                    right: '24px',
+                    bottom: '182px',
+                    backgroundColor: '#1f2937',
+                    color: '#ffffff',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
+                    zIndex: 1300,
+                    maxWidth: '280px',
+                    fontSize: '13px',
+                    lineHeight: 1.3,
+                }}
+            >
+                {installHint}
+            </div>
         )}
 
         {/* Botón de Scroll al inicio (existente) */}

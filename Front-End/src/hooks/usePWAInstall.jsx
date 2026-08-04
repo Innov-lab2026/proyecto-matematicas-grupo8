@@ -8,8 +8,10 @@ const usePWAInstall = () => {
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
-        // Detectar si ya está instalada (modo standalone)
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        // Detectar si ya está instalada (incluye Safari iOS)
+        const isStandalone =
+            window.matchMedia('(display-mode: standalone)').matches ||
+            window.navigator.standalone === true;
         setIsInstalled(isStandalone);
 
         // Escuchar el evento beforeinstallprompt
@@ -36,7 +38,10 @@ const usePWAInstall = () => {
     }, []);
 
     const installApp = async () => {
-        if (!deferredPrompt) return;
+        if (!deferredPrompt) {
+            const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+            return isIOS ? 'manual-ios' : 'unavailable';
+        }
 
         try {
             // Mostrar el prompt de instalación
@@ -49,14 +54,18 @@ const usePWAInstall = () => {
                 console.log('PWA instalada exitosamente');
                 setIsInstalled(true);
                 setIsInstallable(false);
+                return 'accepted';
             } else {
                 console.log('Usuario rechazó la instalación');
+                return 'dismissed';
             }
         } catch (error) {
             console.error('Error al instalar PWA:', error);
+            return 'error';
         } finally {
             // El prompt solo se puede usar una vez
             setDeferredPrompt(null);
+            setIsInstallable(false);
         }
     };
 
