@@ -63,12 +63,12 @@ const Landing = () => {
         const result = await installApp();
 
         if (result === 'accepted') {
-            setInstallHint('Instalacion iniciada correctamente.');
+            setInstallHint('Instalación iniciada correctamente.');
             return;
         }
 
         if (result === 'dismissed') {
-            setInstallHint('Instalacion cancelada por el usuario.');
+            setInstallHint('Instalación cancelada por el usuario.');
             return;
         }
 
@@ -77,130 +77,137 @@ const Landing = () => {
             return;
         }
 
-        if (result === 'unavailable') {
-            setInstallHint('Tu navegador no habilito la instalacion todavia.');
+        if (result === 'manual-browser') {
+            setInstallHint(
+                'Para instalar: Abre el menú del navegador (tres puntos) y selecciona "Instalar aplicación" o "Agregar a pantalla de inicio".'
+            );
             return;
         }
 
-        setInstallHint('No se pudo abrir la instalacion. Intenta de nuevo.');
+        if (result === 'unavailable') {
+            setInstallHint('Tu navegador no habilitó la instalación todavía.');
+            return;
+        }
+
+        setInstallHint('No se pudo abrir la instalación. Intenta de nuevo.');
     };
 
     return (
         <>
-        <Container ref={containerRef} fluid className="p-0 m-0 overflow-auto overflow-x-hidden" style={{ backgroundColor: "#F0F1EB" }}>
-            <a href="#contenido-principal" className="skip-link">
-                Saltar al contenido
-            </a>
-            <Header />
-            <main id="contenido-principal">
-                <FirstSection navigate={navigate} />
-                <Banner />
-                <Introduction />
-                <SecondSection />
-            </main>
-            <Footer />
-        </Container>
+            <Container ref={containerRef} fluid className="p-0 m-0 overflow-auto overflow-x-hidden" style={{ backgroundColor: "#F0F1EB" }}>
+                <a href="#contenido-principal" className="skip-link">
+                    Saltar al contenido
+                </a>
+                <Header />
+                <main id="contenido-principal">
+                    <FirstSection navigate={navigate} />
+                    <Banner />
+                    <Introduction />
+                    <SecondSection />
+                </main>
+                <Footer />
+            </Container>
 
-        {/* Botón de Instalación PWA */}
-        {!isInstalled && (
-            <button
-                type="button"
-                onClick={handleInstallClick}
-                aria-label="Instalar aplicación"
-                title={isInstallable ? 'Instalar aplicacion' : 'Instalacion no disponible aun'}
-                style={{
-                    position: 'fixed',
-                    right: '40px',
-                    bottom: '110px',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    fontSize: '30px',
-                    cursor: 'pointer',
-                    boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
-                    zIndex: 1200,
-                    transition: 'transform 0.2s ease, opacity 0.2s ease',
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    animation: 'pulse 2s infinite',
-                    opacity: isInstallable ? 1 : 0.8,
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                }}
-            >
-                <FaDownload />
-            </button>
-        )}
+            {/* Botón de Instalación PWA */}
+            {!isInstalled && (
+                <button
+                    type="button"
+                    onClick={handleInstallClick}
+                    aria-label="Instalar aplicación"
+                    title={isInstallable ? 'Instalar aplicacion' : 'Instalacion no disponible aun'}
+                    style={{
+                        position: 'fixed',
+                        right: '40px',
+                        bottom: '110px',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        fontSize: '30px',
+                        cursor: 'pointer',
+                        boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
+                        zIndex: 1200,
+                        transition: 'transform 0.2s ease, opacity 0.2s ease',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        animation: 'pulse 2s infinite',
+                        opacity: isInstallable ? 1 : 0.8,
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                >
+                    <FaDownload />
+                </button>
+            )}
 
-        {installHint && (
-            <div
-                role="status"
-                aria-live="polite"
-                style={{
-                    position: 'fixed',
-                    right: '24px',
-                    bottom: '182px',
-                    backgroundColor: '#1f2937',
-                    color: '#ffffff',
-                    padding: '10px 12px',
-                    borderRadius: '10px',
-                    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
-                    zIndex: 1300,
-                    maxWidth: '280px',
-                    fontSize: '13px',
-                    lineHeight: 1.3,
-                }}
-            >
-                {installHint}
-            </div>
-        )}
+            {installHint && (
+                <div
+                    role="status"
+                    aria-live="polite"
+                    style={{
+                        position: 'fixed',
+                        right: '24px',
+                        bottom: '182px',
+                        backgroundColor: '#1f2937',
+                        color: '#ffffff',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        boxShadow: '0 8px 20px rgba(0, 0, 0, 0.25)',
+                        zIndex: 1300,
+                        maxWidth: '280px',
+                        fontSize: '13px',
+                        lineHeight: 1.3,
+                    }}
+                >
+                    {installHint}
+                </div>
+            )}
 
-        {/* Botón de Scroll al inicio (existente) */}
-        {showScrollTop && (
-            <button
-                type="button"
-                onClick={scrollToTop}
-                aria-label="Volver al inicio"
-                style={{
-                    position: 'fixed',
-                    right: '40px',
-                    bottom: '40px',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    backgroundColor: '#FFDB54',
-                    color: 'black',
-                    fontSize: '30px',
-                    cursor: 'pointer',
-                    boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
-                    zIndex: 1200,
-                    transition: 'transform 0.2s ease, opacity 0.2s ease',
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                }}
-                onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                }}
-            >
-                <FaArrowUp color="white" />
-            </button>
-        )}
+            {/* Botón de Scroll al inicio (existente) */}
+            {showScrollTop && (
+                <button
+                    type="button"
+                    onClick={scrollToTop}
+                    aria-label="Volver al inicio"
+                    style={{
+                        position: 'fixed',
+                        right: '40px',
+                        bottom: '40px',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%',
+                        border: 'none',
+                        backgroundColor: '#FFDB54',
+                        color: 'black',
+                        fontSize: '30px',
+                        cursor: 'pointer',
+                        boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
+                        zIndex: 1200,
+                        transition: 'transform 0.2s ease, opacity 0.2s ease',
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                    }}
+                >
+                    <FaArrowUp color="white" />
+                </button>
+            )}
 
-        {/* Añadir la animación CSS para el botón de instalación */}
-        <style>{`
+            {/* Añadir la animación CSS para el botón de instalación */}
+            <style>{`
             @keyframes pulse {
                 0% { transform: scale(1); }
                 50% { transform: scale(1.05); }
