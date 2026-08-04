@@ -6,6 +6,7 @@ import FooterDash from "../components/layouts/FooterDash/FooterDash";
 import HeaderSection from "../components/layouts/HeaderDashboardCollapse/HeaderDashboardCollapse";
 import { useState, useEffect } from "react";
 import api from "../config/api";
+import fotoPerfilUser from '../assets/Foto_perfil.png';
 import LoadingSpinner from "../components/ui/LoadingSpinner";
 
 // ============================================
@@ -243,7 +244,7 @@ const CardRanking = ({
     index,
     subtitulo,
     monedas = "0",
-    avatar = "/user.png",
+    avatar = fotoPerfilUser,
     esUsuarioActual = false
 }) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
@@ -350,14 +351,6 @@ const CardRanking = ({
             overflow: "hidden",
             minHeight: isMobile ? "70px" : "80px",
         }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)";
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.1)";
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = colors.shadow;
-            }}
         >
             {/* Badge "TÚ" si es el usuario actual */}
             {esUsuarioActual && (
@@ -422,7 +415,8 @@ const CardRanking = ({
                         flexShrink: 0,
                         border: index <= 3 ? `2px solid ${index === 1 ? "#FFD700" : index === 2 ? "#C0C0C0" : "#CD7F32"}` : "none",
                     }}
-                >
+                >   
+                    <img src={fotoPerfilUser} style={{ width: "100%", height: "100%" }} />
                     {!isMobile && medal && (
                         <div style={{
                             position: "absolute",
@@ -551,7 +545,7 @@ const UserCard = ({
     isSecond = false,
     isThird = false,
     medalImage = "/medalla.png",
-    userImage = "/user.png"
+    userImage = fotoPerfilUser
 }) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
     const isTablet = useMediaQuery("(min-width: 769px) and (max-width: 1024px)");
@@ -660,6 +654,7 @@ const UserCard = ({
                     border: isYou ? "3px solid #FFD700" : "none",
                 }}
             >
+                <img src={fotoPerfilUser} style={{ width: "100%", height: "100%", borderRadius: "100%" }} />
                 <img
                     src={medalImage}
                     alt="medalla"
