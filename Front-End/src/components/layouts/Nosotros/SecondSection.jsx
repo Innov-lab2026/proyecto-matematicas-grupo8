@@ -19,7 +19,7 @@ const teamMembers = [
   {
     name: 'César Ramos',
     role: 'Backend Developer',
-    quote: 'Creo soluciones robustas que hacen que la app funcione con velocidad y confiabilidad.',
+    quote: 'Marcar rumbo en estrategia siempre es completamente incierto y absolutamente  necesario.',
     image: cesarPhoto,
     linkedin: '#',
     github: 'https://github.com/cesardevuardo',
