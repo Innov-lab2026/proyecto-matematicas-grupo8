@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const usePWAInstall = () => {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [isInstallable, setIsInstallable] = useState(false);
     const [isInstalled, setIsInstalled] = useState(false);
+    const [attemptCount, setAttemptCount] = useState(0);
 
     useEffect(() => {
         // Detectar si ya está instalada
@@ -13,149 +14,159 @@ const usePWAInstall = () => {
             window.navigator.standalone === true;
         setIsInstalled(isStandalone);
 
-        // Si ya está instalada, no mostrar botón
         if (isStandalone) {
+            console.log('✅ App ya está instalada');
             return;
         }
 
-        // Función para verificar si el service worker está registrado
-        const checkServiceWorker = async () => {
-            try {
-                if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    return registrations.length > 0;
-                }
-                return false;
-            } catch (error) {
-                console.error('Error checking service worker:', error);
-                return false;
+        // 🔥 ESTRATEGIA 1: Forzar la verificación del manifest
+        const forceManifestCheck = () => {
+            // Esto ayuda a Chrome a "despertar" y verificar la PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(registration => {
+                    console.log('✅ Service Worker listo, verificando instalabilidad...');
+                    // Disparar un evento personalizado para "recordar" a Chrome
+                    window.dispatchEvent(new Event('appinstalled'));
+                });
             }
         };
 
-        // Función para intentar forzar el registro del SW
-        const ensureServiceWorker = async () => {
-            if ('serviceWorker' in navigator) {
-                try {
-                    // Intentar registrar el SW si no está registrado
-                    const registration = await navigator.serviceWorker.register('/sw.js', {
-                        scope: '/'
-                    });
-                    console.log('Service Worker registrado:', registration);
-                    return true;
-                } catch (error) {
-                    console.error('Error registrando Service Worker:', error);
-                    return false;
-                }
+        // 🔥 ESTRATEGIA 2: Intentar activar el prompt con un timeout
+        const tryActivatePrompt = () => {
+            if (!deferredPrompt && !isInstalled) {
+                // Simular interacción del usuario
+                const fakeClick = new Event('click');
+                document.dispatchEvent(fakeClick);
+                
+                // Forzar una verificación del manifest
+                fetch('/manifest.webmanifest')
+                    .then(response => response.json())
+                    .then(manifest => {
+                        console.log('✅ Manifest verificado:', manifest);
+                        // Si el manifest es válido, intentar "recordar" a Chrome
+                        if (manifest && navigator.serviceWorker.controller) {
+                            console.log('🔄 Intentando activar beforeinstallprompt...');
+                            // Esto a veces ayuda a Chrome a "darse cuenta"
+                            window.location.reload();
+                        }
+                    })
+                    .catch(err => console.error('❌ Error verificando manifest:', err));
             }
-            return false;
         };
 
         // Escuchar el evento beforeinstallprompt
         const handleBeforeInstallPrompt = (e) => {
+            console.log('📱 Evento beforeinstallprompt detectado!');
             e.preventDefault();
             setDeferredPrompt(e);
             setIsInstallable(true);
+            // Guardar en localStorage que el evento ocurrió
+            localStorage.setItem('pwa-prompt-ready', 'true');
         };
 
-        // Escuchar cuando se completa la instalación
+        // Escuchar instalación completada
         const handleAppInstalled = () => {
+            console.log('✅ App instalada exitosamente');
             setIsInstalled(true);
             setIsInstallable(false);
             setDeferredPrompt(null);
+            localStorage.removeItem('pwa-prompt-ready');
         };
 
-        // Configurar listeners
+        // Registrar listeners
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.addEventListener('appinstalled', handleAppInstalled);
 
-        // Verificar y forzar registro del SW
-        const initSW = async () => {
-            const hasSW = await checkServiceWorker();
-            if (!hasSW) {
-                console.log('Service Worker no encontrado, intentando registrar...');
-                const registered = await ensureServiceWorker();
-                if (registered) {
-                    // Esperar un momento y verificar nuevamente
-                    setTimeout(async () => {
-                        const hasSWNow = await checkServiceWorker();
-                        if (hasSWNow) {
-                            console.log('Service Worker registrado exitosamente');
-                            // Disparar evento manual para verificar instalación
-                            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                                // El SW está activo, posiblemente mostrar botón
-                                setIsInstallable(true);
-                            }
-                        }
-                    }, 2000);
-                }
-            } else {
-                console.log('Service Worker ya está registrado');
-                // Si hay un SW pero no hay evento beforeinstallprompt,
-                // verificar si el usuario puede instalar
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                    setTimeout(() => {
-                        // Después de un tiempo, si no hay evento, intentar verificar
-                        if (!deferredPrompt && !isInstalled) {
-                            // Verificar si es Chrome/Edge y debería ser instalable
-                            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-                            const isEdge = /Edg/.test(navigator.userAgent);
-                            if (isChrome || isEdge) {
-                                // Mostrar botón con mensaje específico
-                                setIsInstallable(true);
-                            }
-                        }
-                    }, 3000);
-                }
+        // 🔥 ESTRATEGIA 3: Verificar si ya tuvimos el prompt antes
+        const hadPromptBefore = localStorage.getItem('pwa-prompt-ready') === 'true';
+        if (hadPromptBefore && !deferredPrompt) {
+            console.log('🔄 Recuperando estado de instalación anterior...');
+            // Si ya tuvimos el prompt antes pero no se instaló, intentar de nuevo
+            setIsInstallable(true);
+        }
+
+        // Ejecutar estrategias
+        setTimeout(forceManifestCheck, 1000);
+        setTimeout(tryActivatePrompt, 3000);
+
+        // 🔥 ESTRATEGIA 4: Detectar cuando el usuario hace scroll o click
+        const handleUserInteraction = () => {
+            if (!deferredPrompt && !isInstalled) {
+                console.log('🔄 Usuario interactuó, verificando instalabilidad...');
+                // Intentar nuevamente
+                tryActivatePrompt();
             }
         };
 
-        initSW();
+        window.addEventListener('click', handleUserInteraction);
+        window.addEventListener('scroll', handleUserInteraction);
 
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             window.removeEventListener('appinstalled', handleAppInstalled);
+            window.removeEventListener('click', handleUserInteraction);
+            window.removeEventListener('scroll', handleUserInteraction);
         };
     }, []);
 
-    const installApp = async () => {
-        if (!deferredPrompt) {
-            const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-            if (isIOS) {
-                return 'manual-ios';
-            }
+    const installApp = useCallback(async () => {
+        // Si tenemos el evento beforeinstallprompt, usarlo
+        if (deferredPrompt) {
+            try {
+                console.log('🔄 Mostrando prompt de instalación');
+                await deferredPrompt.prompt();
+                const result = await deferredPrompt.userChoice;
 
-            // Verificar si el navegador soporta instalación
-            const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-            const isEdge = /Edg/.test(navigator.userAgent);
-
-            if (isChrome || isEdge) {
-                return 'manual-browser';
-            }
-
-            return 'unavailable';
-        }
-
-        try {
-            await deferredPrompt.prompt();
-            const result = await deferredPrompt.userChoice;
-
-            if (result.outcome === 'accepted') {
-                console.log('PWA instalada exitosamente');
-                setIsInstalled(true);
+                if (result.outcome === 'accepted') {
+                    console.log('✅ Usuario aceptó la instalación');
+                    setIsInstalled(true);
+                    setIsInstallable(false);
+                    localStorage.removeItem('pwa-prompt-ready');
+                    return 'accepted';
+                } else {
+                    console.log('❌ Usuario rechazó la instalación');
+                    return 'dismissed';
+                }
+            } catch (error) {
+                console.error('❌ Error en la instalación:', error);
+                return 'error';
+            } finally {
+                setDeferredPrompt(null);
                 setIsInstallable(false);
-                return 'accepted';
-            } else {
-                console.log('Usuario rechazó la instalación');
-                return 'dismissed';
             }
-        } catch (error) {
-            console.error('Error al instalar PWA:', error);
-            return 'error';
-        } finally {
-            setDeferredPrompt(null);
-            setIsInstallable(false);
         }
-    };
+
+        // Si no hay beforeinstallprompt, verificar alternativas
+        const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+        if (isIOS) {
+            return 'manual-ios';
+        }
+
+        // 🔥 ESTRATEGIA 5: Intentar forzar en Chrome/Edge
+        const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+        const isEdge = /Edg/.test(navigator.userAgent);
+        
+        if (isChrome || isEdge) {
+            // Intentar recargar la página para activar el beforeinstallprompt
+            // Esto funciona si la página ya fue visitada antes
+            const visits = parseInt(localStorage.getItem('pwa-visits') || '0') + 1;
+            localStorage.setItem('pwa-visits', visits.toString());
+            
+            if (visits >= 2) {
+                // Si ya visitó la página varias veces, intentar recargar
+                console.log('🔄 Múltiples visitas detectadas, intentando recargar...');
+                // Mostrar un mensaje y recargar después de un breve delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                return 'reloading';
+            }
+            
+            return 'manual-browser';
+        }
+
+        return 'unavailable';
+    }, [deferredPrompt]);
 
     return { isInstallable, isInstalled, installApp };
 };
