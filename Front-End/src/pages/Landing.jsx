@@ -67,41 +67,39 @@ const Landing = () => {
             <Footer />
 
             {/* Botón de Instalación PWA */}
-            {isInstallable && !isInstalled && (
-                <button
-                    type="button"
-                    onClick={installApp}
-                    aria-label="Instalar aplicación"
-                    style={{
-                        position: 'fixed',
-                        right: '40px',
-                        bottom: '110px', // Colocado encima del botón de scroll
-                        width: '60px',
-                        height: '60px',
-                        borderRadius: '50%',
-                        border: 'none',
-                        backgroundColor: '#4CAF50',
-                        color: 'white',
-                        fontSize: '30px',
-                        cursor: 'pointer',
-                        boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
-                        zIndex: 1200,
-                        transition: 'transform 0.2s ease, opacity 0.2s ease',
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        animation: 'pulse 2s infinite',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                    }}
-                >
-                    <FaDownload />
-                </button>
-            )}
+            <button
+                type="button"
+                onClick={installApp}
+                aria-label="Instalar aplicación"
+                style={{
+                    position: 'fixed',
+                    right: '40px',
+                    bottom: '110px', // Colocado encima del botón de scroll
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    fontSize: '30px',
+                    cursor: 'pointer',
+                    boxShadow: '0 10px 24px rgba(0, 0, 0, 0.22)',
+                    zIndex: 1200,
+                    transition: 'transform 0.2s ease, opacity 0.2s ease',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    animation: 'pulse 2s infinite',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                }}
+            >
+                <FaDownload />
+            </button>
 
             {/* Botón de Scroll al inicio (existente) */}
             {showScrollTop && (
