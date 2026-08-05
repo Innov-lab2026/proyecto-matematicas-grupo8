@@ -1,61 +1,154 @@
 # Mate+
 
-Una plataforma de entrenamiento para actividades matemáticas de la vida diaria
+*Una plataforma con entrenamientos pensados para adultos, con un enfoque práctico 'gamificado', enfocada en actividades matemáticas puntuales de la vida diaria.*
 
-![imagen identidad](Front-End/src/assets/logo_mate.png)
-
-![imagen identidad](Front-End/src/assets/image.png)
+![Banner](Front-End/src/assets/Visuales_Readme/Banner.png)
+![Lupa](Front-End/src/assets/Visuales_Readme/Lupa.png)
+---
 
 ## Nuestro equipo
 
 <p>
-<img src="Front-End/src/assets/Fotos/Sol.jpg" alt="Sol" width="80">
-<img src="Front-End/src/assets/Fotos/Sofia.jpg" alt="Sofia" width="80">
-<img src="Front-End/src/assets/Fotos/Romina.jpg" alt="Romina" width="80">
-<img src="Front-End/src/assets/Fotos/Lisandro.jpg" alt="Lisandro" width="80">
-<img src="Front-End/src/assets/Fotos/Isaac.jpg" alt="Isaac" width="80">
-<img src="Front-End/src/assets/Fotos/hernan.jpg" alt="Hernán" width="80">
-<img src="Front-End/src/assets/Fotos/Gustavo.jpg" alt="Gustavo" width="80">
-<img src="Front-End/src/assets/Fotos/Flor.jpg" alt="Flor" width="80">
-<img src="Front-End/src/assets/Fotos/Cesar.jpg" alt="César" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Sol.png" alt="Sol" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/sofi.png" alt="Sofia" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Romi.png" alt="Romina" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Lis.png" alt="Lisandro" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Isaac.png" alt="Isaac" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Hernan.png" alt="Hernán" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Gus.png" alt="Gustavo" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Flor.png" alt="Flor" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/May.png" alt="May" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Tony.png" alt="Tony" width="80">
+<img src="Front-End/src/assets/Visuales_Readme/Cesar.png" alt="César" width="80">
 </p>
 
-## Backend Core
+---
 
-Pre-Beta 1.0 para el Back End del proyecto "Aplicación de aprendizaje de Matemática" en **InnovaLab**. La arquitectura está diseñada para ser escalable, profesional y compatible con entornos de despliegue serverless en **Vercel** y **PostgreSQL** en **Supabase**.
+## Estado de desarrollo
+
+La presente es una versión "Beta" implementada para su exposición como slice de prueba conceptual en un "Demo Funcional" que permita una revisión comleta tanto en su carácter de "WebApp", como mediante un "Cliente Local Descargable" (PWA) mediante un escaneo de QR.
+
+---
 
 ### Arquitectura
 
 El proyecto se gestiona bajo una estructura de **Monorepo** utilizando `pnpm workspaces`. Esta configuración permite mantener el código del Back-End y del Front-End en un único repositorio "serverless", facilitando la gestión de dependencias compartidas y scripts de automatización desde la raíz del proyecto.
 
-#### Stack Tecnológico
 
+### Stack Tecnológico
+
+- **UX / UI:** Plantilla **FIGMA**
+- **Gestión de Paquetes:** `pnpm`
+- **Librería Core:** **React** v18+
+- **Tooling / Bundler:** **Vite** v6+
+- **Enrutamiento:** **React Router DOM** v7+
+- **Estilos / CSS:** **Bootstrap** v5.3+
+- **Componentes UI:** **React Bootstrap** v2.10+
+- **Cliente HTTP:** **Axios** v1.7+
+- **Gestión de Formularios:** **React Hook Form** v7+
+- **Validación de Esquemas:** **Zod** v3.24+
 - **Runtime:** **Node.js** v24+
 - **Framework:** **Express.js** v5 (Beta/LTS compatible)
 - **ORM:** **Prisma** v6.4.1 (Stable - Native Engines)
-- **Gestor de Paquetes:** `pnpm`
 - **Base de Datos:** **PostgreSQL** (vía **Supabase**)
 - **Gestor de Registro e Inicio de Sesión:** **Supabase Auth**
 - **Despliegue:** **Vercel**
-- **Integración LLM-CLI:** **Groq (Llama 3.1 / Qwen)**
-- **UX/UI:** Plantilla **FIGMA**
+- **Integración LLM-CLI:** (en desarrollo)
+---
 
-#### Roles y Permisos
-- **usuario:** Perfil estándar para participantes. Acceso a escenarios interactivos y seguimiento de progreso.
-- **admin:** Perfil con permisos de edición sobre contenidos (Secciones y Escenarios), edición de "prompt" de modelado del CLI pedagógico y acceso a Cuadros Estadísticos.
-- **superadmin:** Perfil de gestión total, incluyendo edición de contenidos y manejo de credenciales/permisos.
+## Objetivos iniciales del Front-End
 
-#### Resiliencia en respuesta LLM-CLI (Fallback):
-En caso de que no haya una Key configurada o se excedan los límites de cuota, el sistema activará automáticamente un modo de respaldo. En lugar de fallar, el servidor responderá utilizando la explicación técnica predefinida en el campo `explicacion` de la tabla **Escenarios**.
-
-#### Auditoría
-Se mantiene un seguimiento de las actividades de modificación en la tabla Auditoría.
+>
+> - Construir una interfaz accesible y amigable
+> - Implementar navegación entre pantallas
+> - Crear sistema de módulos y micro-lecciones
+> - Diseñar experiencia gamificada
+> - Mantener una estructura escalable para trabajo en equipo
+---
 
 ### Nodo Administrativo
 
-Consola de relevamiento y actividades administrativas, con acceso desde dirección web [/admin-be](https://deploy-mate-mas-front-end.vercel.app/admin-be) y requerimientos de inicio de sesión para su uso, brinda información relativa al estado y funcionamiento del Back-End, el LLM-CLI y la conexión de datos y también es el punto de acceso para los administradores desde el que pueden manejar condiciones y probar resultados del LLM-CLI, crear, editar buscar o eliminar en las tablas de Secciones y Escenarios y acceder a los gráficos en tiempo real
 
-### Estructura del Proyecto
+Consola de relevamiento y actividades administrativas, con acceso único desde dirección web, con requerimientos de inicio de sesión como "Administrador" para su uso (en fase de desarrollo).
+
+<p align="center">
+<img src="./Front-End/src/assets/consola/01_Consola.png" alt="Preview de Consola Admin" width="600">
+<p>
+brinda información relativa al estado y funcionamiento del Back-End, la conexión con la Base de Datos y el status del LLM-CLI.
+
+<p align="center">
+<img src="./Front-End/src/assets/consola/02_LLM_CLI.png" alt="Preview del Módulo de Gestión del LLM_CLI" width="600">
+<p>
+también es punto de acceso desde el que se manejan y prueban las "condiciones de respuesta" del LLM-CLI
+
+<p align="center">
+<img src="./Front-End/src/assets/consola/03_Pauta_Seccion.png" alt="Preview Módulo de Gestión de CRUD de las Secciones" width="600">
+<p>
+así como donde se crean, editan, buscan, ocultan o eliminan (CRUD) los "contenidos" de las Secciones y Escenarios de la App
+
+<p align="center">
+<img src="./Front-End/src/assets/consola/04_Estadistica.png" alt="Preview del Módulo de Gestión de Estadísticas" width="600">
+<p>
+además es desde dónde se accede a los gráficos para "Analisis de Datos" en tiempo real.
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="./Front-End/src/assets/consola/05_Locacion.png" alt="Captura 05" width="450">
+    </td>
+    <td align="center">
+      <img src="./Front-End/src/assets/consola/06_Genero.png" alt="Captura 06" width="450">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="./Front-End/src/assets/consola/07_Edad.png" alt="Captura 07" width="450">
+    </td>
+    <td align="center">
+      <img src="./Front-End/src/assets/consola/08_Crecimiento.png" alt="Captura 08" width="450">
+    </td>
+  </tr>
+</table>
+
+---
+
+#### Auditoría
+Se mantiene un seguimiento de las actividades de modificación en una tabla de trazabilidad "Auditoría" para posterior revisión estadística y de acceso con permiso restringido.
+
+---
+
+### Estructura del Proyecto (Front-End)
+
+```bash
+proyecto-matematicas-grupo8/
+├── Front-End/
+├── public/
+├── src/
+│   ├── assets/
+│       ├── Fotos/
+│       ├── Visuales_Readme/
+│   ├── components/
+│   ├── config/
+│   ├── context/
+│   ├── data/
+│   ├── hooks/
+│   ├── Images/
+│   ├── mascotas/
+│   ├── pages/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── App.css
+│   ├── App.jsx
+│   └── main.jsx
+├── index.html
+├── package.json
+├── pnpm-lock.yaml
+└── README.md
+```
+
+
+### Estructura del Proyecto (Back-End)
 
 ```bash
 proyecto-matematicas-grupo8/
@@ -337,207 +430,5 @@ Revisión y optimización de Back-End
 
 ---
 
-*Propuesta desarrollada para el equipo de Back End - InnovaLab 2026*
 
-
-## INNOVALAB FRONT-END
-
-Aplicación web educativa enfocada en el aprendizaje de matemática para adultos mediante ejercicios interactivos y elementos de gamificación.
-
-El objetivo del proyecto es ofrecer una experiencia de aprendizaje accesible, dinámica y progresiva para personas que desean reforzar conocimientos matemáticos sin frustración ni presión académica tradicional.
-
---------------------------------------------------------------------------------------
-
-# Tecnologías utilizadas
-
-- React
-- Vite
-- React Router DOM
-- Bootstrap
-- React Bootstrap
-
---------------------------------------------------------------------------------------
-
-# Gestor de paquetes
-
-El proyecto utiliza **pnpm** como gestor de paquetes dentro de una arquitectura monorepo.
-
-## Instalar pnpm globalmente
-
-```bash
-npm install -g pnpm
-```
-
----------------------------------------------------------------------------------------
-
-# Instalación y ejecución
-
-## 1. Clonar el repositorio
-
-```bash
-git clone <url-del-repositorio>
-```
-
----------------------------------------------------------------------------------------
-
-## 2. Ingresar a la carpeta del Front-End
-
-```bash
-cd Front-End
-```
-
----------------------------------------------------------------------------------------
-
-## 3. Instalar dependencias
-
-```bash
-pnpm install
-```
-
----------------------------------------------------------------------------------------
-
-## 4. Ejecutar entorno de desarrollo
-
-```bash
-pnpm dev
-```
-
-La aplicación se ejecutará en:
-
-```bash
-http://localhost:5173
-```
-
----------------------------------------------------------------------------------------
-
-# Dependencias instaladas
-
-## Crear proyecto con Vite
-
-```bash
-pnpm create vite@latest
-```
-
-## Bootstrap + React Bootstrap
-
-```bash
-pnpm add bootstrap react-bootstrap
-```
-
-## React Router DOM
-
-```bash
-pnpm add react-router-dom
-```
-
-## React Iconos
-
-```bash
-pnpm install font-awesome
-pnpm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons @fortawesome/fontawesome-svg-core
-pnpm install @fortawesome/free-regular-svg-icons @fortawesome/free-brands-svg-icons
-```
-
-
-
------------------------------------------------------------------------------------------
-
-# Estructura inicial del proyecto
-
-![alt text](image.png)
-
-```text
-Front-End/
-├── public/
-├── src/
-│   ├── assets/          # Imágenes, iconos y recursos estáticos
-|       ├──              # Carpeta con el nombre (con los archivos de .jsx y .css)
-│   ├── components/      # Componentes reutilizables
-│   ├── pages/           # Vistas principales
-│   ├── routes/          # Configuración de rutas
-│   ├── App.jsx
-│   └── main.jsx
-├── package.json
-├── pnpm-lock.yaml
-└── README.md
-```
-
---------------------------------------------------------------------------------------------
-
-# Objetivos iniciales del Front-End
-
-- Construir una interfaz accesible y amigable
-- Implementar navegación entre pantallas
-- Crear sistema de módulos y micro-lecciones
-- Diseñar experiencia gamificada
-- Mantener una estructura escalable para trabajo en equipo
-
----------------------------------------------------------------------------------------------
-
-# Estado actual del proyecto
-
-🚧 Proyecto en etapa inicial de desarrollo.
-
-Actualmente se encuentra en:
-- planificación de arquitectura
-- organización de componentes
-- definición de flujo de usuario
-- armado inicial de vistas y navegación
-
-------------------------------------------------------------------------------------------------
-
-# Futuras tecnologías a evaluar
-
-Estas herramientas podrían incorporarse más adelante según las necesidades del proyecto:
-
-- Axios
-- Zustand
-- React Hook Form
-- Zod
-
--------------------------------------------------------------------------------------------------
-
-# Arquitectura del proyecto
-
-El proyecto forma parte de una arquitectura **Monorepo**, donde Front-End y Back-End conviven dentro de un mismo repositorio para facilitar:
-- trabajo colaborativo
-- organización del código
-- manejo centralizado de dependencias
-- scripts compartidos
-
-Ejemplo:
-
-```text
-proyecto-matematicas/
-├── Front-End/
-├── Back-End/
-└── package.json
-```
-
--------------------------------------------------------------------------------------------------
-
-# Scripts útiles
-
-## Iniciar entorno de desarrollo
-
-```bash
-pnpm dev
-```
-
-## Generar build de producción
-
-```bash
-pnpm build
-```
-
-## Visualizar build localmente
-
-```bash
-pnpm preview
-```
-
---------------------------------------------------------------------------------------------------
-
-# Equipo Front-End
-
-*Proyecto desarrollado para InnovaLab 2026.*
+*Proyecto desarrollado para InnovaLab por el "Equipo 8" con integrantes multidisciplinarios de distintas extracciones relativas a la "Agencia de Habilidades para el Futuro" dependiente del Ministerio de Educación de la Ciudad Autónoma de Buenos Aires, entre Mayo y Agosto de 2026.*
