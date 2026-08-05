@@ -1,4 +1,8 @@
 import prisma from "../config/prisma.js";
+import {
+  sanitizeEscenario,
+  sanitizeEscenarios,
+} from "../utils/sanitizeEscenario.js";
 
 export const getEscenariosBySeccion = async (req, res, next) => {
   const { seccionId } = req.params;
@@ -7,7 +11,7 @@ export const getEscenariosBySeccion = async (req, res, next) => {
       where: { seccionId: parseInt(seccionId) },
       include: { opciones: true },
     });
-    return res.json(escenarios);
+    return res.json(sanitizeEscenarios(escenarios));
   } catch (error) {
     next(error);
   }
@@ -27,7 +31,7 @@ export const getEscenarioBySeccionAndId = async (req, res, next) => {
       return res
         .status(404)
         .json({ error: "No existe el escenario en esta sección" });
-    return res.json(escenario);
+    return res.json(sanitizeEscenario(escenario));
   } catch (error) {
     next(error);
   }

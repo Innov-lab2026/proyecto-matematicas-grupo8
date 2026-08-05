@@ -10,14 +10,14 @@ import { useMascotContext } from '../../../mascotas/core/MascotProvider';
 function EjercicioInput({
   pregunta,
   imagenUrl,
-  respuestaCorrecta,
   onContinue,
   onResponder,
   progreso = 0,
   mascotPosition = 'bottom-left',
   mascotSize = 160,
   maxIntentos = 3,
-  enviando = false, // ✅ Nuevo prop
+  enviando = false,
+  ultimoResultado = null,
   seccionId = null,
 }) {
   const isMobile = window.innerWidth <= 900;
@@ -64,7 +64,30 @@ function EjercicioInput({
     return () => {
       isMounted.current = false;
     };
-  }, [pregunta, respuestaCorrecta, setState]);
+  }, [pregunta, setState]);
+
+  // Feedback desde el backend (la respuesta correcta no viaja al cliente)
+  useEffect(() => {
+    if (!ultimoResultado || !respuestaEnviada || enviando) return;
+    if (!isMounted.current) return;
+
+    if (ultimoResultado.esCorrecto) {
+      setResultado('correcto');
+      react('celebration', '🎉 ¡Perfecto! ¡Sos un genio!');
+    } else {
+      setResultado('incorrecto');
+      setIntentos((prev) => prev + 1);
+      const mensajesError = [
+        '❌ Intentalo de nuevo. ¡Vos podés!',
+        '❌ Casi... ¡Dale otra oportunidad!',
+        '❌ No te rindas, ¡pensá con calma!',
+        '❌ ¡Un poco más! Confío en vos.',
+      ];
+      const index = Math.min(intentos, mensajesError.length - 1);
+      react('sad', mensajesError[index]);
+      setRespuestaEnviada(false);
+    }
+  }, [ultimoResultado, respuestaEnviada, enviando, react, intentos]);
 
   // Tras acertar: dejar ver la mascota ~2s y después avanzar
   useEffect(() => {
@@ -93,7 +116,7 @@ function EjercicioInput({
   const verificarRespuesta = (e) => {
     e.preventDefault();
 
-    if (enviando) return; // ✅ No permitir enviar mientras carga
+    if (enviando || respuestaEnviada) return;
 
     if (!inputValue) {
       say('thinking_prompt');
@@ -104,30 +127,10 @@ function EjercicioInput({
       return;
     }
 
-    const isCorrect = Number(inputValue) === Number(respuestaCorrecta);
-
-    if (isCorrect) {
-      setResultado('correcto');
-      react('celebration', '🎉 ¡Perfecto! ¡Sos un genio!');
-
-      // ✅ Enviar respuesta al backend
-      setRespuestaEnviada(true);
-      if (onResponder) {
-        onResponder(inputValue);
-      }
-    } else {
-      setResultado('incorrecto');
-      setIntentos(prev => prev + 1);
-
-      const mensajesError = [
-        '❌ Intentálo de nuevo. ¡Vos podés!',
-        '❌ Casi... ¡Dale otra oportunidad!',
-        '❌ No te rindas, ¡pensá con calma!',
-        '❌ ¡Un poco más! Confío en vos.'
-      ];
-
-      const index = Math.min(intentos, mensajesError.length - 1);
-      react('sad', mensajesError[index]);
+    setResultado(null);
+    setRespuestaEnviada(true);
+    if (onResponder) {
+      onResponder(inputValue);
     }
   };
 

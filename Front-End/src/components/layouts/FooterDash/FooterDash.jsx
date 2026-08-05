@@ -93,7 +93,7 @@ const FooterDash = () => {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#52C5FE"}
                 onMouseLeave={(e) => e.currentTarget.style.color = "#1A202C"}
-                onClick={() => navigate('/TermsOfService', { state: { tab: 'privacidad' } })}
+                onClick={() => navigate('/privacidad')}
                 >
                     Política de Privacidad
                 </p>
@@ -108,7 +108,7 @@ const FooterDash = () => {
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.color = "#52C5FE"}
                 onMouseLeave={(e) => e.currentTarget.style.color = "#1A202C"}
-                onClick={() => navigate('/TermsOfService', { state: { tab: 'terminos' } })}
+                onClick={() => navigate('/terminos')}
                 >
                     Términos y Condiciones
                 </p>

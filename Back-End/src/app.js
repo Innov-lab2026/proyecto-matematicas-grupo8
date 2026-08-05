@@ -20,6 +20,9 @@ import errorHandler from "./middlewares/error.middleware.js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// BUG-033: no filtrar fingerprint del stack
+app.disable("x-powered-by");
+
 const allowedOrigins = [
   "https://matemas.vercel.app",
   "http://localhost:5173",

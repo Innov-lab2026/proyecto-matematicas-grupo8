@@ -23,7 +23,12 @@ router.use("/usuarios", auditMiddleware, usuariosRoutes);
 router.use("/ramas", checkAuth, auditMiddleware, ramaRoutes);
 router.use("/progreso", checkAuth, auditMiddleware, progresoRoutes);
 router.use("/ranking", checkAuth, auditMiddleware, rankingRoutes);
-router.get("/logs", checkAuth, getLogs);
+router.get(
+  "/logs",
+  checkAuth,
+  checkRole(["admin", "superadmin"]),
+  getLogs,
+);
 
 // Admin-BE: Centro de Mando Brutalista
 router.get(

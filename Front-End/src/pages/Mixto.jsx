@@ -4,6 +4,7 @@ import HeaderDash from '../components/layouts/Desafios/headerDash/HeaderDash';
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { BiJoystick } from "react-icons/bi";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderSection from "../components/layouts/HeaderDashboardCollapse/HeaderDashboardCollapse";
 
 // Assets 
@@ -169,6 +170,7 @@ export default MixtoPage;
 
 const CardMixto = ({ titulo, imageUrl }) => {
     const isMobile = useMediaQuery("(max-width: 768px)");
+    const navigate = useNavigate();
 
     return (
         <div style={{
@@ -208,6 +210,9 @@ const CardMixto = ({ titulo, imageUrl }) => {
                 +20 Monedas
             </p>
             <Button
+                type="button"
+                aria-label={`Jugar ${titulo}`}
+                onClick={() => navigate("/dashboard")}
                 style={{
                     backgroundColor: "#FFDB54",
                     padding: isMobile ? "6px 14px" : "8px 16px",
@@ -222,9 +227,6 @@ const CardMixto = ({ titulo, imageUrl }) => {
                     margin: 0,
                     transition: "transform 0.2s",
                     cursor: "pointer",
-                    "&:hover": {
-                        transform: "scale(1.05)",
-                    }
                 }}
             >
                 <BiJoystick size={isMobile ? 16 : 24} />

@@ -303,8 +303,9 @@ export const AuthProvider = ({ children }) => {
       const isMockMode = !import.meta.env.VITE_SUPABASE_URL ||
         import.meta.env.VITE_SUPABASE_URL.includes("[TU_PROYECTO]");
 
-      if (isMockMode || err.message === "SUPABASE_UNAVAILABLE") {
-        console.warn("⚠️ Usando autenticación de respaldo (Back-End Mock)");
+      // Solo en mock local: nunca usar /usuarios/login + dev-bypass en producción.
+      if (isMockMode && err.message === "SUPABASE_UNAVAILABLE") {
+        console.warn("⚠️ Usando autenticación de respaldo (Back-End Mock local)");
         const response = await api.post("/usuarios/login", { email, password });
         if (response.data) {
           const mockSession = {

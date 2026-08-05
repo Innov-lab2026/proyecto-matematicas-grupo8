@@ -40,7 +40,7 @@ function Desafios() {
         setError(
           rows.length
             ? null
-            : 'Esta sección todavía no tiene videos cargados en la base (tabla Leccion).',
+            : 'Pronto vas a encontrar contenido acá. Mientras tanto, podés seguir con otros desafíos.',
         );
       })
       .catch((err) => {

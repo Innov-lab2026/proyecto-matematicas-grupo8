@@ -26,9 +26,9 @@ function EjercicioChoice({
   const datosChoiceDePrueba = {
     pregunta: "¿Cuánto es el 25% de 300?",
     opciones: [
-      { id: -1, texto: "75", esCorrecta: true },
-      { id: -2, texto: "100", esCorrecta: false },
-      { id: -3, texto: "50", esCorrecta: false },
+      { id: -1, texto: "75" },
+      { id: -2, texto: "100" },
+      { id: -3, texto: "50" },
     ],
   };
 
@@ -92,16 +92,7 @@ function EjercicioChoice({
     setSeleccionado(opcion.id);
     setEsCorrecto(null);
 
-    // Feedback local inmediato (más snappy en móvil)
-    if (typeof opcion.esCorrecta === "boolean") {
-      setEsCorrecto(opcion.esCorrecta);
-      if (opcion.esCorrecta) {
-        react("celebration", "¡Excelente! Elegiste la opción correcta.");
-      } else {
-        react("sad", "Casi. Volvé a intentarlo, vos podés.");
-      }
-    }
-
+    // La corrección la define el backend (no enviamos esCorrecta al cliente).
     if (onResponder) {
       onResponder(opcion.id);
     }

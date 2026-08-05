@@ -32,24 +32,6 @@ const usePWAInstall = () => {
             }
         };
 
-        // Función para intentar forzar el registro del SW
-        const ensureServiceWorker = async () => {
-            if ('serviceWorker' in navigator) {
-                try {
-                    // Intentar registrar el SW si no está registrado
-                    const registration = await navigator.serviceWorker.register('/sw.js', {
-                        scope: '/'
-                    });
-                    console.log('Service Worker registrado:', registration);
-                    return true;
-                } catch (error) {
-                    console.error('Error registrando Service Worker:', error);
-                    return false;
-                }
-            }
-            return false;
-        };
-
         // Escuchar el evento beforeinstallprompt
         const handleBeforeInstallPrompt = (e) => {
             e.preventDefault();
@@ -68,39 +50,16 @@ const usePWAInstall = () => {
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         window.addEventListener('appinstalled', handleAppInstalled);
 
-        // Verificar y forzar registro del SW
+        // El registro del SW lo hace vite-plugin-pwa (registerSW). Acá solo detectamos install.
         const initSW = async () => {
             const hasSW = await checkServiceWorker();
-            if (!hasSW) {
-                console.log('Service Worker no encontrado, intentando registrar...');
-                const registered = await ensureServiceWorker();
-                if (registered) {
-                    // Esperar un momento y verificar nuevamente
-                    setTimeout(async () => {
-                        const hasSWNow = await checkServiceWorker();
-                        if (hasSWNow) {
-                            console.log('Service Worker registrado exitosamente');
-                            // Disparar evento manual para verificar instalación
-                            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                                // El SW está activo, posiblemente mostrar botón
-                                setIsInstallable(true);
-                            }
-                        }
-                    }, 2000);
-                }
-            } else {
-                console.log('Service Worker ya está registrado');
-                // Si hay un SW pero no hay evento beforeinstallprompt,
-                // verificar si el usuario puede instalar
+            if (hasSW) {
                 if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                     setTimeout(() => {
-                        // Después de un tiempo, si no hay evento, intentar verificar
                         if (!deferredPrompt && !isInstalled) {
-                            // Verificar si es Chrome/Edge y debería ser instalable
                             const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
                             const isEdge = /Edg/.test(navigator.userAgent);
                             if (isChrome || isEdge) {
-                                // Mostrar botón con mensaje específico
                                 setIsInstallable(true);
                             }
                         }

@@ -294,9 +294,28 @@ export const getHistorialUsuario = async (req, res, next) => {
     const { uid } = req.params;
     console.log(`📝 getHistorialUsuario: Usuario ${uid}`);
     try {
+        // IDOR: solo el propio usuario (o admin) puede ver historial
+        const requesterId = req.user?.id;
+        const rol = req.user?.rol;
+        const esAdmin = rol === 'admin' || rol === 'superadmin';
+        if (!esAdmin && requesterId !== uid) {
+            return res.status(403).json({ error: 'No autorizado a ver el progreso de otro usuario' });
+        }
+
         const historial = await prisma.progreso.findMany({
             where: { usuarioId: uid },
-            include: { escenario: true },
+            include: {
+                escenario: {
+                    select: {
+                        id: true,
+                        titulo: true,
+                        pregunta: true,
+                        categoria: true,
+                        tipo: true,
+                        seccionId: true,
+                    },
+                },
+            },
             orderBy: { updatedAt: 'desc' }
         });
         console.log(`✅ Historial encontrado: ${historial.length} registros`);

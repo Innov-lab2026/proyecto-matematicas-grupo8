@@ -38,9 +38,14 @@ const ResetPassword = () => {
     setError("");
     setSuccess("");
 
-    if (password.length < 8 || !/[A-Z]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password) ||
+      !/[!@#$%^&*]/.test(password)
+    ) {
       setError(
-        "La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial.",
+        "La contraseña debe tener 8+ caracteres, una mayúscula, un número y un especial (! @ # $ % ^ & *).",
       );
       return;
     }

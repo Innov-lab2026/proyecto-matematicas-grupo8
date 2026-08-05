@@ -54,7 +54,7 @@ const useRegisterForm = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email.trim())) {
-      setToastMessage("❌ Ingresa un correo electrónico válido");
+      setToastMessage("❌ Ingresá un correo electrónico válido");
       setToastVariant("danger");
       setShowToast(true);
       return;
@@ -62,10 +62,11 @@ const useRegisterForm = () => {
     if (
       password.length < 8 ||
       !/[A-Z]/.test(password) ||
-      !/[^A-Za-z0-9]/.test(password)
+      !/[0-9]/.test(password) ||
+      !/[!@#$%^&*]/.test(password)
     ) {
       setToastMessage(
-        "❌ La contraseña debe tener al menos 8 caracteres, una mayúscula y un carácter especial",
+        "❌ La contraseña debe tener 8+ caracteres, una mayúscula, un número y un especial (! @ # $ % ^ & *)",
       );
       setToastVariant("danger");
       setShowToast(true);
@@ -375,20 +376,25 @@ const RegisterPage = () => {
                     )}
                   </div>
                   {/* 👁 mostrar/ocultar */}
-                  <div
+                  <button
+                    type="button"
+                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     onClick={() => setShowPassword(!showPassword)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       cursor: "pointer",
+                      background: "none",
+                      border: "none",
+                      padding: 0,
                     }}
                   >
                     {showPassword ? (
-                      <FaEyeSlash size={18} />
+                      <FaEyeSlash size={18} aria-hidden="true" />
                     ) : (
-                      <FaEye size={18} />
+                      <FaEye size={18} aria-hidden="true" />
                     )}
-                  </div>
+                  </button>
                 </div>
               </Form.Group>
               <Form.Group className="mb-3" controlId="registerConfirmPassword">
@@ -439,20 +445,29 @@ const RegisterPage = () => {
                     )}
                   </div>
                   {/* 👁 mostrar/ocultar */}
-                  <div
+                  <button
+                    type="button"
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar repetición de contraseña"
+                        : "Mostrar repetición de contraseña"
+                    }
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       cursor: "pointer",
+                      background: "none",
+                      border: "none",
+                      padding: 0,
                     }}
                   >
                     {showConfirmPassword ? (
-                      <FaEyeSlash size={18} />
+                      <FaEyeSlash size={18} aria-hidden="true" />
                     ) : (
-                      <FaEye size={18} />
+                      <FaEye size={18} aria-hidden="true" />
                     )}
-                  </div>
+                  </button>
                 </div>
               </Form.Group>
               {/* Recordarme / Olvidé contraseña */}

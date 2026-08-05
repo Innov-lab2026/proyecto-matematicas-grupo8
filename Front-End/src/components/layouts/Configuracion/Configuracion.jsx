@@ -35,6 +35,8 @@ function Configuracion() {
   });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const nombreInputRef = useRef(null);
   const emailInputRef = useRef(null);
@@ -161,14 +163,37 @@ function Configuracion() {
   };
 
   const handleConfirmDelete = async () => {
-    setShowDeleteModal(false);
+    if (!deletePassword.trim()) {
+      alert('Ingresá tu contraseña para confirmar la eliminación.');
+      return;
+    }
+    setDeleting(true);
     try {
-      await api.delete('/usuarios/eliminar');
+      // Re-autenticar con Supabase antes de borrar (BUG-036)
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: profile?.email || formData.email,
+        password: deletePassword,
+      });
+      if (reauthError) {
+        throw new Error('Contraseña incorrecta. No se eliminó la cuenta.');
+      }
+
+      await api.delete('/usuarios/eliminar', {
+        data: { confirmacion: 'ELIMINAR', password: deletePassword },
+      });
+      setShowDeleteModal(false);
+      setDeletePassword('');
       await logout?.();
       alert('Cuenta eliminada correctamente.');
     } catch (err) {
       console.error(err);
-      alert('No se pudo eliminar la cuenta por ahora.');
+      alert(
+        err.response?.data?.error ||
+          err.message ||
+          'No se pudo eliminar la cuenta por ahora.',
+      );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -292,22 +317,46 @@ function Configuracion() {
             <div className="modal-icon">⚠️</div>
             <h2>¿Eliminar cuenta?</h2>
             <p>
-              Esta acción es irreversible y perderás todo tu progreso en MATE+. ¿Estás seguro/a de que deseas continuar?
+              Esta acción es irreversible y perderás todo tu progreso en MATE+.
+              Ingresá tu contraseña para confirmar.
             </p>
+            <label htmlFor="delete-password" className="visually-hidden">
+              Contraseña para eliminar cuenta
+            </label>
+            <input
+              id="delete-password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Tu contraseña"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              style={{
+                width: '100%',
+                margin: '0.75rem 0 1rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 12,
+                border: '1px solid #ddd',
+              }}
+            />
             <div className="modal-actions">
               <button
                 type="button"
                 className="modal-cancel-btn"
-                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletePassword('');
+                }}
               >
                 Cancelar
               </button>
               <button
                 type="button"
                 className="modal-confirm-delete-btn"
+                disabled={deleting}
                 onClick={handleConfirmDelete}
               >
-                Sí, eliminar
+                {deleting ? 'Eliminando...' : 'Sí, eliminar'}
               </button>
             </div>
           </div>

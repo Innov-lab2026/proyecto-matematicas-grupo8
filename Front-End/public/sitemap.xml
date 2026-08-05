@@ -11,18 +11,18 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://matemas.vercel.app/login</loc>
+    <loc>https://matemas.vercel.app/started</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://matemas.vercel.app/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://matemas.vercel.app/TermsOfService</loc>
+    <loc>https://matemas.vercel.app/terminos</loc>
     <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://matemas.vercel.app/privacidad</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

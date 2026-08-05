@@ -253,7 +253,6 @@ function ModuloEjercicios() {
           <EjercicioInput
             pregunta={ejercicioActual.pregunta}
             imagenUrl={ejercicioActual.imagenUrl}
-            respuestaCorrecta={ejercicioActual.respuestaCorrecta}
             onBack={manejarAtras}
             onContinue={manejarContinuar}
             onResponder={(respuestaUsuario) =>

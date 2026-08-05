@@ -1,6 +1,5 @@
 import { Row, Col, Nav } from 'react-bootstrap';
 import './Footer.css';
-import { FaFacebook, FaGithub, FaLinkedin } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Footer = () => {
@@ -38,35 +37,10 @@ const Footer = () => {
                             <p className="footer-location w-75 text-center text-lg-start">
                                 Nuestra visión es hacerte el aprendizaje más fácil y ayudarte a dominar las matemáticas que necesitás para potenciar tu día a día.
                             </p>
-                            <div className="footer-social-icons justify-content-start">
-                                <a
-                                    href="https://www.facebook.com/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="footer-social-link"
-                                    aria-label="Facebook de Mate+"
-                                >
-                                    <FaFacebook size={24} aria-hidden="true" />
-                                </a>
-                                <a
-                                    href="https://www.linkedin.com/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="footer-social-link"
-                                    aria-label="LinkedIn de Mate+"
-                                >
-                                    <FaLinkedin size={24} aria-hidden="true" />
-                                </a>
-                                <a
-                                    href="https://github.com/"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="footer-social-link"
-                                    aria-label="GitHub de Mate+"
-                                >
-                                    <FaGithub size={24} aria-hidden="true" />
-                                </a>
-                            </div>
+                            {/* Sin perfiles oficiales todavía: no linkear a homes genéricas */}
+                            <p className="footer-location w-75 text-center text-lg-start mb-0" style={{ fontSize: '0.85rem', opacity: 0.85 }}>
+                                Seguinos pronto en redes — perfiles oficiales en camino.
+                            </p>
                         </div>
                     </Col>
 
