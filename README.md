@@ -18,8 +18,6 @@
 <img src="Front-End/src/assets/Visuales_Readme/Gus.png" alt="Gustavo" width="80">
 <img src="Front-End/src/assets/Visuales_Readme/Flor.png" alt="Flor" width="80">
 <img src="Front-End/src/assets/Visuales_Readme/Maribel.png" alt="Maribel" width="80">
-<img src="Front-End/src/assets/Visuales_Readme/May.png" alt="May" width="80">
-<img src="Front-End/src/assets/Visuales_Readme/Tony.png" alt="Tony" width="80">
 <img src="Front-End/src/assets/Visuales_Readme/Cesar.png" alt="César" width="80">
 </p>
 
